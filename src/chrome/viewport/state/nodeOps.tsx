@@ -7,7 +7,8 @@ import { getRandomId, ROOT_NODE } from "@craftjs/utils";
 import React from "react";
 import { Container } from "../../../components/Container/Container";
 import generate from "../../../utils/seeds/nameGenerator";
-import { DeleteMedia } from "./api";
+import { getMediaLibraryStore } from "../../../utils/media/libraryStore";
+import { createRootPropsMediaLibrary } from "../../toolbar/inputs/media/hooks/useRootPropsMediaLibrary";
 import { phStorage } from "../../../utils/phStorage";
 import {
   addHasMany,
@@ -78,9 +79,14 @@ export const deleteNode = async (
   const parentId = node.data.parent;
   const { type, videoId, image, ico } = node.data.props || {};
 
-  if (type === "cdn" && videoId) DeleteMedia(videoId, settings, query, actions);
-  if (image) DeleteMedia(image, settings, query, actions);
-  if (ico) DeleteMedia(ico, settings, query, actions);
+  const mediaIds = [type === "cdn" ? videoId : null, image, ico].filter(
+    (id): id is string => typeof id === "string" && !!id
+  );
+  if (mediaIds.length) {
+    const library =
+      getMediaLibraryStore() ?? createRootPropsMediaLibrary({ query, actions, siteId: settings?._id });
+    library.remove(mediaIds).catch(e => sdkLog.error("Failed to delete node media:", e));
+  }
 
   if (!query.node(selected).get()) return;
   actions.delete(selected);

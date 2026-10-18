@@ -1,6 +1,7 @@
 // ─── Media Manager utility functions (pure, no React dependencies) ───
 
 import { DEFAULT_IMAGE_ACCEPT } from "@/utils/media/registry";
+import type { MediaItem } from "@/utils/media/libraryTypes";
 
 export type SortField = "name" | "size" | "createdAt" | "order";
 export type SortDirection = "asc" | "desc";
@@ -18,52 +19,6 @@ export const MEDIA_KIND_LABELS: Record<MediaKind, string> = {
   archive: "Archive",
   other: "File",
 };
-
-export interface MediaDimensions {
-  width: number;
-  height: number;
-  aspectRatio: number;
-}
-
-export interface MediaMetadata {
-  title?: string;
-  alt?: string;
-  description?: string;
-  url?: string;
-  svg?: string;
-  size?: number;
-  dimensions?: MediaDimensions;
-  originalUrl?: string;
-  isVariant?: boolean;
-  aiGenerated?: boolean;
-  aiPrompt?: string;
-  source?: string;
-  /** For `type: "r2"`, the ready-to-use public URL (avoids re-deriving at render). */
-  deliveryURL?: string;
-  /** The original MIME type — helpful for `r2` media (video/audio/pdf) where
-   *  the type prefix changes how we render it. */
-  contentType?: string;
-  /** Optional single-level folder assignment. */
-  folderId?: string;
-}
-
-export interface MediaItem {
-  id: string;
-  type?: "cdn" | "url" | "svg" | "r2";
-  cdnId?: string;
-  order?: number;
-  uploadedAt?: number;
-  createdAt?: number;
-  metadata?: MediaMetadata;
-}
-
-export interface MediaFolder {
-  id: string;
-  name: string;
-  order: number;
-  createdAt: number;
-  updatedAt: number;
-}
 
 export interface UploadProgress {
   current: number;

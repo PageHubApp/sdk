@@ -1,12 +1,11 @@
-import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useState } from "react";
 import { TbAlertTriangle, TbPhoto, TbUpload } from "react-icons/tb";
-import { useAtomValue } from "@zedux/react";
-import { SettingsAtom } from "@/utils/atoms";
-import { getMediaContent, registerMediaWithBackground } from "@/utils/media/media";
+import { getMediaContent } from "@/utils/media/media";
+import { useMediaLibrary, type MediaLibrary } from "@/utils/media/libraryStore";
 import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
+import { registerUploadedMedia, uploadedMediaItem } from "./utils/registerUpload";
 import Spinner from "../../primitives/Spinner";
 import { MediaManagerModal } from "./MediaManagerModal";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
@@ -27,29 +26,14 @@ const handleFileSelection = (e, setErrors) => {
   return files;
 };
 
-const uploadFiles = async (files, settings, setErrors, query, actions) => {
-  const _saved = [];
+const uploadFiles = async (files: File[], setErrors, library: MediaLibrary) => {
+  const _saved: string[] = [];
 
   for (const file of files) {
     try {
-      const { mediaId, file: uploaded, width, height } = await uploadImageToCdn(file);
-      _saved.push(mediaId);
-
-      actions.setProp(ROOT_NODE, (props: any) => {
-        props.pageMedia = props.pageMedia || [];
-        const existingMedia = props.pageMedia.find((m: any) => m.id === mediaId);
-        if (existingMedia) {
-          existingMedia.metadata = {
-            ...existingMedia.metadata,
-            title: uploaded.name,
-            alt: uploaded.name.replace(/\.[^/.]+$/, ""),
-            size: uploaded.size,
-            ...(width && height
-              ? { dimensions: { width, height, aspectRatio: width / height } }
-              : {}),
-          };
-        }
-      });
+      const result = await uploadImageToCdn(file);
+      await registerUploadedMedia(library, uploadedMediaItem(result));
+      _saved.push(result.mediaId);
     } catch (error) {
       const message =
         error instanceof MediaUploadError ? error.message : `Failed to upload ${file.name}`;
@@ -103,7 +87,8 @@ export const ImageUploadInput: any = ({
     nodeProps: node.data?.props,
   }));
 
-  const { query, actions } = useEditor();
+  const { query } = useEditor();
+  const library = useMediaLibrary();
 
   const [errors, setErrors] = useState([]);
   const [value] = useState("");
@@ -111,8 +96,6 @@ export const ImageUploadInput: any = ({
   const [saved, setSaved] = useState(false);
   const [enabled, setEnabled] = useState(true);
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
-
-  const settings = useAtomValue(SettingsAtom);
 
   let timeout;
 
@@ -133,7 +116,7 @@ export const ImageUploadInput: any = ({
       // Note: We don't delete old media from the library anymore
       // Media stays in the library until explicitly deleted via Media Manager
 
-      const savedFiles = await uploadFiles(files, settings, setErrors, query, actions);
+      const savedFiles = await uploadFiles(files, setErrors, library);
       _saved.push(...savedFiles);
     }
 
@@ -146,8 +129,6 @@ export const ImageUploadInput: any = ({
     setTimeout(() => {
       _saved.forEach(id => {
         updateNodeProps(setProp, false, true, propKey, typeKey, id, contentKey);
-        // Register new media with Background
-        registerMediaWithBackground(query, actions, id, "cdn", componentId);
       });
     }, 500);
 
@@ -171,9 +152,6 @@ export const ImageUploadInput: any = ({
         _props[contentKey] = null;
       }
     });
-
-    // Register with background (if not already registered)
-    registerMediaWithBackground(query, actions, selectedMediaId, "reference", componentId);
 
     setShowMediaBrowser(false);
     setSaved(true);

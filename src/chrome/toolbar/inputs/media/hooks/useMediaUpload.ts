@@ -1,33 +1,32 @@
-import { ROOT_NODE } from "@craftjs/utils";
-import { useEditor } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
-import { getImageDimensionsFromFile, getImageDimensionsFromUrl } from "@/utils/imageDimensions";
-import { registerMediaWithBackground } from "@/utils/media/media";
+import { getImageDimensionsFromUrl } from "@/utils/imageDimensions";
+import { getMediaLibraryStore, type MediaLibrary } from "@/utils/media/libraryStore";
+import type { MediaItem } from "@/utils/media/libraryTypes";
 import { getUploadAccept, MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import { useSDK } from "@/core/context";
 import { useImageDrop } from "@/chrome/hooks/useImageDrop";
 import { getSiteId } from "@/utils/page/pageNavigation";
-import {
-  cleanSvg,
-  type AddMode,
-  type MediaItem,
-  type UploadProgress,
-} from "../utils/media-helpers";
+import { cleanSvg, type AddMode, type UploadProgress } from "../utils/media-helpers";
+import { registerUploadedMedia, uploadedMediaItem } from "../utils/registerUpload";
 import { sdkLog } from "../../../../../utils/logger";
 
 interface UseMediaUploadOptions {
   isOpen: boolean;
-  refreshMediaList: () => void;
-  generateMetadataForImage: (mediaId: string, imageUrl: string) => void;
+  library: MediaLibrary;
 }
 
-export function useMediaUpload({
-  isOpen,
-  refreshMediaList,
-  generateMetadataForImage,
-}: UseMediaUploadOptions) {
-  const { query, actions } = useEditor();
+/** Dimensions of an image at `url`, or nothing when it can't be probed. */
+const probeDimensions = async (url: string) => {
+  try {
+    const { width, height, aspectRatio } = await getImageDimensionsFromUrl(url);
+    return { dimensions: { width, height, aspectRatio } };
+  } catch {
+    return {};
+  }
+};
+
+export function useMediaUpload({ isOpen, library }: UseMediaUploadOptions) {
   const { config, save: sdkSave } = useSDK();
 
   /** Ensure the current page has been persisted (has a `_id` + URL) before
@@ -37,7 +36,8 @@ export function useMediaUpload({
    *  (e.g. multi-file upload, upload while paste pending) share one in-flight
    *  promise so we don't fire `emit("save")` multiple times in parallel. */
   const ensureSavedPage = async () => {
-    if (getSiteId()) return;
+    // A host library store is site-scoped: the site exists by construction.
+    if (getMediaLibraryStore() || getSiteId()) return;
     // Coordinator already coalesces concurrent callers — no need for a
     // local in-flight ref. Just await the result.
     try {
@@ -72,85 +72,9 @@ export function useMediaUpload({
 
   // ─── Shared helpers ───
 
-  /** Register uploaded media and attach metadata (dimensions, title, alt).
-   *
-   *  Image uploads (CF Images, `destination: "cf-images"`) go through the
-   *  classic pageMedia path with `type: "cdn"`, extract dimensions, and
-   *  kick off AI metadata generation.
-   *
-   *  R2 uploads (video/audio/pdf/etc) register with `type: "r2"` and stash
-   *  the `deliveryURL` + `contentType` in metadata so render sites don't
-   *  need to re-derive the URL or sniff the file type. No dimension probe
-   *  (would fail on non-images) and no AI metadata (vision model doesn't
-   *  analyze MP4s). */
-  const registerUploadedMedia = async (
-    mediaId: string,
-    file: File,
-    source: string,
-    destination: "cf-images" | "r2" = "cf-images",
-    deliveryURL?: string
-  ) => {
-    if (destination === "r2") {
-      registerMediaWithBackground(query, actions, mediaId, "r2", "media-manager");
-      actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-        const pageMedia = (props.pageMedia || []) as MediaItem[];
-        const existingMedia = pageMedia.find(m => m.id === mediaId);
-        if (existingMedia) {
-          existingMedia.metadata = {
-            ...existingMedia.metadata,
-            title: file.name || mediaId,
-            alt: file.name?.replace(/\.[^/.]+$/, "") || mediaId,
-            size: file.size,
-            source,
-            contentType: file.type,
-            deliveryURL,
-          };
-        }
-      });
-      return;
-    }
-
-    registerMediaWithBackground(query, actions, mediaId, "cdn", "media-manager");
-
-    try {
-      const dimensions = await getImageDimensionsFromFile(file);
-      actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-        const pageMedia = (props.pageMedia || []) as MediaItem[];
-        const existingMedia = pageMedia.find(m => m.id === mediaId);
-        if (existingMedia) {
-          existingMedia.metadata = {
-            ...existingMedia.metadata,
-            title: file.name || "Pasted Image",
-            alt: file.name?.replace(/\.[^/.]+$/, "") || "Pasted Image",
-            size: file.size,
-            source,
-            dimensions: {
-              width: dimensions.width,
-              height: dimensions.height,
-              aspectRatio: dimensions.aspectRatio,
-            },
-          };
-        }
-      });
-    } catch {
-      actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-        const pageMedia = (props.pageMedia || []) as MediaItem[];
-        const existingMedia = pageMedia.find(m => m.id === mediaId);
-        if (existingMedia) {
-          existingMedia.metadata = {
-            ...existingMedia.metadata,
-            title: file.name || "Pasted Image",
-            alt: file.name?.replace(/\.[^/.]+$/, "") || "Pasted Image",
-            size: file.size,
-            source,
-          };
-        }
-      });
-    }
-
-    const imageUrl = getCdnUrl(mediaId, { width: 800, format: "auto" });
-    generateMetadataForImage(mediaId, imageUrl);
-  };
+  /** Put a freshly uploaded file into the library (see `registerUploadedMedia`). */
+  const addUploaded = (result: Parameters<typeof uploadedMediaItem>[0], source: string) =>
+    registerUploadedMedia(library, uploadedMediaItem(result, { source }));
 
   // ─── Upload handler ───
 
@@ -171,26 +95,19 @@ export function useMediaUpload({
         setUploadProgress(prev => (prev ? { ...prev, current: i, currentFile: file.name } : null));
 
         try {
-          const {
-            mediaId,
-            file: uploadedFile,
-            destination,
-            deliveryURL,
-          } = await uploadImageToCdn(file);
+          const result = await uploadImageToCdn(file);
 
           setUploadProgress(prev =>
             prev ? { ...prev, completedFiles: [...prev.completedFiles, file.name] } : null
           );
 
-          await registerUploadedMedia(mediaId, uploadedFile, "upload", destination, deliveryURL);
+          await addUploaded(result, "upload");
         } catch (error: unknown) {
           const message =
             error instanceof MediaUploadError ? error.message : (error as Error)?.message;
           failedFiles.push({ name: file.name, error: message || "Unknown error" });
         }
       }
-
-      refreshMediaList();
 
       if (failedFiles.length > 0) {
         const errorMessage =
@@ -223,36 +140,23 @@ export function useMediaUpload({
         deliveryURL,
       } = await uploadImageToCdn(file);
 
-      actions.setProp("ROOT", (props: Record<string, unknown>) => {
-        const pageMedia = props.pageMedia as MediaItem[] | undefined;
-        if (!pageMedia) return;
-        const mediaItem = pageMedia.find(m => m.id === replacingMedia);
-        if (mediaItem) {
-          // Trust the destination — the replacement was really uploaded
-          // there, so type must follow. Previous type ("svg" / "url" /
-          // "cdn") is stale the moment the new file lands.
-          const nextType: MediaItem["type"] = destination === "r2" ? "r2" : "cdn";
-          mediaItem.cdnId = newMediaId;
-          mediaItem.uploadedAt = Date.now();
-          mediaItem.type = nextType;
-          if (mediaItem.metadata) {
-            mediaItem.metadata.title = uploaded.name;
-            mediaItem.metadata.size = uploaded.size;
-            mediaItem.metadata.contentType = uploaded.type || mediaItem.metadata.contentType;
-            // Purge stale fields from the previous type so renderers don't
-            // pick them up (e.g. `metadata.svg` after SVG → raster replace).
-            delete mediaItem.metadata.svg;
-            delete mediaItem.metadata.url;
-            if (destination === "r2") {
-              mediaItem.metadata.deliveryURL = deliveryURL;
-            } else {
-              delete mediaItem.metadata.deliveryURL;
-            }
-          }
-        }
+      // Trust the destination — the replacement was really uploaded there, so
+      // type must follow. Fields that belong to the previous type are cleared
+      // (`undefined` = remove) so renderers can't pick them up (e.g.
+      // `metadata.svg` after SVG → raster replace).
+      await library.update(replacingMedia, {
+        cdnId: newMediaId,
+        type: destination === "r2" ? "r2" : "cdn",
+        metadata: {
+          title: uploaded.name,
+          size: uploaded.size,
+          ...(uploaded.type ? { contentType: uploaded.type } : {}),
+          svg: undefined,
+          url: undefined,
+          deliveryURL: destination === "r2" ? deliveryURL : undefined,
+        },
       });
 
-      refreshMediaList();
       setReplacingMedia(null);
     } catch (error) {
       const message = error instanceof MediaUploadError ? error.message : (error as Error)?.message;
@@ -288,88 +192,33 @@ export function useMediaUpload({
 
         const result = await response.json();
         const mediaId = result.mediaId;
-        registerMediaWithBackground(query, actions, mediaId, "cdn", "media-manager");
-
-        try {
-          const imageUrl = getCdnUrl(mediaId, { width: 800, format: "auto" });
-          const dimensions = await getImageDimensionsFromUrl(imageUrl);
-
-          actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-            const pageMedia = (props.pageMedia || []) as MediaItem[];
-            const existingMedia = pageMedia.find(m => m.id === mediaId);
-            if (existingMedia) {
-              existingMedia.metadata = {
-                ...existingMedia.metadata,
-                title: result.filename,
-                alt: result.filename.replace(/\.[^/.]+$/, ""),
-                size: result.size,
-                dimensions: {
-                  width: dimensions.width,
-                  height: dimensions.height,
-                  aspectRatio: dimensions.aspectRatio,
-                },
-                originalUrl: urlInput,
-              };
-            }
-          });
-          generateMetadataForImage(mediaId, imageUrl);
-        } catch {
-          actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-            const pageMedia = (props.pageMedia || []) as MediaItem[];
-            const existingMedia = pageMedia.find(m => m.id === mediaId);
-            if (existingMedia) {
-              existingMedia.metadata = {
-                ...existingMedia.metadata,
-                title: result.filename,
-                alt: result.filename.replace(/\.[^/.]+$/, ""),
-                size: result.size,
-                originalUrl: urlInput,
-              };
-            }
-          });
-          const imageUrl = getCdnUrl(mediaId, { width: 800, format: "auto" });
-          generateMetadataForImage(mediaId, imageUrl);
-        }
+        const imageUrl = getCdnUrl(mediaId, { width: 800, format: "auto" });
+        await registerUploadedMedia(library, {
+          id: mediaId,
+          type: "cdn",
+          uploadedAt: Date.now(),
+          metadata: {
+            title: result.filename,
+            alt: result.filename.replace(/\.[^/.]+$/, ""),
+            size: result.size,
+            originalUrl: urlInput,
+            ...(await probeDimensions(imageUrl)),
+          },
+        });
       } else {
-        const mediaId = `url-${Date.now()}`;
-        registerMediaWithBackground(query, actions, mediaId, "url", "media-manager");
-
-        try {
-          const dimensions = await getImageDimensionsFromUrl(urlInput);
-          actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-            const pageMedia = (props.pageMedia || []) as MediaItem[];
-            const existingMedia = pageMedia.find(m => m.id === mediaId);
-            if (existingMedia) {
-              existingMedia.metadata = {
-                ...existingMedia.metadata,
-                title: urlInput.split("/").pop() || urlInput,
-                url: urlInput,
-                dimensions: {
-                  width: dimensions.width,
-                  height: dimensions.height,
-                  aspectRatio: dimensions.aspectRatio,
-                },
-              };
-            }
-          });
-          generateMetadataForImage(mediaId, urlInput);
-        } catch {
-          actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-            const pageMedia = (props.pageMedia || []) as MediaItem[];
-            const existingMedia = pageMedia.find(m => m.id === mediaId);
-            if (existingMedia) {
-              existingMedia.metadata = {
-                ...existingMedia.metadata,
-                title: urlInput.split("/").pop() || urlInput,
-                url: urlInput,
-              };
-            }
-          });
-          generateMetadataForImage(mediaId, urlInput);
-        }
+        const item: MediaItem = {
+          id: `url-${Date.now()}`,
+          type: "url",
+          uploadedAt: Date.now(),
+          metadata: {
+            title: urlInput.split("/").pop() || urlInput,
+            url: urlInput,
+            ...(await probeDimensions(urlInput)),
+          },
+        };
+        await library.add([item]);
       }
 
-      refreshMediaList();
       setUrlInput("");
       setSaveUrlToCdn(false);
       setAddMode("upload");
@@ -391,23 +240,14 @@ export function useMediaUpload({
     try {
       const cleanedSvg = cleanSvg(svgInput);
       const svgSize = new Blob([cleanedSvg]).size;
-      const mediaId = `svg-${Date.now()}`;
-      registerMediaWithBackground(query, actions, mediaId, "svg", "media-manager");
-
-      actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-        const pageMedia = (props.pageMedia || []) as MediaItem[];
-        const existingMedia = pageMedia.find(m => m.id === mediaId);
-        if (existingMedia) {
-          existingMedia.metadata = {
-            ...existingMedia.metadata,
-            title: "SVG Image",
-            svg: cleanedSvg,
-            size: svgSize,
-          };
-        }
-      });
-
-      refreshMediaList();
+      await library.add([
+        {
+          id: `svg-${Date.now()}`,
+          type: "svg",
+          uploadedAt: Date.now(),
+          metadata: { title: "SVG Image", svg: cleanedSvg, size: svgSize },
+        },
+      ]);
       setSvgInput("");
       setAddMode("upload");
     } finally {
@@ -454,9 +294,7 @@ export function useMediaUpload({
         await ensureSavedPage();
 
         try {
-          const { mediaId, file: uploaded } = await uploadImageToCdn(file);
-          await registerUploadedMedia(mediaId, uploaded, "paste");
-          refreshMediaList();
+          await addUploaded(await uploadImageToCdn(file), "paste");
         } catch (error: unknown) {
           const message =
             error instanceof MediaUploadError ? error.message : (error as Error)?.message;
@@ -486,22 +324,7 @@ export function useMediaUpload({
             setUploading(true);
             await ensureSavedPage();
             try {
-              const { mediaId, file: uploaded } = await uploadImageToCdn(file);
-              registerMediaWithBackground(query, actions, mediaId, "cdn", "media-manager");
-              actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-                const pageMedia = (props.pageMedia || []) as MediaItem[];
-                const existingMedia = pageMedia.find(m => m.id === mediaId);
-                if (existingMedia) {
-                  existingMedia.metadata = {
-                    ...existingMedia.metadata,
-                    title: uploaded.name,
-                    alt: uploaded.name.replace(/\.[^/.]+$/, ""),
-                    size: uploaded.size,
-                    source: "paste",
-                  };
-                }
-              });
-              refreshMediaList();
+              await addUploaded(await uploadImageToCdn(file), "paste");
             } catch (error: unknown) {
               const message =
                 error instanceof MediaUploadError ? error.message : (error as Error)?.message;

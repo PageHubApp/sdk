@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { MediaItem } from "../utils/media-helpers";
+import type { MediaItem } from "@/utils/media/libraryTypes";
 import { isInsideTextEditingSurface } from "../../../../../utils/keyboard";
 
 interface UseMediaKeyboardShortcutsArgs {

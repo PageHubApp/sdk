@@ -1,18 +1,19 @@
-import { ROOT_NODE } from "@craftjs/utils";
 import { useCallback, useEffect, useState } from "react";
 import {
   getMediaKind,
   MEDIA_KIND_LABELS,
   sortMedia,
-  type MediaItem,
   type MediaKind,
   type SortDirection,
   type SortField,
 } from "../utils/media-helpers";
+import type { MediaLibrary } from "@/utils/media/libraryStore";
+import type { MediaItem } from "@/utils/media/libraryTypes";
+import { sdkLog } from "../../../../../utils/logger";
 import type { FolderFilter } from "./types";
 
 interface UseMediaFiltersArgs {
-  actions: any;
+  reorder: MediaLibrary["reorder"];
   mediaList: MediaItem[];
   folderNameById: Map<string, string>;
   validFolderIdSet: Set<string>;
@@ -28,7 +29,7 @@ interface UseMediaFiltersArgs {
  * Filter order matters: kind → folder → search → sort.
  */
 export function useMediaFilters({
-  actions,
+  reorder,
   mediaList,
   folderNameById,
   validFolderIdSet,
@@ -121,14 +122,9 @@ export function useMediaFilters({
 
     const updatedMedia = newOrder.map((media, index) => ({ ...media, order: index }));
 
-    actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-      const pageMedia = props.pageMedia as MediaItem[] | undefined;
-      if (!pageMedia) return;
-      props.pageMedia = pageMedia.map(m => {
-        const updatedItem = updatedMedia.find(u => u.id === m.id);
-        return updatedItem ? { ...m, order: updatedItem.order } : m;
-      });
-    });
+    reorder(updatedMedia.map(({ id }, order) => ({ id, order }))).catch(e =>
+      sdkLog.error("Failed to reorder media:", e)
+    );
 
     setFilteredMedia(updatedMedia);
   };

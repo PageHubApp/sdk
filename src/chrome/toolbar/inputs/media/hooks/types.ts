@@ -1,10 +1,19 @@
-import type { MediaFolder } from "../utils/media-helpers";
+import type { MediaFolder } from "@/utils/media/libraryTypes";
+
+/** Site design notes / tags the AI metadata actions read. */
+export interface MediaDesignContext {
+  notes?: string;
+  tags?: string[];
+}
 
 export interface UseMediaManagerOptions {
   isOpen: boolean;
   onClose: () => void;
   onSelect?: (mediaId: string) => void;
   selectionMode: boolean;
+  /** Editor shells pass `useEditorDesignContext()`; a host outside the editor
+   *  passes its own site data. */
+  designContext?: MediaDesignContext;
 }
 
 export type FolderFilter = "all" | "unfiled" | string;

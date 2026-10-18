@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import type { MediaItem } from "../utils/media-helpers";
+import type { MediaItem } from "@/utils/media/libraryTypes";
 import type { SelectionModifiers } from "./types";
 
 export function useMediaSelectionState(filteredMedia: MediaItem[], selectionMode: boolean) {

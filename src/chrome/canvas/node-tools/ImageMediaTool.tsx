@@ -1,19 +1,14 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
 import { useState } from "react";
-import { getMediaById, registerMediaWithBackground } from "../../../utils/media/media";
+import { getMediaById } from "../../../utils/media/media";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 
 export const ImageMediaTool = () => {
-  const { query, actions } = useEditor();
+  const { query } = useEditor();
   const {
-    props: nodeProps,
-    id: componentId,
     actions: { setProp },
-  } = useNode(node => ({
-    props: node.data.props,
-    id: node.id,
-  }));
+  } = useNode();
 
   const [showMediaModal, setShowMediaModal] = useState(false);
 
@@ -26,15 +21,6 @@ export const ImageMediaTool = () => {
       _props.videoId = selectedMediaId;
       _props.type = selectedMedia?.type || "cdn";
     });
-
-    // Register the media with the component
-    registerMediaWithBackground(
-      query,
-      actions,
-      selectedMediaId,
-      selectedMedia?.type || "cdn",
-      componentId
-    );
 
     setShowMediaModal(false);
   };

@@ -1,14 +1,18 @@
-import { ROOT_NODE } from "@craftjs/utils";
-import { useEditor } from "@craftjs/core";
-import { useCallback, useMemo, useState } from "react";
-import { getPageMedia } from "@/utils/media/media";
-import type { MediaFolder, MediaItem } from "../utils/media-helpers";
+import { useCallback, useMemo, useRef } from "react";
+import type { MediaLibrary } from "@/utils/media/libraryStore";
+import type { MediaFolder } from "@/utils/media/libraryTypes";
+import { sdkLog } from "../../../../../utils/logger";
 import { normalizeFolders } from "./types";
 
-export function useMediaListState() {
-  const { query, actions } = useEditor();
-  const [mediaList, setMediaList] = useState<MediaItem[]>([]);
-  const [folders, setFolders] = useState<MediaFolder[]>([]);
+const logFailure = (what: string) => (e: unknown) => sdkLog.error(`Failed to ${what}:`, e);
+
+/** The library list + folders, read from the media library store. */
+export function useMediaListState(library: MediaLibrary) {
+  const mediaList = library.snapshot.items;
+  const folders = useMemo(
+    () => normalizeFolders(library.snapshot.folders),
+    [library.snapshot.folders]
+  );
 
   const folderNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -36,23 +40,19 @@ export function useMediaListState() {
     };
   }, [mediaList, validFolderIdSet]);
 
+  // Stable identity: the open-reset effect in `useMediaManager` depends on it,
+  // and `library` is a new object whenever the snapshot changes.
+  const libraryRef = useRef(library);
+  libraryRef.current = library;
   const refreshMediaList = useCallback(() => {
-    const media = getPageMedia(query);
-    const rootNode = query.node(ROOT_NODE).get();
-    const rootProps = rootNode?.data?.props as Record<string, unknown> | undefined;
-    const nextFolders = normalizeFolders(rootProps?.mediaFolders);
-    setMediaList(media);
-    setFolders(nextFolders);
-  }, [query]);
+    libraryRef.current.refresh().catch(logFailure("refresh the media library"));
+  }, []);
 
   const persistFolders = useCallback(
     (nextFolders: MediaFolder[]) => {
-      actions.setProp(ROOT_NODE, (props: Record<string, any>) => {
-        props.mediaFolders = nextFolders;
-      });
-      setFolders(nextFolders);
+      library.saveFolders(nextFolders).catch(logFailure("save media folders"));
     },
-    [actions]
+    [library]
   );
 
   const createFolder = useCallback(
@@ -85,52 +85,32 @@ export function useMediaListState() {
     [folders, persistFolders]
   );
 
+  /** Unfile the folder's items, then drop the folder. */
   const deleteFolderById = useCallback(
-    (folderId: string, onDeleted?: () => void) => {
-      const nextFolders = folders.filter(folder => folder.id !== folderId);
-      actions.setProp(ROOT_NODE, (props: Record<string, any>) => {
-        props.mediaFolders = nextFolders;
-        if (!Array.isArray(props.pageMedia)) return;
-        props.pageMedia = props.pageMedia.map((media: MediaItem) => {
-          if (media.metadata?.folderId !== folderId) return media;
-          const nextMetadata = { ...(media.metadata || {}) };
-          delete nextMetadata.folderId;
-          return { ...media, metadata: nextMetadata };
-        });
-      });
-      setFolders(nextFolders);
-      onDeleted?.();
-      refreshMediaList();
+    async (folderId: string, onDeleted?: () => void) => {
+      const filed = mediaList.filter(m => m.metadata?.folderId === folderId).map(m => m.id);
+      try {
+        if (filed.length) await library.move(filed, null);
+        await library.saveFolders(folders.filter(folder => folder.id !== folderId));
+        onDeleted?.();
+      } catch (e) {
+        logFailure("delete the media folder")(e);
+      }
     },
-    [actions, folders, refreshMediaList]
+    [library, mediaList, folders]
   );
 
   const moveMediaToFolder = useCallback(
     (mediaIds: string[], folderId: string | null) => {
       if (!mediaIds.length) return;
-      const idSet = new Set(mediaIds);
-      actions.setProp(ROOT_NODE, (props: Record<string, any>) => {
-        if (!Array.isArray(props.pageMedia)) return;
-        props.pageMedia = props.pageMedia.map((media: MediaItem) => {
-          if (!idSet.has(media.id)) return media;
-          const nextMetadata = { ...(media.metadata || {}) };
-          if (folderId) nextMetadata.folderId = folderId;
-          else delete nextMetadata.folderId;
-          return { ...media, metadata: nextMetadata };
-        });
-      });
-      refreshMediaList();
+      library.move(mediaIds, folderId).catch(logFailure("move media"));
     },
-    [actions, refreshMediaList]
+    [library]
   );
 
   return {
-    query,
-    actions,
     mediaList,
-    setMediaList,
     folders,
-    setFolders,
     folderNameById,
     validFolderIdSet,
     folderCounts,

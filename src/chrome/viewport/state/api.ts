@@ -24,22 +24,18 @@ export const GetHtmlToComponent = async (html: string) => {
   }
 };
 
-export const DeleteMedia = async (
-  mediaId: string,
-  settings: any,
-  query: any = null,
-  actions: any = null
-) => {
+/**
+ * Delete one file's stored bytes (`DELETE /api/files`). Bytes only: the
+ * library entry is the media library store's job (`useMediaLibrary().remove`).
+ * Resolves to the response body (`{ deleted, reason?, backupsUsingMedia? }`).
+ */
+export const DeleteMedia = async (mediaId: string, settings: { _id?: string } | null | undefined) => {
   try {
     const res = await fetch(`${getApiBase()}/api/files`, {
       method: "DELETE",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({ mediaId, _id: settings._id }),
+      body: JSON.stringify({ mediaId, _id: settings?._id }),
     });
-    if (query && actions && mediaId) {
-      const { unregisterMediaFromBackground } = await import("../../../utils/media/media");
-      unregisterMediaFromBackground(query, actions, mediaId);
-    }
     return res.json();
   } catch (e) {
     sdkLog.error(e);

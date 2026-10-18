@@ -1,5 +1,7 @@
 /**
- * Media management utilities — CRUD for pageMedia on ROOT_NODE
+ * Media readers over `ROOT.props.pageMedia` (the editor's copy is mirrored
+ * from the media library store — see `./libraryStore`). Library writes go
+ * through `useMediaLibrary()`, never through here.
  */
 
 import { ROOT_NODE } from "../rootNode";
@@ -24,52 +26,7 @@ export const calculateOptimalBackgroundSize = (): number => {
   return breakpoints.find(size => size >= actualWidth) || 3840;
 };
 
-// ─── Page media CRUD ───
-
-export const registerMediaWithBackground = (
-  query: any,
-  actions: any,
-  mediaId: string,
-  mediaType: string = "cdn",
-  componentId?: string
-) => {
-  try {
-    const backgroundNode = query.node(ROOT_NODE).get();
-    if (!backgroundNode) return;
-
-    actions.setProp(ROOT_NODE, (props: any) => {
-      props.pageMedia = props.pageMedia || [];
-      const exists = props.pageMedia.find((m: any) => m.id === mediaId);
-      if (exists) {
-        exists.componentId = componentId;
-        exists.type = mediaType;
-      } else {
-        props.pageMedia.push({
-          id: mediaId,
-          type: mediaType,
-          uploadedAt: Date.now(),
-          componentId,
-        });
-      }
-    });
-  } catch (e) {
-    sdkLog.error("Failed to register media with Background:", e);
-  }
-};
-
-export const unregisterMediaFromBackground = (query: any, actions: any, mediaId: string) => {
-  try {
-    const backgroundNode = query.node(ROOT_NODE).get();
-    if (!backgroundNode) return;
-
-    actions.setProp(ROOT_NODE, (props: any) => {
-      if (!props.pageMedia) return;
-      props.pageMedia = props.pageMedia.filter((m: any) => m.id !== mediaId);
-    });
-  } catch (e) {
-    sdkLog.error("Failed to unregister media from Background:", e);
-  }
-};
+// ─── Page media readers ───
 
 export const getPageMedia = (query: any) => {
   try {
@@ -233,63 +190,5 @@ export const getMediaById = (query: any, mediaId: string): any | null => {
   } catch (e) {
     sdkLog.error("Failed to get media by ID:", e);
     return null;
-  }
-};
-
-export const updateMediaMetadata = (
-  query: any,
-  actions: any,
-  mediaId: string,
-  metadata: { alt?: string; title?: string; description?: string }
-) => {
-  try {
-    actions.setProp(ROOT_NODE, (props: any) => {
-      if (!props.pageMedia) return;
-      const mediaItem = props.pageMedia.find((m: any) => m.id === mediaId);
-      if (mediaItem) {
-        mediaItem.metadata = { ...mediaItem.metadata, ...metadata };
-      }
-    });
-  } catch (e) {
-    sdkLog.error("Failed to update media metadata:", e);
-  }
-};
-
-export const syncPageMedia = (query: any, actions: any) => {
-  try {
-    const nodes = query.getSerializedNodes();
-    const usedMediaIds = new Set<string>();
-
-    const mediaProps = [
-      "ico",
-      "image",
-      "videoId",
-      "src",
-      "imageDesktop",
-      "imageTablet",
-      "imageMobile",
-    ];
-
-    Object.keys(nodes).forEach(nodeId => {
-      const props = nodes[nodeId].props;
-      mediaProps.forEach(propKey => {
-        if (props[propKey] && typeof props[propKey] === "string") {
-          usedMediaIds.add(props[propKey]);
-        }
-      });
-      // Nested: background.image (CDN media id for section/container backgrounds)
-      const bgImage = props?.background?.image;
-      if (bgImage && typeof bgImage === "string") usedMediaIds.add(bgImage);
-    });
-
-    actions.setProp(ROOT_NODE, (props: any) => {
-      if (!props.pageMedia) return;
-      props.pageMedia = props.pageMedia.filter((m: any) => usedMediaIds.has(m.id));
-    });
-
-    return Array.from(usedMediaIds);
-  } catch (e) {
-    sdkLog.error("Failed to sync page media:", e);
-    return [];
   }
 };

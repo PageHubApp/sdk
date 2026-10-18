@@ -6,7 +6,7 @@ import { TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
 import { SideBarAtom } from "@/utils/atoms";
 import { isInsideRepeater } from "@/utils/data/dataSourceContext";
-import { getMediaById, getMediaContent, registerMediaWithBackground } from "@/utils/media/media";
+import { getMediaById, getMediaContent } from "@/utils/media/media";
 import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -19,9 +19,9 @@ import { Chip } from "../../../primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { MediaManagerBody } from "./MediaManagerBody";
 import { MediaManagerModal } from "./MediaManagerModal";
-import { MediaPreviewModal } from "./components/MediaPreviewModal";
 import { SiteLogoSource } from "./SiteLogoSource";
 import { previewUrlForSrc, siteLogoVariantOf } from "./utils/siteLogo";
+import { useEditorDesignContext } from "./hooks/useEditorDesignContext";
 import { useMediaManager } from "./hooks/useMediaManager";
 import type { MediaKind } from "./utils/media-helpers";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
@@ -94,7 +94,8 @@ export const MediaInput = (propa: MediaInputProps) => {
     actions: { setProp },
   } = useNode();
 
-  const { query, actions } = useEditor();
+  const { query } = useEditor();
+  const designContext = useEditorDesignContext();
 
   const {
     propKey,
@@ -143,16 +144,6 @@ export const MediaInput = (propa: MediaInputProps) => {
       }
     });
 
-    // Don't override the media type - it's already registered with the correct type
-    // Just update the component reference
-    registerMediaWithBackground(
-      query,
-      actions,
-      selectedMediaId,
-      selectedMedia?.type || "cdn",
-      componentId
-    );
-
     setShowMediaBrowser(false);
   };
 
@@ -161,6 +152,7 @@ export const MediaInput = (propa: MediaInputProps) => {
     onClose: () => setShowMediaBrowser(false),
     onSelect: handleBrowseSelect,
     selectionMode: true,
+    designContext,
   });
 
   const mediaId = getPath(nodeProps, propKey);
@@ -310,15 +302,6 @@ export const MediaInput = (propa: MediaInputProps) => {
               )}
             </div>
           </FloatingPanel>
-          {variant === "chip" && showMediaBrowser ? (
-            <MediaPreviewModal
-              previewMedia={manager.previewMedia}
-              filteredMedia={manager.filteredMedia}
-              onClose={() => manager.setPreviewMedia(null)}
-              onPrevious={manager.handlePreviewPrevious}
-              onNext={manager.handlePreviewNext}
-            />
-          ) : null}
         </Suspense>
       );
     }

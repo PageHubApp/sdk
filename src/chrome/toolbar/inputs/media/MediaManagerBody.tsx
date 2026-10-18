@@ -6,18 +6,25 @@
  *
  * The `popover` prop toggles the compact folder dropdown above the toolbar
  * (instead of the sidebar tabs that the modal shell renders separately).
+ *
+ * Also owns the dialogs every shell needs (preview, crop, delete confirm), so
+ * a host can render the body alone — e.g. a dashboard Media page outside the
+ * editor, with a registered `MediaLibraryStore` and
+ * `useMediaManager({ isOpen: true, onClose, selectionMode: false, designContext })`.
  */
 import { ConfirmDialog } from "@/chrome/primitives/layout/ConfirmDialog";
 import { useMemo, useState } from "react";
-import { TbAlertTriangle, TbFolder, TbX } from "react-icons/tb";
+import { TbAlertTriangle, TbFolder, TbInfoCircle, TbX } from "react-icons/tb";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
+import { ImageCropModal } from "../../dialogs/ImageCropModal";
 import { MediaEditModal } from "./components/MediaEditModal";
+import { MediaPreviewModal } from "./components/MediaPreviewModal";
 import { MediaGrid } from "./components/MediaGrid";
 import { MediaToolbar } from "./components/MediaToolbar/MediaToolbar";
 import { getReplaceAccept } from "./utils/media-helpers";
 import type { UseMediaManagerReturn } from "./hooks/useMediaManager";
 
-interface MediaManagerBodyProps {
+export interface MediaManagerBodyProps {
   manager: UseMediaManagerReturn;
   selectionMode: boolean;
   onSelect?: (mediaId: string) => void;
@@ -123,6 +130,25 @@ export function MediaManagerBody({
                 className="hover:bg-error/20 shrink-0 rounded p-1 transition-colors"
               >
                 <TbX className="text-error size-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {manager.deleteNotice && (
+          <div className="border-base-300 bg-base-200 border-b px-6 py-3">
+            <div className="flex items-start gap-3">
+              <TbInfoCircle className="text-base-content mt-0.5 size-5 shrink-0" />
+              <p className="text-base-content flex-1 text-sm whitespace-pre-line">
+                {manager.deleteNotice}
+              </p>
+              <button
+                type="button"
+                aria-label="Dismiss"
+                onClick={() => manager.setDeleteNotice(null)}
+                className="hover:bg-base-300 shrink-0 rounded p-1 transition-colors"
+              >
+                <TbX className="size-4" />
               </button>
             </div>
           </div>
@@ -248,6 +274,38 @@ export function MediaManagerBody({
           onUpdate={manager.setEditingMedia}
         />
       )}
+
+      <MediaPreviewModal
+        previewMedia={manager.previewMedia}
+        filteredMedia={manager.filteredMedia}
+        onClose={() => manager.setPreviewMedia(null)}
+        onPrevious={manager.handlePreviewPrevious}
+        onNext={manager.handlePreviewNext}
+      />
+
+      <ImageCropModal
+        key="image-crop-modal"
+        isOpen={manager.cropMedia !== null}
+        onClose={() => manager.setCropMedia(null)}
+        media={manager.cropMedia}
+        onSave={manager.handleSaveCroppedImage}
+      />
+
+      <ConfirmDialog
+        key="delete-confirm-dialog"
+        isOpen={manager.deleteConfirm.isOpen}
+        onClose={() => manager.setDeleteConfirm({ isOpen: false, mediaIds: [] })}
+        onConfirm={manager.confirmDelete}
+        title="Delete Media"
+        message={
+          manager.deleteConfirm.mediaIds.length > 1
+            ? `Are you sure you want to delete ${manager.deleteConfirm.mediaIds.length} media items? This action cannot be undone.`
+            : "Are you sure you want to delete this media item? This action cannot be undone."
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
 
       <ConfirmDialog
         key="delete-folder-confirm-dialog"

@@ -11,11 +11,10 @@ interface ImageCropModalProps {
   onClose: () => void;
   media: any;
   onSave: (croppedImage: any) => void;
-  settings?: any;
 }
 
-export function ImageCropModal({ isOpen, onClose, media, onSave, settings }: ImageCropModalProps) {
-  const crop = useImageCrop({ media, onSave, onClose, settings });
+export function ImageCropModal({ isOpen, onClose, media, onSave }: ImageCropModalProps) {
+  const crop = useImageCrop({ media, onSave, onClose });
 
   if (!isOpen) return null;
 

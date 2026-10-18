@@ -1,11 +1,9 @@
-import { ConfirmDialog } from "@/chrome/primitives/layout/ConfirmDialog";
 import { SettingsShell } from "@/chrome/viewport/modals/settings/SettingsShell";
 import { useEditorSidebarDockLeft } from "@/utils/atoms";
 import { useEffect, useMemo } from "react";
 import { TbFolder } from "react-icons/tb";
-import { ImageCropModal } from "../../dialogs/ImageCropModal";
 import { MediaManagerBody } from "./MediaManagerBody";
-import { MediaPreviewModal } from "./components/MediaPreviewModal";
+import { useEditorDesignContext } from "./hooks/useEditorDesignContext";
 import { useMediaManager } from "./hooks/useMediaManager";
 import { type MediaKind } from "./utils/media-helpers";
 import { OVERLAY_Z_MEDIA_MANAGER } from "@/chrome/popovers/overlayZIndex";
@@ -30,7 +28,8 @@ export function MediaManagerModal({
   selectionMode = false,
   kindFilter,
 }: MediaManagerModalProps) {
-  const manager = useMediaManager({ isOpen, onClose, onSelect, selectionMode });
+  const designContext = useEditorDesignContext();
+  const manager = useMediaManager({ isOpen, onClose, onSelect, selectionMode, designContext });
 
   const toolbarDockedLeft = useEditorSidebarDockLeft();
   const dockEdge: "left" | "right" = toolbarDockedLeft ? "left" : "right";
@@ -80,68 +79,33 @@ export function MediaManagerModal({
         : `folder:${manager.folderFilter}`;
 
   return (
-    <>
-      <SettingsShell
-        isOpen={isOpen}
+    <SettingsShell
+      isOpen={isOpen}
+      onClose={onClose}
+      title={selectionMode ? "Select Media" : "Media Manager"}
+      storageKey="media-manager-v3"
+      tabs={folderTabs}
+      activeTab={activeFolderTab}
+      setActiveTab={key => {
+        const raw = String(key).replace(/^folder:/, "");
+        manager.setFolderFilter(raw === "all" || raw === "unfiled" ? raw : raw);
+      }}
+      defaultWidth={MEDIA_MANAGER_DEFAULT_WIDTH}
+      defaultHeight={defaultHeight}
+      minWidth={760}
+      maxWidth={1400}
+      minHeight={500}
+      maxHeight={maxHeight}
+      dockToEdge={dockEdge}
+      zIndex={MEDIA_MANAGER_Z}
+    >
+      <MediaManagerBody
+        manager={manager}
+        selectionMode={selectionMode}
+        onSelect={onSelect}
         onClose={onClose}
-        title={selectionMode ? "Select Media" : "Media Manager"}
-        storageKey="media-manager-v3"
-        tabs={folderTabs}
-        activeTab={activeFolderTab}
-        setActiveTab={key => {
-          const raw = String(key).replace(/^folder:/, "");
-          manager.setFolderFilter(raw === "all" || raw === "unfiled" ? raw : raw);
-        }}
-        defaultWidth={MEDIA_MANAGER_DEFAULT_WIDTH}
-        defaultHeight={defaultHeight}
-        minWidth={760}
-        maxWidth={1400}
-        minHeight={500}
-        maxHeight={maxHeight}
-        dockToEdge={dockEdge}
-        zIndex={MEDIA_MANAGER_Z}
-      >
-        <MediaManagerBody
-          manager={manager}
-          selectionMode={selectionMode}
-          onSelect={onSelect}
-          onClose={onClose}
-          popover={false}
-        />
-      </SettingsShell>
-
-      <MediaPreviewModal
-        previewMedia={manager.previewMedia}
-        filteredMedia={manager.filteredMedia}
-        onClose={() => manager.setPreviewMedia(null)}
-        onPrevious={manager.handlePreviewPrevious}
-        onNext={manager.handlePreviewNext}
+        popover={false}
       />
-
-      <ImageCropModal
-        key="image-crop-modal"
-        isOpen={manager.cropMedia !== null}
-        onClose={() => manager.setCropMedia(null)}
-        media={manager.cropMedia}
-        onSave={manager.handleSaveCroppedImage}
-        settings={manager.settings}
-      />
-
-      <ConfirmDialog
-        key="delete-confirm-dialog"
-        isOpen={manager.deleteConfirm.isOpen}
-        onClose={() => manager.setDeleteConfirm({ isOpen: false, mediaIds: [] })}
-        onConfirm={manager.confirmDelete}
-        title="Delete Media"
-        message={
-          manager.deleteConfirm.mediaIds.length > 1
-            ? `Are you sure you want to delete ${manager.deleteConfirm.mediaIds.length} media items? This action cannot be undone.`
-            : "Are you sure you want to delete this media item? This action cannot be undone."
-        }
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
-      />
-    </>
+    </SettingsShell>
   );
 }

@@ -5,7 +5,8 @@ import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
 import type { PageHubMediaEditAiActionsContext } from "@/types";
 import { SlotRenderer } from "@/registry";
-import { formatFileSize, type MediaItem } from "../utils/media-helpers";
+import { formatFileSize } from "../utils/media-helpers";
+import type { MediaItem } from "@/utils/media/libraryTypes";
 import { OVERLAY_Z_CRITICAL_MODAL } from "@/chrome/popovers/overlayZIndex";
 import { Modal } from "@/chrome/floating/Modal";
 

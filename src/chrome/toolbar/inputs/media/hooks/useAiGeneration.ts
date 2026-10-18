@@ -1,23 +1,15 @@
-import { ROOT_NODE } from "@craftjs/utils";
-import { useEditor } from "@craftjs/core";
 import { useState } from "react";
-import { getCdnUrl } from "@/utils/cdn";
-import { registerMediaWithBackground } from "@/utils/media/media";
+import type { MediaLibrary } from "@/utils/media/libraryStore";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
-import type { AiUsage, MediaItem } from "../utils/media-helpers";
+import type { AiUsage } from "../utils/media-helpers";
+import { registerUploadedMedia, uploadedMediaItem } from "../utils/registerUpload";
 
 interface UseAiGenerationOptions {
-  refreshMediaList: () => void;
-  generateMetadataForImage: (mediaId: string, imageUrl: string) => void;
+  library: MediaLibrary;
   setUploading: (v: boolean) => void;
 }
 
-export function useAiGeneration({
-  refreshMediaList,
-  generateMetadataForImage,
-  setUploading,
-}: UseAiGenerationOptions) {
-  const { query, actions } = useEditor();
+export function useAiGeneration({ library, setUploading }: UseAiGenerationOptions) {
 
   const [aiPrompt, setAiPrompt] = useState("");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -61,31 +53,16 @@ export function useAiGeneration({
       const blob = await response.blob();
       const file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
 
-      const { mediaId, file: uploaded, width, height } = await uploadImageToCdn(file);
-
-      registerMediaWithBackground(query, actions, mediaId, "cdn", "media-manager");
-
-      actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-        const pageMedia = (props.pageMedia || []) as MediaItem[];
-        const existingMedia = pageMedia.find(m => m.id === mediaId);
-        if (existingMedia) {
-          existingMedia.metadata = {
-            ...existingMedia.metadata,
-            title: prompt ? `AI Generated: ${prompt}` : "AI Generated Image",
-            alt: prompt || "AI generated image",
-            size: uploaded.size,
-            ...(width && height
-              ? { dimensions: { width, height, aspectRatio: width / height } }
-              : {}),
-            aiGenerated: true,
-            aiPrompt: prompt || undefined,
-          };
-        }
-      });
-
-      const savedImageUrl = getCdnUrl(mediaId, { width: 800, format: "auto" });
-      generateMetadataForImage(mediaId, savedImageUrl);
-      refreshMediaList();
+      const uploaded = await uploadImageToCdn(file);
+      await registerUploadedMedia(
+        library,
+        uploadedMediaItem(uploaded, {
+          title: prompt ? `AI Generated: ${prompt}` : "AI Generated Image",
+          alt: prompt || "AI generated image",
+          aiGenerated: true,
+          aiPrompt: prompt || undefined,
+        })
+      );
       setAiError("");
       setAiSuccess("Image saved successfully!");
       setTimeout(() => setAiSuccess(""), 3000);

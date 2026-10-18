@@ -49,6 +49,7 @@ import { ChromeErrorBoundary } from "./chrome/shell/ChromeErrorBoundary";
 import { DragPreviewLayer } from "./chrome/shell/DragPreviewLayer";
 import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
 import { EditorActiveGate } from "./chrome/shell/EditorActiveGate";
+import { MediaLibraryMirror } from "./utils/media/useMirrorMediaLibraryToRoot";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
 import { EditorSaveBanner } from "./chrome/shell/EditorSaveBanner";
 import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
@@ -538,6 +539,7 @@ function PageHubEditorInner({
           >
             <EditorSelectionDomProvider>
               <EditorActiveGate />
+              <MediaLibraryMirror />
               <DropZoneIndicator />
               <DragPreviewLayer />
               <BorderResizeController />

@@ -1,9 +1,7 @@
-import { ROOT_NODE } from "@craftjs/utils";
 import { useEffect } from "react";
-import { useAtomValue } from "@zedux/react";
-import { SettingsAtom } from "@/utils/atoms";
 import { useSlot } from "@/registry";
 import { useAiEnabled } from "@/utils/hooks/useAiEnabled";
+import { useMediaLibrary } from "@/utils/media/libraryStore";
 import { useAiGeneration } from "./useAiGeneration";
 import { useMediaDeleteState } from "./useMediaDeleteState";
 import { useMediaEditingState } from "./useMediaEditingState";
@@ -22,15 +20,19 @@ import type { UseMediaManagerOptions } from "./types";
  * Combines slice hooks (list / filters / view / selection / preview / delete /
  * editing) and runs the cross-slice effects (refresh-on-open, prune dead
  * selection IDs). Returns one flat object so the 5 importers don't change.
+ *
+ * Reads and writes the library only through `useMediaLibrary()`. With a host
+ * store registered nothing under here calls Craft, so a host can render
+ * `MediaManagerBody` outside the editor (inside `<PageHubProvider>`).
  */
 export function useMediaManager({
   isOpen,
   onClose,
   onSelect,
   selectionMode,
+  designContext,
 }: UseMediaManagerOptions) {
   const aiEnabled = useAiEnabled();
-  const settings = useAtomValue(SettingsAtom);
 
   // `media-edit/ai-actions` is rendered via <SlotRenderer> inside
   // MediaEditModal; here we only need to know whether a contribution exists
@@ -39,11 +41,12 @@ export function useMediaManager({
   const canUseImageGenerate = aiEnabled;
   const canUseImageAnalyze = aiEnabled && mediaEditAiActionsSlot !== null;
 
-  const list = useMediaListState();
+  const library = useMediaLibrary();
+  const list = useMediaListState(library);
   const view = useMediaViewState();
 
   const filters = useMediaFilters({
-    actions: list.actions,
+    reorder: library.reorder,
     mediaList: list.mediaList,
     folderNameById: list.folderNameById,
     validFolderIdSet: list.validFolderIdSet,
@@ -54,43 +57,17 @@ export function useMediaManager({
     sortDirection: view.sortDirection,
   });
 
-  const upload = useMediaUpload({
-    isOpen,
-    refreshMediaList: list.refreshMediaList,
-    generateMetadataForImage: () => {},
-  });
-  const ai = useAiGeneration({
-    refreshMediaList: list.refreshMediaList,
-    generateMetadataForImage: () => {},
-    setUploading: upload.setUploading,
-  });
-
-  const rootNode = list.query.node(ROOT_NODE).get();
-  const rootProps = rootNode?.data?.props as Record<string, any> | undefined;
-  const design = rootProps?.design as { notes?: unknown; tags?: unknown } | undefined;
-  const designContext = {
-    designNotes: typeof design?.notes === "string" ? design.notes : undefined,
-    designTags: Array.isArray(design?.tags) ? (design.tags as string[]) : undefined,
-  };
-
-  const editing = useMediaEditingState({
-    query: list.query,
-    actions: list.actions,
-    ai,
-    designContext,
-    refreshMediaList: list.refreshMediaList,
-  });
+  const upload = useMediaUpload({ isOpen, library });
+  const ai = useAiGeneration({ library, setUploading: upload.setUploading });
+  const editing = useMediaEditingState({ library, ai, designContext });
 
   const selection = useMediaSelectionState(filters.filteredMedia, selectionMode);
 
   const preview = useMediaPreviewState(filters.filteredMedia);
 
   const del = useMediaDeleteState({
-    query: list.query,
-    actions: list.actions,
-    settings,
+    library,
     selectedMediaIds: selection.selectedMediaIds,
-    refreshMediaList: list.refreshMediaList,
     clearSelection: selection.clearSelection,
   });
 
@@ -174,6 +151,7 @@ export function useMediaManager({
     previewMedia: preview.previewMedia,
     deleteConfirm: del.deleteConfirm,
     deletingMedia: del.deletingMedia,
+    deleteNotice: del.deleteNotice,
     savingMetadata: editing.savingMetadata,
 
     uploading: upload.uploading,
@@ -213,6 +191,7 @@ export function useMediaManager({
     setUploadError: upload.setUploadError,
     setReplacingMedia: upload.setReplacingMedia,
     setDeleteConfirm: del.setDeleteConfirm,
+    setDeleteNotice: del.setDeleteNotice,
 
     handleSearch: view.handleSearch,
     handleDelete: del.handleDelete,
@@ -243,7 +222,6 @@ export function useMediaManager({
     selectionMode,
     onSelect,
     onClose,
-    settings,
     resortFilteredMedia: filters.resortFilteredMedia,
   };
 }

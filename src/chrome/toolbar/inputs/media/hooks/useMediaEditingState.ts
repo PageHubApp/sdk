@@ -1,32 +1,25 @@
-import { ROOT_NODE } from "@craftjs/utils";
 import { useEffect, useMemo, useState } from "react";
 import { useAtomState } from "@zedux/react";
 import { AssistantMediaMetadataResultAtom } from "@/utils/atoms";
 import { getCdnUrl } from "@/utils/cdn";
-import { updateMediaMetadata } from "@/utils/media/media";
+import type { MediaLibrary } from "@/utils/media/libraryStore";
+import type { MediaItem } from "@/utils/media/libraryTypes";
 import type {
   PageHubMediaEditAiActionsContext,
   PageHubMediaMetadataSuggestion,
 } from "@/types";
-import { cleanSvg, type MediaItem } from "../utils/media-helpers";
+import { cleanSvg } from "../utils/media-helpers";
 import type { useAiGeneration } from "./useAiGeneration";
+import type { MediaDesignContext } from "./types";
 import { sdkLog } from "../../../../../utils/logger";
 
 interface UseMediaEditingStateArgs {
-  query: any;
-  actions: any;
+  library: MediaLibrary;
   ai: ReturnType<typeof useAiGeneration>;
-  designContext: { designNotes?: string; designTags?: string[] };
-  refreshMediaList: () => void;
+  designContext?: MediaDesignContext;
 }
 
-export function useMediaEditingState({
-  query,
-  actions,
-  ai,
-  designContext,
-  refreshMediaList,
-}: UseMediaEditingStateArgs) {
+export function useMediaEditingState({ library, ai, designContext }: UseMediaEditingStateArgs) {
   const [editingMedia, setEditingMedia] = useState<MediaItem | null>(null);
   const [cropMedia, setCropMedia] = useState<MediaItem | null>(null);
   const [savingMetadata, setSavingMetadata] = useState<"idle" | "saving" | "saved">("idle");
@@ -68,9 +61,7 @@ export function useMediaEditingState({
         metadata.size = new Blob([cleaned]).size;
       }
 
-      await new Promise(resolve => setTimeout(resolve, 300));
-      updateMediaMetadata(query, actions, editingMedia.id, metadata);
-      refreshMediaList();
+      await library.update(editingMedia.id, { metadata });
       setSavingMetadata("saved");
       setTimeout(() => setSavingMetadata("idle"), 2000);
     } catch (error) {
@@ -90,13 +81,22 @@ export function useMediaEditingState({
     });
   };
 
-  const handleSaveCroppedImage = (croppedImage: MediaItem) => {
-    actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-      const pageMedia = props.pageMedia as MediaItem[] | undefined;
-      if (!pageMedia) return;
-      props.pageMedia = [...pageMedia, croppedImage];
-    });
-    refreshMediaList();
+  /** A crop saved as a new version adds an entry; "override" keeps the id and
+   *  points it at the cropped file. */
+  const handleSaveCroppedImage = async (croppedImage: MediaItem) => {
+    try {
+      const exists = library.snapshot.items.some(m => m.id === croppedImage.id);
+      if (exists) {
+        await library.update(croppedImage.id, {
+          cdnId: croppedImage.cdnId,
+          metadata: croppedImage.metadata,
+        });
+      } else {
+        await library.add([croppedImage]);
+      }
+    } catch (error) {
+      sdkLog.error("Failed to save cropped image:", error);
+    }
     setCropMedia(null);
   };
 
@@ -117,8 +117,8 @@ export function useMediaEditingState({
         imageUrl: analysisImageUrl,
         isGenerating: ai.isGeneratingMetadata,
         error: ai.metadataError,
-        designNotes: designContext.designNotes,
-        designTags: designContext.designTags,
+        designNotes: designContext?.notes,
+        designTags: designContext?.tags,
         setGenerating: ai.setIsGeneratingMetadata,
         setError: ai.setMetadataError,
         applyMetadata: applyGeneratedMetadata,

@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
-import { DeleteMedia } from "@/chrome/viewport/state/viewportExports";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import { useDragGesture } from "@/chrome/hooks/useDragGesture";
 
@@ -37,10 +36,9 @@ interface UseImageCropOptions {
   media: any;
   onSave: (croppedImage: any) => void;
   onClose: () => void;
-  settings?: any;
 }
 
-export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropOptions) {
+export function useImageCrop({ media, onSave, onClose }: UseImageCropOptions) {
   // ─── Crop state ───
   const [cropArea, setCropArea] = useState<CropArea>({ x: 0, y: 0, width: 200, height: 200 });
   const [baseCropArea, setBaseCropArea] = useState<CropArea>({
@@ -418,15 +416,13 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
         skipPreprocess: true,
       });
 
-      if (saveMode === "override") {
-        try {
-          await DeleteMedia(media.id, settings);
-        } catch {}
-      }
-
+      // "override" keeps the library id (nodes reference it) and points it at
+      // the cropped file via `cdnId`, the same as Replace does. A new version is
+      // its own file, so it must not inherit the original's `cdnId`.
       const croppedImage = {
         ...media,
         id: saveMode === "new" ? finalMediaId : media.id,
+        cdnId: saveMode === "override" ? finalMediaId : undefined,
         metadata: {
           ...media.metadata,
           title:

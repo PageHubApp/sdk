@@ -433,6 +433,28 @@ export type { ModalProps } from "./chrome/floating/Modal";
 export { getPortalTarget } from "./chrome/popovers/getPortalTarget";
 export { OVERLAY_Z_MODAL, OVERLAY_Z_CRITICAL_MODAL } from "./chrome/popovers/overlayZIndex";
 
+// Media library store — host-injectable library (register before the editor /
+// Media Manager mounts). Deep imports also work:
+// `@pagehub/sdk/utils/media/libraryStore`, `@pagehub/sdk/utils/media/libraryTypes`.
+export {
+  registerMediaLibraryStore,
+  getMediaLibraryStore,
+  useMediaLibrary,
+} from "./utils/media/libraryStore";
+export type {
+  MediaLibrary,
+  MediaLibrarySnapshot,
+  MediaLibraryStore,
+  MediaItemPatch,
+  MediaRemoveResult,
+} from "./utils/media/libraryStore";
+export type {
+  MediaDimensions,
+  MediaFolder,
+  MediaItem,
+  MediaMetadata,
+} from "./utils/media/libraryTypes";
+
 // Canonical keyboard predicates (used by registry dispatcher + any surface
 // that still mounts its own listeners during the Phase 2 transition).
 export { isInsideTextEditingSurface } from "./utils/keyboard";

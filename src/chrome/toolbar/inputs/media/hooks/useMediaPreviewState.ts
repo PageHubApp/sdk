@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { MediaItem } from "../utils/media-helpers";
+import type { MediaItem } from "@/utils/media/libraryTypes";
 
 export function useMediaPreviewState(filteredMedia: MediaItem[]) {
   const [previewMedia, setPreviewMedia] = useState<string | null>(null);
