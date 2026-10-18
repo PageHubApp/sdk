@@ -21,6 +21,11 @@ interface MarkdownTextProps {
   onListItemClick?: (text: string) => void;
 }
 
+/** Only web and mail links become anchors: the text is model output, so `javascript:` stays text. */
+function isSafeLink(url: string): boolean {
+  return /^(https?:|mailto:)/i.test(url.trim());
+}
+
 function parseInline(text: string, onMediaClick?: (url: string) => void): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
   // Match: **bold**, *italic*, `code`, [text](url), bare URL (trailing punctuation stays text)
@@ -70,6 +75,9 @@ function parseInline(text: string, onMediaClick?: (url: string) => void): React.
             />
           </button>
         );
+      } else if (!isSafeLink(linkUrl)) {
+        // Model output is untrusted: a `javascript:` link stays text.
+        parts.push(<span key={match.index}>{linkText}</span>);
       } else {
         parts.push(
           <a
@@ -83,6 +91,8 @@ function parseInline(text: string, onMediaClick?: (url: string) => void): React.
           </a>
         );
       }
+    } else if (match[10] && !isSafeLink(match[10])) {
+      parts.push(<span key={match.index}>{match[10]}</span>);
     } else if (match[10]) {
       parts.push(
         <a
