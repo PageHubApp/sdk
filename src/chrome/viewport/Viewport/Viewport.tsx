@@ -1,4 +1,5 @@
 import { useEditor } from "@craftjs/core";
+import { canvasScopeProps } from "../../../utils/canvasScope";
 import { ROOT_NODE } from "@craftjs/utils";
 import React, { useCallback, useRef } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
@@ -30,11 +31,6 @@ import { ViewportMeta } from "../canvas/ViewportMeta";
 import { ViewportScopeCoachmark } from "../canvas/ViewportScopeCoachmark";
 import { DeviceOffline } from "../../toolbar/DeviceOffline";
 import { EditModifiersAtom } from "../../toolbar/Label";
-import { useAutoOpenSidebar } from "../../hooks/useAutoOpenSidebar";
-import { useComponentSync } from "../../hooks/useComponentSync";
-import { useShowOnLoadAutoReveal } from "../../hooks/useShowOnLoadAutoReveal";
-import { useRegisterSelectionContext } from "../hooks/useRegisterSelectionContext";
-import { useRegisterTiptapContext } from "../../inline-tools/useRegisterTiptapContext";
 import { useViewportClickDeselect } from "../hooks/useViewportClickDeselect";
 import { usePageNavigation } from "../../../utils/page/pageNavigation";
 import { getEditorWidthOnlyCanvasClasses } from "../canvas/editorCanvasLayout";
@@ -54,7 +50,6 @@ import {
   ShowDeviceGuidesAtom,
   SideBySideAtom,
   TabAtom,
-  UnsavedChangesAtom,
   ViewAtom,
 } from "../state/atoms";
 import { BreakpointMarkers } from "./parts/BreakpointMarkers";
@@ -68,11 +63,8 @@ import { DeviceGuides } from "./parts/DeviceGuides";
 import { PreviewEditButton } from "./parts/PreviewEditButton";
 import { useBreakpointMarkerDrag } from "./hooks/useBreakpointMarkerDrag";
 import { useCanvasEdgeResize } from "./hooks/useCanvasEdgeResize";
-import { useInitialPageNavigation } from "./hooks/useInitialPageNavigation";
 import { usePageLoadIndicator } from "./hooks/usePageLoadIndicator";
-import { useUnsavedChangesWarning } from "./hooks/useUnsavedChangesWarning";
 import { useViewportContextMenu } from "./hooks/useViewportContextMenu";
-import { useViewportSetupEffects } from "./hooks/useViewportSetupEffects";
 
 export function Viewport({ children }: { children: React.ReactNode }) {
   const {
@@ -83,31 +75,14 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
   const { actions, query } = useEditor();
 
-  const editorPageIdsKey = useEditor((state: any) => {
-    const root = state.nodes[ROOT_NODE];
-    if (!root?.data?.nodes) return "";
-    return root.data.nodes
-      .filter((id: string) => state.nodes[id]?.data?.props?.type === "page")
-      .join(",");
-  }) as unknown as string;
-
   const themeBreakpoints = useEditor((state: any) => {
     return state.nodes[ROOT_NODE]?.data?.props?.theme?.breakpoints as
       | Record<string, number>
       | undefined;
   }) as Record<string, number> | undefined;
 
-  // ─── Composed external hooks ───
-  useComponentSync();
-  useAutoOpenSidebar();
-  useShowOnLoadAutoReveal();
-  // The registry's doc-level dispatcher owns every canvas chord (delete /
-  // copy / paste / undo / redo / tab cycle / escape / etc.). Selection-
-  // context predicates feed the dispatcher.
-  useRegisterSelectionContext();
-  // Publish active-Tiptap-editor + selection snapshot into
-  // CommandContext.tiptap so `ph.text.*` when/enablement predicates work.
-  useRegisterTiptapContext();
+  // Editor-wide effects (component sync, selection / Tiptap context, initial
+  // page load, unsaved-changes prompt, …) run in `EditorServices`.
   const { handleViewportClick } = useViewportClickDeselect();
 
   // Double-click on a node label exits the active inspector tab; keep this
@@ -122,16 +97,11 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     [setActiveTab]
   );
 
-  useViewportSetupEffects();
-
   // ─── Atoms (reads only) ───
   const editModifiers = useAtomValue(EditModifiersAtom);
   const classDarkEdit = editModifiers.dark ?? false;
   const showGridLines = useAtomValue(ShowGridLinesAtom);
-  const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const viewMode = useAtomValue(ViewModeAtom);
-  const [unsavedChangesRaw] = useAtomState(UnsavedChangesAtom);
-  const unsavedChanges = unsavedChangesRaw as unknown as string | null;
   const view = useAtomValue(ViewAtom);
   const [device, setDevice] = useAtomState(DeviceAtom);
   const deviceDimensions = useAtomValue(DeviceDimensionsAtom);
@@ -158,25 +128,13 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const sideBarOpen = useAtomValue(SideBarOpen);
   const sideBarLeft = useAtomValue(SideBarAtom);
   useSetAtomState(InitialLoadCompleteAtom);
-  const { config, features } = useSDK();
+  const { features } = useSDK();
   usePageNavigation();
 
   const { handleViewportContextMenuCapture, handleViewportDoubleClickCapture } =
     useViewportContextMenu({ enabled, handleDoubleClick });
 
-  const { pageLoad, handleLoadComplete, setPageLoad } = usePageLoadIndicator();
-
-  useInitialPageNavigation({
-    query,
-    actions,
-    editorPageIdsKey,
-    isolate,
-    setIsolate,
-    config,
-    setPageLoad,
-  });
-
-  const unsavedChangesDialog = useUnsavedChangesWarning(unsavedChanges);
+  const { pageLoad, handleLoadComplete } = usePageLoadIndicator();
 
   // ─── Side-by-side scroll mirror ───
   // Both frames share scroll state but each has its own DOM scroll container.
@@ -273,7 +231,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ViewportMeta />
-      {unsavedChangesDialog}
       {/* min-h-0: a column flex item's auto min-height clamps to its own `height`,
           so with h-full the canvas never shrinks to make room for the docked
           AI panel below it — the column overflows and the shell scrolls. */}
@@ -344,6 +301,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             {enabled && !device && showDeviceGuides && <DeviceGuides />}
             <div
               id="viewport"
+              {...canvasScopeProps}
               role="application"
               onClick={handleViewportClick}
               onDoubleClick={handleDoubleClick}

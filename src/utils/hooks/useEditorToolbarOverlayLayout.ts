@@ -1,25 +1,13 @@
-import { useSyncExternalStore } from "react";
+import { useEditorRootRect } from "../../chrome/shell/editorRootRect";
 
-/** Matches Tailwind `md` (768px): below this, settings toolbar is overlay (out of flex flow). */
-const MEDIA_QUERY = "(max-width: 767px)";
+/** Matches Tailwind `md` (768px): an editor narrower than this overlays the settings toolbar. */
+const OVERLAY_BELOW_PX = 768;
 
-function subscribe(onStoreChange: () => void) {
-  if (typeof window === "undefined") return () => {};
-  const mql = window.matchMedia(MEDIA_QUERY);
-  mql.addEventListener("change", onStoreChange);
-  return () => mql.removeEventListener("change", onStoreChange);
-}
-
-function getSnapshot(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia(MEDIA_QUERY).matches;
-}
-
-function getServerSnapshot(): boolean {
-  return false;
-}
-
-/** True when the editor chrome should use overlay (absolute) settings toolbar instead of docked flex column. */
+/**
+ * True when the editor chrome should use the overlay (absolute) settings
+ * toolbar instead of the docked flex column. Measured on the editor root, not
+ * the window, so an editor in part of a host page decides by its own width.
+ */
 export function useEditorToolbarOverlayLayout(): boolean {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  return useEditorRootRect(r => r.width < OVERLAY_BELOW_PX);
 }

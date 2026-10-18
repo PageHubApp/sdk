@@ -26,15 +26,21 @@ export interface EditorTopBarActionsProps {
   className?: string;
   /** Include the page switcher (PageSelector, inline trigger). Default true. */
   showPageSelector?: boolean;
+  /** Command ids to leave out, for a host that renders those actions its own way. */
+  omit?: readonly string[];
 }
 
 export function EditorTopBarActions({
   className,
   showPageSelector = true,
+  omit,
 }: EditorTopBarActionsProps): React.JSX.Element | null {
   const { enabled } = useEditor(state => ({ enabled: state.options.enabled }));
   const { features, commands } = useSDK();
-  const topbarItems = useMenuItems("topbar");
+  const allItems = useMenuItems("topbar");
+  const topbarItems = omit?.length
+    ? allItems.filter(item => !omit.includes(item.command))
+    : allItems;
 
   if (!enabled) return null;
 

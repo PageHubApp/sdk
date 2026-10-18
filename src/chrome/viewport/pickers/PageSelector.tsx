@@ -52,6 +52,8 @@ interface PageSelectorProps {
   selectedPageId?: string;
   buttonClassName?: string;
   showHashIcon?: boolean;
+  /** Show the current page's name in the trigger (with `inlineTrigger`), not only its icon or slug. */
+  showName?: boolean;
 }
 
 export function PageSelector({
@@ -63,6 +65,7 @@ export function PageSelector({
   selectedPageId,
   buttonClassName,
   showHashIcon = true,
+  showName = false,
 }: PageSelectorProps) {
   const { query, actions } = useEditor();
   const settings = useAtomValue(SettingsAtom) as { _id?: string; draftId?: string } | null;
@@ -245,7 +248,9 @@ export function PageSelector({
               ) : (
                 <TbFileText className="size-4 shrink-0" aria-hidden />
               )}
-              {!isCurrentHomePage && currentPageRoute ? (
+              {showName && currentPage ? (
+                <span className="max-w-[10rem] truncate">{currentPage.displayName}</span>
+              ) : !isCurrentHomePage && currentPageRoute ? (
                 <span className="max-w-[120px] truncate font-mono text-xs">
                   {finalSlugSegment(currentPageRoute)}
                 </span>

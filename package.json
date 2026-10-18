@@ -45,6 +45,7 @@
     "./compile-css": "./src/compile-css/index.ts",
     "./email-renderer": "./src/render/email/index.ts",
     "./page-settings/fields": "./src/chrome/viewport/modals/page-settings/fields.ts",
+    "./editor/pieces": "./src/editor/pieces.ts",
     "./presets/audio": "./src/components/Audio/Audio.presets.ts",
     "./presets/button": "./src/components/Button/Button.presets.ts",
     "./presets/container": "./src/components/Container/Container.presets.tsx",

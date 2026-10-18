@@ -15,42 +15,61 @@ const ALL_PANEL_KEYS: Array<keyof PanelUrlState> = ["panel", "cat", "sub", "sty"
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+const EMPTY_STATE: PanelUrlState = { panel: null, cat: null, sub: null, sty: null, q: null };
+
+/**
+ * Read the panel state from a query string. Each key is read as
+ * `<prefix><key>` (`ed_panel`, `ed_cat`, …) so a host page can keep its own
+ * params alongside the editor's.
+ */
+export function readPanelParams(search: string, prefix = ""): PanelUrlState {
+  const sp = new URLSearchParams(search);
+  const state = { ...EMPTY_STATE };
+  for (const key of ALL_PANEL_KEYS) state[key] = sp.get(prefix + key);
+  return state;
+}
+
+/** Apply panel updates to a query string; a falsy value removes its key. Returns the query without `?`. */
+export function writePanelParams(
+  search: string,
+  updates: Partial<PanelUrlState>,
+  prefix = ""
+): string {
+  const sp = new URLSearchParams(search);
+  for (const key of ALL_PANEL_KEYS) {
+    if (!(key in updates)) continue;
+    const val = updates[key];
+    if (val) sp.set(prefix + key, val);
+    else sp.delete(prefix + key);
+  }
+  return sp.toString();
+}
+
+/** Remove every panel key from a query string. Returns the query without `?`. */
+export function stripPanelParams(search: string, prefix = ""): string {
+  const sp = new URLSearchParams(search);
+  for (const key of ALL_PANEL_KEYS) sp.delete(prefix + key);
+  return sp.toString();
+}
+
+/** Param prefix for the mounted editor (`features.panelUrlPrefix`); "" on `/build`. */
+let paramPrefix = "";
+
 function readParams(): PanelUrlState {
-  if (typeof window === "undefined")
-    return { panel: null, cat: null, sub: null, sty: null, q: null };
-  const sp = new URLSearchParams(window.location.search);
-  return {
-    panel: sp.get("panel"),
-    cat: sp.get("cat"),
-    sub: sp.get("sub"),
-    sty: sp.get("sty"),
-    q: sp.get("q"),
-  };
+  if (typeof window === "undefined") return EMPTY_STATE;
+  return readPanelParams(window.location.search, paramPrefix);
+}
+
+function withQuery(qs: string): string {
+  return window.location.pathname + (qs ? `?${qs}` : "");
 }
 
 function buildUrl(updates: Partial<PanelUrlState>): string {
-  const sp = new URLSearchParams(window.location.search);
-
-  for (const key of ALL_PANEL_KEYS) {
-    if (key in updates) {
-      const val = updates[key];
-      if (val) {
-        sp.set(key, val);
-      } else {
-        sp.delete(key);
-      }
-    }
-  }
-
-  const qs = sp.toString();
-  return window.location.pathname + (qs ? `?${qs}` : "");
+  return withQuery(writePanelParams(window.location.search, updates, paramPrefix));
 }
 
 function stripAllPanelParams(): string {
-  const sp = new URLSearchParams(window.location.search);
-  for (const key of ALL_PANEL_KEYS) sp.delete(key);
-  const qs = sp.toString();
-  return window.location.pathname + (qs ? `?${qs}` : "");
+  return withQuery(stripPanelParams(window.location.search, paramPrefix));
 }
 
 // ── External store (single instance, module-scoped) ─────────────────────────
@@ -95,9 +114,8 @@ function getSnapshot(): PanelUrlState {
   return currentSnapshot;
 }
 
-const SERVER_SNAPSHOT: PanelUrlState = { panel: null, cat: null, sub: null, sty: null, q: null };
 function getServerSnapshot(): PanelUrlState {
-  return SERVER_SNAPSHOT;
+  return EMPTY_STATE;
 }
 
 function notify(): void {
@@ -106,9 +124,24 @@ function notify(): void {
   for (const l of listeners) l();
 }
 
+/**
+ * Set the param prefix the panel keys are read and written with. Called by
+ * `PageHubEditor` from `features.panelUrlPrefix`; re-reads the URL so open
+ * panels follow the new names.
+ */
+export function setPanelUrlPrefix(prefix: string): void {
+  if (prefix === paramPrefix) return;
+  paramPrefix = prefix;
+  if (typeof window !== "undefined") notify();
+}
+
 // ── Non-hook accessors (for command `run` bodies) ───────────────────────────
 
-export type PanelType = "menu" | "components" | "blocks" | "publish" | "theme";
+/**
+ * `layers` is only used by hosts that show the layer tree as a tab of their
+ * own panel (`layout="none"`); the default drawer ignores it.
+ */
+export type PanelType = "menu" | "components" | "blocks" | "publish" | "theme" | "layers";
 
 /** Open a panel from outside React (registry commands, dispatcher). */
 export function panelOpen(

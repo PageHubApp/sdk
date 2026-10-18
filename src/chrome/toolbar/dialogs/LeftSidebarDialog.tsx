@@ -2,6 +2,7 @@ import React, { ReactNode, useEffect, useRef } from "react";
 import { TbX } from "react-icons/tb";
 import { useFocusTrap } from "../../../utils/hooks/useAccessibility";
 import { useOverlay } from "../../../registry/hooks/useOverlay";
+import { useEditorRootRect } from "../../shell/editorRootRect";
 
 interface LeftSidebarDialogProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ interface LeftSidebarDialogProps {
  * @param children - Dialog content
  * @param width - Optional custom width (default: 360px for fixed, 100% for absolute)
  * @param position - Position type: "fixed" (default, left sidebar) or "absolute" (full width under toolbar)
- * @param top - Top offset. Absolute default: `var(--editor-nav-height)` from `#toolbar` (measured icon bar).
+ * @param top - Top offset. Absolute default: `var(--editor-nav-height)` from the panel frame (measured icon bar).
  */
 export function LeftSidebarDialog({
   isOpen,
@@ -59,9 +60,13 @@ export function LeftSidebarDialog({
   const modalRef = useRef<HTMLDivElement>(null);
   const focusTrapRef = useFocusTrap(isOpen);
 
-  // Set defaults based on position (absolute panels live in `#toolbar` and anchor under the measured icon row)
+  // Set defaults based on position (absolute panels live in a panel frame and anchor under the measured icon row)
   const finalWidth = width || (position === "absolute" ? "100%" : "360px");
   const finalTop = top ?? (position === "absolute" ? "var(--editor-nav-height, 3rem)" : "40px");
+  // A fixed dialog docks to the editor's box (its left edge, full height), not the window's.
+  const editorTop = useEditorRootRect(r => r.top);
+  const editorLeft = useEditorRootRect(r => r.left);
+  const editorHeight = useEditorRootRect(r => r.height);
 
   // Escape dismissal is handled by the registry dispatcher via the editor
   // overlay stack — the dialog title is unique enough to disambiguate, and
@@ -109,8 +114,9 @@ export function LeftSidebarDialog({
       className={`${position} bg-base-100 text-base-content left-0 z-9999 flex flex-col`}
       style={{
         width: finalWidth,
-        top: finalTop,
-        height: position === "fixed" ? `calc(100vh - ${finalTop})` : undefined,
+        top: position === "fixed" ? `calc(${editorTop}px + ${finalTop})` : finalTop,
+        left: position === "fixed" ? editorLeft : undefined,
+        height: position === "fixed" ? `calc(${editorHeight}px - ${finalTop})` : undefined,
         bottom: position === "absolute" ? "0" : undefined,
         pointerEvents: position === "absolute" ? "auto" : undefined,
       }}

@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { TbCheck, TbChevronDown, TbEdit, TbPlus, TbTrash } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { FloatingPanel } from "../../floating/FloatingPanel";
+import { useEditorRootRect } from "../../shell/editorRootRect";
 import { sdkLog } from "../../../utils/logger";
 
 interface Modifier {
@@ -21,6 +22,7 @@ interface ModifiersModalProps {
 
 export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
   const { actions, query } = useEditor();
+  const editorHeight = useEditorRootRect(r => r.height);
 
   const [modifiers, setModifiers] = useState<Record<string, Modifier[]>>({});
   const [selectedType, setSelectedType] = useState("");
@@ -172,7 +174,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
       storageKey="modifiers-manager"
       autoSize={false}
       defaultWidth={500}
-      defaultHeight={Math.round(typeof window !== "undefined" ? window.innerHeight - 120 : 600)}
+      defaultHeight={editorHeight - 120}
       minWidth={360}
       maxWidth={700}
       minHeight={300}

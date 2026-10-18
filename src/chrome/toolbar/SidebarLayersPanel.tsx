@@ -4,7 +4,8 @@ import { TbChevronDown, TbChevronUp, TbExternalLink, TbLayoutGrid } from "react-
 import { LayersDialogOpenAtom, SidebarLayersPanelAtom } from "../../utils/atoms";
 import { phStorage } from "../../utils/phStorage";
 import { useDragGesture } from "../hooks/useDragGesture";
-import { Layers } from "./dialogs/Layers/Layers";
+import { EditorLayers } from "./EditorLayers";
+import { PANEL_VARS, frameShareHeight, syncHeightToFrameVar } from "../shell/EditorPanelFrame";
 
 const MIN_HEIGHT = 120;
 const DEFAULT_HEIGHT = 250;
@@ -32,22 +33,11 @@ export function SidebarLayersPanel() {
     });
   }, [setIsOpen]);
 
-  // Sync CSS var so the EditorNavigation flyout stops above us
-  useLayoutEffect(() => {
-    const toolbar = document.getElementById("toolbar");
-    if (!toolbar || !panelRef.current) return;
-    const sync = () => {
-      const h = Math.ceil(panelRef.current!.getBoundingClientRect().height);
-      toolbar.style.setProperty("--sidebar-layers-height", `${h}px`);
-    };
-    sync();
-    const ro = new ResizeObserver(sync);
-    ro.observe(panelRef.current);
-    return () => {
-      ro.disconnect();
-      toolbar.style.removeProperty("--sidebar-layers-height");
-    };
-  }, [isOpen]);
+  // Sync the frame's CSS var so the EditorNavigation flyout stops above us
+  useLayoutEffect(
+    () => syncHeightToFrameVar(panelRef.current, PANEL_VARS.layersHeight),
+    [isOpen]
+  );
 
   const startHRef = useRef(0);
   const { onPointerDown } = useDragGesture({
@@ -56,8 +46,7 @@ export function SidebarLayersPanel() {
       startHRef.current = heightRef.current;
     },
     onMove: (_e, m) => {
-      const toolbar = document.getElementById("toolbar");
-      const maxH = toolbar ? Math.floor(toolbar.getBoundingClientRect().height * MAX_RATIO) : 600;
+      const maxH = frameShareHeight(panelRef.current, MAX_RATIO);
       const next = Math.max(MIN_HEIGHT, Math.min(maxH, startHRef.current - m.dy));
       setHeight(next);
       heightRef.current = next;
@@ -122,9 +111,7 @@ export function SidebarLayersPanel() {
       </div>
 
       {/* Content */}
-      <div className="bg-base-100 text-base-content flex-1 overflow-hidden">
-        <Layers expandRootOnLoad={true} />
-      </div>
+      <EditorLayers />
     </div>
   );
 }

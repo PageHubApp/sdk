@@ -9,6 +9,7 @@ import {
 import { buildCraftTreeFromStructure } from "../../buildCraftTreeFromStructure";
 import { sdkLog } from "../../../utils/logger";
 import { UntrustedRenderProvider } from "../../../utils/runtimeMode";
+import { canvasScopeProps } from "../../../utils/canvasScope";
 
 /**
  * Error boundary that catches CraftJS invariant errors inside preview Editors.
@@ -246,6 +247,7 @@ export const ComponentPreview = React.memo(function ComponentPreview({
       >
         <div
           ref={previewRef}
+          {...canvasScopeProps}
           style={
             {
               width: scaledWidth,

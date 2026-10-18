@@ -9,13 +9,9 @@
 // Styles: bundled separately as dist/editor.css (import "@pagehub/sdk/editor.css").
 // For Next.js, import styles/globals.css in pages/_app.tsx.
 
-import { Editor, Frame, useEditor } from "@craftjs/core";
-import { EcosystemProvider, useAtomState, useEcosystem } from "@zedux/react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { setEditorBackref, clearEditorBackref } from "./registry/editorBackref";
-import { useRegistries } from "./registry";
-import { mountMouseOverTracker } from "./registry/mouseOverTracker";
-import { useRegisterOverlayContext } from "./registry/hooks/useRegisterOverlayContext";
+import { Editor } from "@craftjs/core";
+import { EcosystemProvider } from "@zedux/react";
+import React, { useRef } from "react";
 import { Inspector } from "./chrome/toolbar/inspector/InspectorRegistry";
 import { resolveConfig } from "./config";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
@@ -27,20 +23,15 @@ import { CustomComponentsContext } from "./define/context";
 import { processForEditor } from "./define/processors/forEditor";
 import type { ResolvedComponentDef } from "./define/types";
 import type {
-  PageData,
   PageHubCallbacks,
   PageHubConfig,
   PageHubFeatures,
   PageHubTheme,
 } from "./types";
-import { BatchOperationAtom, EditorSaveBannerAtom, useSetAtomState } from "./utils/atoms";
-import { compressAsync } from "./utils/compressionAsync";
-import { applyFetchedTree, safeSerialize } from "./core/editorTree";
 import { ConfigError } from "./utils/errors";
-import { listPageNodeIds } from "./utils/page/pageManagement";
-import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
+import { createValueStore } from "./utils/createValueStore";
 
-// ─── Import the real Viewport, Toolbar, and all dialog components from the editor chrome ──
+// ─── Editor chrome ──
 import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
 import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
 import { BorderResizeController } from "./chrome/canvas/controllers/BorderResizeController";
@@ -51,250 +42,23 @@ import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
 import { EditorActiveGate } from "./chrome/shell/EditorActiveGate";
 import { MediaLibraryMirror } from "./utils/media/useMirrorMediaLibraryToRoot";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
-import { EditorSaveBanner } from "./chrome/shell/EditorSaveBanner";
+import { DefaultEditorLayout } from "./chrome/shell/DefaultEditorLayout";
+import { EditorDocumentLoadedContext } from "./chrome/shell/useEditorDocument";
 import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
-import { GlobalSectionPickerDialog } from "./chrome/shell/GlobalSectionPickerDialog";
+import { EditorServices } from "./chrome/shell/EditorServices";
+import { EditorRootRectContext, createEditorRootRectStore } from "./chrome/shell/editorRootRect";
+import { setPanelUrlPrefix } from "./utils/usePanelUrl";
 import { onBesideDrop } from "./chrome/shell/besideDrop";
 import { findPosition2DForEditor } from "./chrome/shell/findPosition2D";
 import { setFindPositionEditorQuery } from "./chrome/shell/findPositionQueryRef";
-import { Toolbar } from "./chrome/toolbar";
-import { Viewport } from "./chrome/viewport/Viewport/Viewport";
-import { UnsavedChangesAtom } from "./chrome/viewport/state/atoms";
 import { Container } from "./components/Container/Container";
-import { sdkLog } from "./utils/logger";
 
-// Lazy-loaded dialogs — only loaded when user opens them
-const ColorPickerDialog = React.lazy(() =>
-  import("./chrome/toolbar/dialogs/ColorPickerDialog").then(m => ({ default: m.ColorPickerDialog }))
-);
-const ColorPickerSidebarDialog = React.lazy(() =>
-  import("./chrome/toolbar/dialogs/ColorPickerSidebarDialog").then(m => ({
-    default: m.ColorPickerSidebarDialog,
-  }))
-);
-const FontFamilyDialog = React.lazy(() =>
-  import("./chrome/toolbar/dialogs/FontFamilyDialog").then(m => ({ default: m.FontFamilyDialog }))
-);
-const PatternDialog = React.lazy(() =>
-  import("./chrome/toolbar/dialogs/PatternDialog").then(m => ({ default: m.PatternDialog }))
-);
 const ToolTipDialog = React.lazy(() =>
   import("./chrome/toolbar/dialogs/TooltipDialog").then(m => ({ default: m.ToolTipDialog }))
 );
 
 // Side-effect import: RegistrySettings self-registers with InspectorRegistry
 import "./chrome/toolbar/inspector/RegistrySettings";
-
-// ─── Internal editor wrapper that handles save/load ──────────────────────────
-
-function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) {
-  const { config, emitter, readOnly } = useSDK();
-  const { actions, query, connectors } = useEditor();
-  const ecosystem = useEcosystem();
-  const [loaded, setLoaded] = useState(false);
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const setBatchOperation = useSetAtomState(BatchOperationAtom);
-  const setEditorSaveBanner = useSetAtomState(EditorSaveBannerAtom);
-
-  // Expose the query ref to the parent
-  useEffect(() => {
-    if (onQueryReady) onQueryReady(query);
-  }, [query, onQueryReady]);
-
-  // Capture editor backrefs into the registry so command `run` bodies and
-  // the keybinding dispatcher can reach CraftJS + Zedux without React.
-  useEffect(() => {
-    setEditorBackref({ query, actions, ecosystem });
-    return () => {
-      clearEditorBackref();
-    };
-  }, [query, actions, ecosystem]);
-
-  // Mount the mouse-region tracker once after the editor DOM is in place.
-  // Powers the `mouseOver` context key required by `ph.sidebar.search` (⌘F).
-  // Uses mouseenter / mouseleave on labeled regions — no mousemove cost.
-  const registries = useRegistries();
-  useEffect(() => {
-    // Defer to next tick so #viewport / #toolbar are in the DOM.
-    let unmount = () => {};
-    const raf = requestAnimationFrame(() => {
-      unmount = mountMouseOverTracker({ context: registries.context });
-    });
-    return () => {
-      cancelAnimationFrame(raf);
-      unmount();
-    };
-  }, [registries.context]);
-
-  // Wire the editor overlay stack into the command context so the Escape
-  // priority chain (`ph.overlay.dismissTop`) sees real `stackDepth` /
-  // `topId` values. Surfaces register via `useOverlay({ id, isOpen, ... })`.
-  useRegisterOverlayContext();
-
-  // Load initial data
-  useEffect(() => {
-    async function loadInitialData() {
-      try {
-        const pageData = await config.callbacks.onLoad(config.pageId);
-
-        if (pageData?.content) {
-          setBatchOperation(true);
-          // SSR may have assembled only one page + shared shard —
-          // unloaded pages will be fetched on demand via isolatePageLazy.
-          await applyFetchedTree(pageData.content, query, actions);
-          requestAnimationFrame(() => {
-            setBatchOperation(false);
-          });
-        }
-
-        setLoaded(true);
-        emitter.emit("ready");
-        emitter.emit("load", pageData);
-      } catch (err) {
-        sdkLog.error("[PageHub] Failed to load page:", err);
-        emitter.emit("error", err);
-        setLoaded(true); // Show empty canvas on error
-      }
-    }
-
-    loadInitialData();
-  }, [config.pageId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const [_, setUnsavedChanges] = useAtomState(UnsavedChangesAtom);
-
-  // Wire the save coordinator — single authoritative owner of the save
-  // lifecycle. `instance.save()` funnels through here so callers get one
-  // Promise + one mutex.
-  useEffect(() => {
-    const coordinator = getSaveCoordinator(emitter);
-
-    const buildPageData = async (): Promise<PageData | null> => {
-      const json = safeSerialize(query);
-      if (!json) return null;
-      const compressed = await compressAsync(json);
-      // Lazy-load static-renderer so its ~25-file chunk (walker, stringify,
-      // alpine inline) stays out of the editor's initial bundle — only fetched
-      // on first save.
-      const { renderToHTML } = await import("./render/static/renderToHTML");
-      const { html, classes, scrollObserverScript, renderError } = renderToHTML(json, {
-        compressed: false,
-      });
-      if (renderError) {
-        setEditorSaveBanner({ message: renderError });
-      } else {
-        setEditorSaveBanner(null);
-      }
-
-      // Build per-page shards — each page as its own compressed piece
-      let shards: PageData["shards"] | undefined;
-      try {
-        const flat = JSON.parse(json);
-        const pageIds = listPageNodeIds(query);
-        if (pageIds.length > 0) {
-          const sharedShard = extractSharedShard(flat);
-          const pages: Record<string, string> = {};
-          for (const pageId of pageIds) {
-            if (flat[pageId]) {
-              pages[pageId] = await compressAsync(JSON.stringify(extractPageShard(flat, pageId)));
-            }
-          }
-          shards = {
-            shared: await compressAsync(JSON.stringify(sharedShard)),
-            pages,
-            loadedPageIds: pageIds,
-          };
-        }
-      } catch (shardErr) {
-        sdkLog.warn(
-          "[PageHub] Shard extraction failed, falling back to full-tree save:",
-          shardErr
-        );
-      }
-
-      return {
-        content: compressed,
-        html,
-        classes,
-        scrollObserverScript,
-        shards,
-      };
-    };
-
-    coordinator.configure({
-      buildPageData,
-      onSave: config.callbacks.onSave as any,
-      applyServerContent: (content: any) => applyFetchedTree(content, query, actions),
-      onConflictReload: config.callbacks.onConflictReload,
-      notifyUpdatedAt: (updatedAt: string) => {
-        emitter.emit("updated_at_changed", updatedAt);
-      },
-      onSaveSettled: () => {
-        setUnsavedChanges(null);
-      },
-      onConflict: err => {
-        emitter.emit("save_conflict", err);
-      },
-    });
-
-    // Listen for load events
-    const unsubLoad = emitter.onInternal("_doLoad", async (pageData: PageData) => {
-      try {
-        if (pageData?.content) {
-          setBatchOperation(true);
-          await applyFetchedTree(pageData.content, query, actions);
-          requestAnimationFrame(() => setBatchOperation(false));
-        }
-      } catch (err) {
-        sdkLog.error("[PageHub] Load error:", err);
-        emitter.emit("error", err);
-      }
-    });
-
-    const unsubUnsaved = emitter.on("unsaved_changes", (hasChanges: boolean) => {
-      setUnsavedChanges((hasChanges ? safeSerialize(query) : null) as any);
-    });
-
-    return () => {
-      unsubLoad();
-      unsubUnsaved();
-    };
-  }, [query, actions, config.callbacks, emitter, setUnsavedChanges, setEditorSaveBanner]);
-
-  // Debounced onChange handler
-  const handleChange = useCallback(() => {
-    if (!loaded || readOnly) return;
-
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        const json = safeSerialize(query);
-        if (!json) return;
-        const compressed = await compressAsync(json);
-        const pageData: PageData = { content: compressed };
-
-        config.callbacks.onChange?.(pageData);
-        emitter.emit("change", pageData);
-      } catch (err) {
-        sdkLog.error("[PageHub] onChange error:", err);
-      }
-    }, 500);
-  }, [loaded, readOnly, query, config.callbacks, emitter]);
-
-  // Use onNodesChange to trigger the debounced save naturally instead of setInterval
-  useEffect(() => {
-    const unsub = emitter.onInternal("_nodes_changed", handleChange);
-    return () => unsub();
-  }, [handleChange, emitter]);
-
-  if (!loaded) {
-    return <EditorLoader />;
-  }
-
-  return <Frame />;
-}
 
 // ─── Public Editor React component ───────────────────────────────────────────
 
@@ -323,6 +87,19 @@ interface PageHubEditorProps {
   active?: boolean;
   /** Host-rendered docked panel (e.g. assistant). Same as `PageHubConfig.aiPanel`. */
   aiPanel?: PageHubConfig["aiPanel"];
+  /**
+   * `"default"` (the default): the editor draws its own sidebar, header and
+   * canvas. `"none"`: it draws nothing visible; render the pieces from
+   * `@pagehub/sdk/editor/pieces` as `children` (directly or through portals)
+   * and arrange them yourself. Document load/save, shortcuts and the editor's
+   * dialogs run either way.
+   */
+  layout?: "default" | "none";
+  /**
+   * Shown in place of the editor while it gets ready (built-in catalogs).
+   * Defaults to the SDK's spinner; a host with its own skeleton passes it here.
+   */
+  loading?: React.ReactNode;
   /** Content rendered inside the CraftJS <Editor> tree (has access to useEditor) */
   children?: React.ReactNode;
 }
@@ -381,6 +158,8 @@ function PageHubEditorStandalone(props: PageHubEditorProps & { callbacks: PageHu
         components={props.components}
         onQueryReady={props.onQueryReady}
         onNodesChange={props.onNodesChange}
+        layout={props.layout}
+        loading={props.loading}
       >
         {props.children}
       </PageHubEditorInner>
@@ -393,13 +172,16 @@ function PageHubEditorInner({
   components = [],
   onQueryReady,
   onNodesChange,
+  layout = "default",
+  loading,
   children,
-}: Pick<PageHubEditorProps, "resolver" | "components" | "onQueryReady" | "onNodesChange"> & {
+}: Pick<
+  PageHubEditorProps,
+  "resolver" | "components" | "onQueryReady" | "onNodesChange" | "layout" | "loading"
+> & {
   children?: React.ReactNode;
 }) {
   const { readOnly, config, emitter } = useSDK();
-  const showToolbar = config.features?.toolbar !== false;
-  const showSidebar = config.features?.sidebar !== false;
 
   // Eager-load built-in catalog files (presets + modifiers) ONCE at editor mount,
   // then apply per-component host overrides from `config.{presets,modifiers}`.
@@ -462,14 +244,33 @@ function PageHubEditorInner({
 
   const customComponentsValue = React.useMemo(() => ({ toolboxCategories }), [toolboxCategories]);
 
+  // Drawer URL params are read and written as `<prefix>panel`, … while this editor is mounted.
+  const panelUrlPrefix = config.features?.panelUrlPrefix ?? "";
+  React.useLayoutEffect(() => {
+    setPanelUrlPrefix(panelUrlPrefix);
+    return () => setPanelUrlPrefix("");
+  }, [panelUrlPrefix]);
+
+  // Flips once the initial document is applied; the canvas swaps its loader for <Frame />.
+  const [documentLoaded] = React.useState(() => createValueStore(false));
+
+  // The editor root's box, for chrome that sizes to the editor instead of the window.
+  const [rootRect] = React.useState(createEditorRootRectStore);
+  const rootElRef = useRef<HTMLDivElement>(null);
+  React.useLayoutEffect(() => {
+    if (!catalogsReady || !rootElRef.current) return;
+    return rootRect.observe(rootElRef.current);
+  }, [catalogsReady, rootRect]);
+
   // Hold render until built-in catalogs (presets + modifiers) are loaded — otherwise
   // the toolbox flashes empty and AI-driven inserts may resolve to fallback presets.
   if (!catalogsReady) {
-    return <EditorLoader />;
+    return loading !== undefined ? <>{loading}</> : <EditorLoader />;
   }
 
   return (
     <div
+      ref={rootElRef}
       className="pagehub-sdk-root"
       style={{
         width: "100%",
@@ -479,6 +280,8 @@ function PageHubEditorInner({
         overflow: "hidden",
       }}
     >
+      <EditorRootRectContext.Provider value={rootRect}>
+      <EditorDocumentLoadedContext.Provider value={documentLoaded}>
       <ChromeErrorBoundary region="editor">
       {/* If an ancestor EcosystemProvider already exists (e.g. the
            PageHub app's _app.tsx), atoms are shared via the same ecosystem.
@@ -544,41 +347,17 @@ function PageHubEditorInner({
               <DragPreviewLayer />
               <BorderResizeController />
               <RotateHandleController />
-              <div
-                className="bg-base-100 text-base-content relative flex h-full min-h-0 w-full flex-col overflow-hidden"
-                data-base={true}
-              >
-                {!readOnly && <EditorSaveBanner />}
-                <div className="relative flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
-                  {/* Settings sidebar */}
-                  {showSidebar && !readOnly && <Toolbar />}
-
-                  {/* Dialog overlays — color pickers, font selector, icons, patterns */}
-                  {!readOnly && (
-                    <>
-                      <ColorPickerDialog />
-                      <ColorPickerSidebarDialog />
-                      <FontFamilyDialog />
-                      <PatternDialog />
-                      <GlobalSectionPickerDialog />
-                    </>
-                  )}
-
-                  {/* Viewport + docked AI panel column */}
-                  <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                    <Viewport>
-                      <EditorInner onQueryReady={onQueryReady} />
-                    </Viewport>
-                    {!readOnly && config.features?.aiGeneration && config.aiPanel}
-                  </div>
-                </div>
-              </div>
+              {layout === "default" && <DefaultEditorLayout />}
+              {/* Document load/save, editor-wide effects and singleton dialogs, in every layout. */}
+              <EditorServices onQueryReady={onQueryReady} />
               {children}
             </EditorSelectionDomProvider>
           </Editor>
         </CustomComponentsContext.Provider>
       </EcosystemProvider>
       </ChromeErrorBoundary>
+      </EditorDocumentLoadedContext.Provider>
+      </EditorRootRectContext.Provider>
     </div>
   );
 }

@@ -21,6 +21,7 @@ import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./inspector/registry
 import { InspectorTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./InspectorTab";
 import { useRegistries } from "../../registry";
 import { setSidebarBackref } from "../../registry/sidebarBackref";
+import { closestPanelFrame } from "../shell/EditorPanelFrame";
 
 export const ToolbarWrapper = ({
   children = null,
@@ -115,8 +116,9 @@ export const ToolbarWrapper = ({
   // by the SDK-level `mountMouseOverTracker`; we also publish a
   // `focusInSidebar` boolean from a focusin/focusout listener for the
   // keyboard-only path.
+  const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const toolbar = document.getElementById("toolbar");
+    const toolbar = closestPanelFrame(rootRef.current);
     if (!toolbar) return;
     const handleMove = (e: MouseEvent) => {
       mousePosRef.current = { x: e.clientX, y: e.clientY };
@@ -129,7 +131,7 @@ export const ToolbarWrapper = ({
 
   const { context } = useRegistries();
   useEffect(() => {
-    const toolbar = document.getElementById("toolbar");
+    const toolbar = closestPanelFrame(rootRef.current);
     if (!toolbar) return;
     const handleFocusIn = () => context.set("focusInSidebar", true);
     const handleFocusOut = (e: FocusEvent) => {
@@ -165,7 +167,7 @@ export const ToolbarWrapper = ({
   }, [searchOpen, closeSearch]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div ref={rootRef} className="flex h-full flex-col">
       {/* Hide settings tabs for fully linked components */}
       {!isLinked && (
         <>

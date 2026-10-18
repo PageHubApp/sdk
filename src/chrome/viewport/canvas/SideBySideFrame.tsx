@@ -15,6 +15,7 @@
  * Performance: serialization is debounced (60ms) — well under the eye's
  * threshold for "live" feel and prevents stutter on rapid drag.
  */
+import { canvasScopeProps } from "../../../utils/canvasScope";
 import { Editor, Frame, useEditor } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
@@ -124,6 +125,7 @@ export function SideBySideFrame({
       </div>
       <div
         ref={containerRef}
+        {...canvasScopeProps}
         className="scrollbar flex-1 overflow-auto"
         style={{
           // Each secondary frame is its own container — Phase 3's @container

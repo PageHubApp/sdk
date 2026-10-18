@@ -8,6 +8,7 @@
  * element in CustomEventHandlers so only our layer is visible.
  */
 
+import { CANVAS_SCOPE_ATTR } from "../../utils/canvasScope";
 import { useEffect } from "react";
 import { OVERLAY_Z_DRAG } from "../popovers/overlayZIndex";
 
@@ -75,7 +76,13 @@ export function DragPreviewLayer() {
       clone.style.transition = "transform 0.18s ease, opacity 0.15s ease";
       clone.classList.add("pagehub-drag-clone");
 
-      sdkRoot.appendChild(clone);
+      // The wrapper is a canvas scope box, so page CSS scoped to the canvas
+      // (`scopeCss`) still styles the clone. `contents` keeps it out of layout.
+      const scopeBox = document.createElement("div");
+      scopeBox.setAttribute(CANVAS_SCOPE_ATTR, "");
+      scopeBox.style.display = "contents";
+      scopeBox.appendChild(clone);
+      sdkRoot.appendChild(scopeBox);
 
       let rafId = 0;
       let lastX = e.clientX;
@@ -97,7 +104,7 @@ export function DragPreviewLayer() {
       const finish = () => {
         if (rafId) cancelAnimationFrame(rafId);
         rafId = 0;
-        clone.remove();
+        scopeBox.remove();
         document.removeEventListener("dragover", onDragOver, true);
         document.removeEventListener("dragend", finish, true);
         document.removeEventListener("drop", finish, true);

@@ -21,7 +21,7 @@ export function isFormFieldOrRichTextTarget(target: EventTarget | null): boolean
 /** Settings / chrome: never hijack Cmd+C / Cmd+V for Craft tree clipboard. */
 export function isEditorChromePanelTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
-  if (target.closest("#toolbar")) return true;
+  if (target.closest("#toolbar, [data-ph-panel]")) return true;
   if (target.closest("#editor-node-context-menu")) return true;
   if (target.closest('[role="dialog"]')) return true;
   if (target.closest("[data-pagehub-canvas-chrome]")) return true;

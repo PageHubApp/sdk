@@ -26,6 +26,7 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   canvasWidth: null,
   topBar: true,
   commandPalette: true,
+  panelUrlPrefix: "",
   directSave: false,
   saveButton: true,
   settingsPanelSwitcher: true,

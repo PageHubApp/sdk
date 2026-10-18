@@ -18,7 +18,13 @@ import { ActionRow } from "./primitives/ActionRow";
  * consumed via `<SlotRenderer id="empty-state/ai-card">` — host renderers
  * contributed through the adapter shim still work unchanged.
  */
-export const EditorEmptyState = () => {
+export const EditorEmptyState = ({
+  closable = true,
+  align = "center",
+}: {
+  closable?: boolean;
+  align?: "center" | "start";
+}) => {
   const [components] = useAtomState(ComponentsAtom);
   const [viewMode] = useAtomState(ViewModeAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
@@ -38,7 +44,9 @@ export const EditorEmptyState = () => {
 
   return (
     <div className="scrollbar text-neutral-content z-20 flex min-h-0 w-full flex-1 flex-col overflow-auto bg-transparent p-4 pr-2 pb-2 text-center">
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8">
+      <div
+        className={`flex min-h-0 flex-1 flex-col items-center gap-8 ${align === "start" ? "justify-start pt-2" : "justify-center"}`}
+      >
         {!isCanvasMode && (
           <div className="flex max-w-md flex-wrap items-center justify-center gap-1 text-sm">
             <div className="w-full space-y-6">
@@ -102,13 +110,17 @@ export const EditorEmptyState = () => {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => void commands.execute("ph.editor.closeSidebar", undefined, { trigger: "menu" })}
-        className="text-neutral-content/50 hover:text-neutral-content/80 shrink-0 border-0 bg-transparent py-2 text-xs transition-colors hover:underline"
-      >
-        close sidebar
-      </button>
+      {closable && (
+        <button
+          type="button"
+          onClick={() =>
+            void commands.execute("ph.editor.closeSidebar", undefined, { trigger: "menu" })
+          }
+          className="text-neutral-content/50 hover:text-neutral-content/80 shrink-0 border-0 bg-transparent py-2 text-xs transition-colors hover:underline"
+        >
+          close sidebar
+        </button>
+      )}
     </div>
   );
 };

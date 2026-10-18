@@ -23,6 +23,7 @@ import { generateDesignSystemCSSVariables } from "../../utils/design/designSyste
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { sanitizeCraftNodeReferences } from "../../utils/sanitizeNodeMap";
 import { UntrustedRenderProvider } from "../../utils/runtimeMode";
+import { canvasScopeProps } from "../../utils/canvasScope";
 
 type Tab = "review" | "live";
 
@@ -416,6 +417,7 @@ export function PreviewPanel({
               <PreviewErrorBoundary>
                 <div
                   id="ph-preview-frame"
+                  {...canvasScopeProps}
                   ref={scaledFrameRef}
                   style={{
                     transform: `scale(${zoom})`,

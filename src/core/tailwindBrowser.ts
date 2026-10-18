@@ -17,6 +17,7 @@
  */
 
 import { rewriteMediaToContainer } from "../utils/breakpointRewrite";
+import { scopeCss } from "../utils/canvasScope";
 import { THEME_INLINE_CSS } from "./themeInline.generated";
 
 const SCRIPT_ID = "pagehub-tw-browser";
@@ -46,6 +47,42 @@ function stripLayers(css: string): string {
 
 let injected = false;
 let layerObserver: MutationObserver | null = null;
+/** `@scope` selector for the runtime's output, or null for global output (`/build`). */
+let outputScope: string | null = null;
+
+export interface TailwindBrowserOptions {
+  /**
+   * Limit the generated CSS to elements inside this selector (`@scope`), for a
+   * host app whose own chrome shares the document (the dashboard passes
+   * `CANVAS_SCOPE_SELECTOR`). Media queries then always become canvas
+   * container queries. Leave unset where the editor is the whole page.
+   */
+  scope?: string;
+}
+
+/** Strip layers, rewrite breakpoints and scope one runtime output sheet. */
+function processRuntimeCss(text: string): string {
+  if (!(text.includes("@layer") && text.includes("--tw-"))) return text;
+  let next = stripLayers(text);
+  // Rewrite media queries to the canvas container: always when scoped (the
+  // output only reaches the canvas), else only while the editor is on the
+  // page (#viewport carries the container name).
+  if (next.includes("@media") && (outputScope || document.getElementById("viewport"))) {
+    next = rewriteMediaToContainer(next);
+  }
+  return outputScope ? scopeCss(next, outputScope) : next;
+}
+
+function processRuntimeOutput(): void {
+  // The runtime's output is the <style> without an id or type that holds its
+  // utilities; it rewrites its textContent on every compile.
+  const styles = document.head.querySelectorAll("style:not([id]):not([type])");
+  for (const style of styles) {
+    const text = style.textContent || "";
+    const next = processRuntimeCss(text);
+    if (next !== text) style.textContent = next;
+  }
+}
 
 /**
  * Inject the Tailwind v4 browser runtime into the page.
@@ -54,9 +91,16 @@ let layerObserver: MutationObserver | null = null;
  * Should be called early (before React renders) so the MutationObserver
  * is ready to pick up classes as components mount.
  */
-export function injectTailwindBrowser(): void {
+export function injectTailwindBrowser(options: TailwindBrowserOptions = {}): void {
   if (typeof window === "undefined") return;
-  if (injected) return;
+  const scope = options.scope ?? null;
+  const scopeChanged = scope !== outputScope;
+  outputScope = scope;
+  if (injected) {
+    // Re-process what the runtime already emitted under the new scope.
+    if (scopeChanged) processRuntimeOutput();
+    return;
+  }
   if (document.getElementById(SCRIPT_ID)) {
     injected = true;
     return;
@@ -96,28 +140,7 @@ export function injectTailwindBrowser(): void {
   //    dynamic class added during editing (e.g. user types a new utility) lands
   //    in the same container-query namespace as SSR-baked CSS — required for
   //    side-by-side mirror frames to behave correctly.
-  layerObserver = new MutationObserver(() => {
-    // Find the runtime's output style — it's the last <style> without an id
-    // that contains @layer (the runtime doesn't set an id on its output tag)
-    const styles = document.head.querySelectorAll("style:not([id]):not([type])");
-    for (const style of styles) {
-      const text = style.textContent || "";
-      if (text.includes("@layer") && text.includes("--tw-")) {
-        let next = stripLayers(text);
-        // Only rewrite when in editor (#viewport carries the container-name).
-        if (
-          typeof document !== "undefined" &&
-          document.getElementById("viewport") &&
-          next.includes("@media")
-        ) {
-          next = rewriteMediaToContainer(next);
-        }
-        if (next !== text) {
-          style.textContent = next;
-        }
-      }
-    }
-  });
+  layerObserver = new MutationObserver(processRuntimeOutput);
 
   layerObserver.observe(document.head, {
     childList: true,
@@ -138,6 +161,7 @@ export function removeTailwindBrowser(): void {
     layerObserver.disconnect();
     layerObserver = null;
   }
+  outputScope = null;
 
   const script = document.getElementById(SCRIPT_ID);
   if (script) script.remove();

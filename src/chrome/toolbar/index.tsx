@@ -1,4 +1,4 @@
-import { NodeProvider, useEditor } from "@craftjs/core";
+import { useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useAtomState, useAtomValue } from "@zedux/react";
@@ -7,11 +7,11 @@ import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolba
 import { PreviewAtom } from "../viewport/state/atoms";
 import { isFlyoutBlockingToolColumn, usePanelUrl } from "../../utils/usePanelUrl";
 import { ViewportTopBar } from "../viewport/ViewportTopBar/ViewportTopBar";
-import { Inspector } from "./inspector/InspectorRegistry";
-import { EditorEmptyState } from "./EditorEmptyState";
+import { EditorInspector } from "./EditorInspector";
 import { SidebarLayersPanel } from "./SidebarLayersPanel";
 import { SidebarSwipeHint } from "./SidebarSwipeHint";
 import { markManualSidebarClose } from "../hooks/useAutoOpenSidebar";
+import { panelFrameProps } from "../shell/EditorPanelFrame";
 
 export * from "./primitives/ToolbarDashedButton";
 export * from "./primitives/ToolbarSegmentedControl";
@@ -43,21 +43,7 @@ export const Toolbar = () => {
   const { panel } = usePanelUrl();
   const flyoutBlockingToolColumn = isFlyoutBlockingToolColumn(panel);
 
-  const { selectedNodeId, actions: editorActions } = useEditor((state, query) => {
-    const id = query.getEvent("selected").first() || null;
-    if (id && !state.nodes[id]?.data) return { selectedNodeId: null };
-    return { selectedNodeId: id };
-  });
-
-  // Mount Inspector ONCE. NodeProvider swaps the context id without
-  // remounting children — useNode() inside picks up the new id reactively.
-  const tool = selectedNodeId ? (
-    <NodeProvider id={selectedNodeId}>
-      <Inspector />
-    </NodeProvider>
-  ) : (
-    <EditorEmptyState />
-  );
+  const { actions: editorActions } = useEditor();
 
   // Right sidebar: push to end of the flex row via CSS order (docked only)
   const orderClass = !isOverlayLayout && !sideBarLeft ? "order-last" : "";
@@ -205,6 +191,7 @@ export const Toolbar = () => {
       aria-label="Component settings"
       key="sideMenu"
       id="toolbar"
+      {...panelFrameProps}
       className={twMerge(
         "text-sidebar-foreground border-sidebar-border flex flex-col overflow-hidden border-x shadow-lg transition-[width,opacity] duration-200",
         layoutClass,
@@ -224,7 +211,7 @@ export const Toolbar = () => {
             flyoutBlockingToolColumn ? "pointer-events-none" : ""
           }`}
         >
-          {tool}
+          <EditorInspector />
         </div>
         <SidebarLayersPanel />
       </div>

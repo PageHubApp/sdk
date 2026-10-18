@@ -32,6 +32,7 @@ import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } fro
 import { SubgroupItem } from "./SubgroupComponents";
 import { extractFirstCssHex } from "@/utils/design/color";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
+import { canvasScopeProps } from "@/utils/canvasScope";
 
 interface UnifiedDropdownProps {
   options: {
@@ -201,7 +202,7 @@ export function UnifiedDropdown({
               />
             ) : null}
             <div className="flex flex-1 items-center justify-center">
-              <div className={`bg-base-100 size-7 rounded ${option}`} />
+              <div {...canvasScopeProps} className={`bg-base-100 size-7 rounded ${option}`} />
             </div>
           </div>
         );

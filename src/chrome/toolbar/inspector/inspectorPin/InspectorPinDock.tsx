@@ -8,6 +8,12 @@ import { phStorage } from "../../../../utils/phStorage";
 import { getSectionDef } from "../registry/propertyRegistry";
 import type { SectionId } from "../registry/propertyDefs";
 import { useInspectorPin } from "./InspectorPinContext";
+import { useDragGesture } from "../../../hooks/useDragGesture";
+import {
+  PANEL_VARS,
+  frameShareHeight,
+  syncHeightToFrameVar,
+} from "../../../shell/EditorPanelFrame";
 
 const MIN_HEIGHT = 120;
 const DEFAULT_HEIGHT = 250;
@@ -54,54 +60,27 @@ export function InspectorPinDock() {
     });
   }, [setIsOpen]);
 
-  useLayoutEffect(() => {
-    const toolbar = document.getElementById("toolbar");
-    const el = panelRef.current;
-    if (!toolbar || !el) return;
+  useLayoutEffect(
+    () => syncHeightToFrameVar(panelRef.current, PANEL_VARS.inspectorPinHeight),
+    [isOpen, pinnedIds.length > 0]
+  );
 
-    const sync = () => {
-      const node = panelRef.current;
-      const tb = document.getElementById("toolbar");
-      if (!tb) return;
-      if (!node) {
-        tb.style.removeProperty("--sidebar-inspector-pin-height");
-        return;
-      }
-      const h = Math.ceil(node.getBoundingClientRect().height);
-      tb.style.setProperty("--sidebar-inspector-pin-height", `${h}px`);
-    };
-
-    sync();
-    const ro = new ResizeObserver(sync);
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-      toolbar.style.removeProperty("--sidebar-inspector-pin-height");
-    };
-  }, [isOpen]);
-
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
-    const startY = e.clientY;
-    const startH = heightRef.current;
-
-    const onMove = (ev: PointerEvent) => {
-      const toolbar = document.getElementById("toolbar");
-      const maxH = toolbar ? Math.floor(toolbar.getBoundingClientRect().height * MAX_RATIO) : 600;
-      const next = Math.max(MIN_HEIGHT, Math.min(maxH, startH + (startY - ev.clientY)));
+  const startHRef = useRef(0);
+  const { onPointerDown } = useDragGesture({
+    onStart: e => {
+      e.preventDefault();
+      startHRef.current = heightRef.current;
+    },
+    onMove: (_e, m) => {
+      const maxH = frameShareHeight(panelRef.current, MAX_RATIO);
+      const next = Math.max(MIN_HEIGHT, Math.min(maxH, startHRef.current - m.dy));
       setHeight(next);
       heightRef.current = next;
-    };
-
-    const onUp = () => {
+    },
+    onEnd: () => {
       phStorage.set("sidebar-inspector-pin-height", String(heightRef.current));
-      document.removeEventListener("pointermove", onMove);
-      document.removeEventListener("pointerup", onUp);
-    };
-
-    document.addEventListener("pointermove", onMove);
-    document.addEventListener("pointerup", onUp);
-  }, []);
+    },
+  });
 
   if (pinnedIds.length === 0) return null;
 

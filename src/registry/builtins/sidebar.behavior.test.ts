@@ -58,69 +58,84 @@ test("ph.sidebar.search: not stubbed", () => {
 
 // ─── mouseOverTracker ───────────────────────────────────────────────────
 
-function fakeElement(id: string) {
-  const listeners: Record<string, EventListener[]> = {};
-  const el = {
-    id,
-    addEventListener(type: string, fn: EventListener) {
-      (listeners[type] ||= []).push(fn);
+/** An element whose `closest` / `matches` answer for the given selectors. */
+function fakeElement(selectors: string[], parent: FakeEl | null = null): FakeEl {
+  const el: FakeEl = {
+    matches: (sel: string) => sel.split(",").some(s => selectors.includes(s.trim())),
+    closest: (sel: string) => {
+      for (let cur: FakeEl | null = el; cur; cur = cur.parent) if (cur.matches(sel)) return cur;
+      return null;
     },
-    removeEventListener(type: string, fn: EventListener) {
-      const arr = listeners[type];
-      if (!arr) return;
-      const idx = arr.indexOf(fn);
-      if (idx >= 0) arr.splice(idx, 1);
-    },
-    fire(type: string) {
-      (listeners[type] || []).forEach(f => f({} as Event));
-    },
+    parent,
   };
   return el;
 }
+type FakeEl = {
+  matches: (sel: string) => boolean;
+  closest: (sel: string) => FakeEl | null;
+  parent: FakeEl | null;
+};
 
-test("mountMouseOverTracker: publishes mouseOver as regions enter/leave", () => {
-  const viewport = fakeElement("viewport");
-  const toolbar = fakeElement("toolbar");
-  const doc = {
-    querySelector(sel: string) {
-      if (sel === "#viewport") return viewport;
-      if (sel === "#toolbar") return toolbar;
-      return null;
+function fakeDoc() {
+  const listeners: Record<string, Array<(e: unknown) => void>> = {};
+  return {
+    addEventListener(type: string, fn: (e: unknown) => void) {
+      (listeners[type] ||= []).push(fn);
     },
-  } as unknown as Document;
+    removeEventListener(type: string, fn: (e: unknown) => void) {
+      listeners[type] = (listeners[type] || []).filter(f => f !== fn);
+    },
+    fire(type: string, e: unknown) {
+      (listeners[type] || []).forEach(f => f(e));
+    },
+  };
+}
+
+test("mountMouseOverTracker: publishes the innermost region under the cursor", () => {
+  const doc = fakeDoc();
+  const viewport = fakeElement(["#viewport"]);
+  const inCanvas = fakeElement([], viewport);
+  const toolbar = fakeElement(["#toolbar"]);
+  const panelFrame = fakeElement(["[data-ph-panel]"]);
+  const inPanel = fakeElement([], panelFrame);
+  const modalInPanel = fakeElement(['[data-ph-region="modal"]'], panelFrame);
+  const outside = fakeElement([]);
 
   const context = createContextRegistry();
-  const unmount = mountMouseOverTracker({ context, doc });
-
+  const unmount = mountMouseOverTracker({ context, doc: doc as unknown as Document });
   assert.equal(context.getSnapshot().mouseOver, null, "initial null");
 
-  viewport.fire("mouseenter");
+  doc.fire("mouseover", { target: inCanvas });
   assert.equal(context.getSnapshot().mouseOver, "canvas");
 
-  toolbar.fire("mouseenter");
-  assert.equal(context.getSnapshot().mouseOver, "sidebar", "last entered wins");
+  doc.fire("mouseover", { target: toolbar });
+  assert.equal(context.getSnapshot().mouseOver, "sidebar");
 
-  toolbar.fire("mouseleave");
-  assert.equal(context.getSnapshot().mouseOver, "canvas", "falls back to next on stack");
+  doc.fire("mouseover", { target: inPanel });
+  assert.equal(context.getSnapshot().mouseOver, "sidebar", "a host panel frame is the sidebar");
 
-  viewport.fire("mouseleave");
+  doc.fire("mouseover", { target: modalInPanel });
+  assert.equal(context.getSnapshot().mouseOver, "modal", "innermost wins");
+
+  doc.fire("mouseover", { target: outside });
   assert.equal(context.getSnapshot().mouseOver, null);
+
+  doc.fire("mouseover", { target: inCanvas });
+  doc.fire("mouseout", { target: inCanvas, relatedTarget: null });
+  assert.equal(context.getSnapshot().mouseOver, null, "leaving the window clears");
 
   unmount();
 });
 
 test("mountMouseOverTracker: unmount clears subscriptions + resets context", () => {
-  const viewport = fakeElement("viewport");
-  const doc = {
-    querySelector: (sel: string) => (sel === "#viewport" ? viewport : null),
-  } as unknown as Document;
+  const doc = fakeDoc();
+  const viewport = fakeElement(["#viewport"]);
   const context = createContextRegistry();
-  const unmount = mountMouseOverTracker({ context, doc });
-  viewport.fire("mouseenter");
+  const unmount = mountMouseOverTracker({ context, doc: doc as unknown as Document });
+  doc.fire("mouseover", { target: viewport });
   assert.equal(context.getSnapshot().mouseOver, "canvas");
   unmount();
   assert.equal(context.getSnapshot().mouseOver, null, "unmount clears");
-  // After unmount, fire shouldn't update context.
-  viewport.fire("mouseenter");
+  doc.fire("mouseover", { target: viewport });
   assert.equal(context.getSnapshot().mouseOver, null);
 });

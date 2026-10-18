@@ -67,6 +67,13 @@ export interface PageHubFeatures {
    * mounts its palette nor claims the chord, so the host's handler gets it.
    */
   commandPalette?: boolean;
+  /**
+   * Prefix for the editor's drawer params in the page URL (`panel`, `cat`,
+   * `sub`, `sty`, `q`). Default: "" (`?panel=blocks`). A host whose own page
+   * uses query params sets one, e.g. "ed_" for `?ed_panel=blocks`, so the two
+   * never clash.
+   */
+  panelUrlPrefix?: string;
   /** Save directly without showing the domain/publish picker. Default: false */
   directSave?: boolean;
   /** Show the save/publish button in the top toolbar. Default: true */

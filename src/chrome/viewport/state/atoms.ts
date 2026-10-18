@@ -136,6 +136,9 @@ export const EnabledAtom = atom("enabled", true);
 
 export const InitialLoadCompleteAtom = atom("initialLoadComplete", false);
 
+/** Page-switch progress for the canvas `LoadingBar`: written by `EditorServices`, read by `Viewport`. */
+export const PageLoadAtom = atom<"idle" | "loading" | "done">("pageLoad", "idle");
+
 export const ComponentCanvasZoomAtom = atom(
   "componentCanvasZoom",
   readSavedZoom("editor-component-canvas-zoom", 0.5)

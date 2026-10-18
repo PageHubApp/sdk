@@ -11,30 +11,19 @@
  * their existing bodies — they're routed content, not menu rows. C2b only
  * touches `panel === "menu"`.
  *
- * Dynamic titles ("Hide Layers Panel" vs "Dock Layers Panel", etc.) flow
- * from atom state into the command context via host-set keys
- * (`sidebarLayersOpen`, `showGridLines`, `editorDarkMode`, etc.) so menu
- * `titleOverride` resolvers can read them without prop-drilling.
+ * Dynamic titles ("Hide Layers Panel" vs "Dock Layers Panel", etc.) read
+ * host-set command-context keys (`sidebarLayersOpen`, `showGridLines`,
+ * `editorDarkMode`, …) that `useEditorWideEffects` keeps in sync.
  */
 import { useEditor } from "@craftjs/core";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { useEffect, useRef } from "react";
-import { useAtomState } from "@zedux/react";
 import {
   isFlyoutBlockingToolColumn,
   takeToolboxHistorySelectionSyncForRebaseline,
   usePanelUrl,
 } from "../../../utils/usePanelUrl";
-import {
-  DarkModeAtom,
-  ShowGridLinesAtom,
-  ShowHiddenAtom,
-  SideBarAtom,
-  SidebarLayersPanelAtom,
-} from "../../../utils/atoms";
-import { ShowBreakpointMarkersAtom, ShowDeviceGuidesAtom } from "../state/atoms";
 import { useSDK } from "../../../core/context";
-import { useRegistries } from "../../../registry/provider";
 import { useMenuItems } from "../../../registry/hooks";
 import { SlotRenderer } from "../../../registry/SlotRenderer";
 import type { ResolvedMenuItem } from "../../../registry/types";
@@ -81,44 +70,7 @@ export const EditorNavigation = ({ settings: _settings, isTenant }: EditorNaviga
   }));
   const { commands, config } = useSDK();
   const designSystemEnabled = config.features?.designSystem !== false;
-  // Subscribe to the atoms that drive dynamic titles so this component
-  // re-renders and re-runs the title resolvers. We also mirror them into
-  // the command context (below) so the `titleOverride` callbacks see them.
-  const [showGridLines] = useAtomState(ShowGridLinesAtom);
-  const [showBreakpointMarkers] = useAtomState(ShowBreakpointMarkersAtom);
-  const [showDeviceGuides] = useAtomState(ShowDeviceGuidesAtom);
-  const [showHidden] = useAtomState(ShowHiddenAtom);
-  const [sidebarLayersOpen] = useAtomState(SidebarLayersPanelAtom);
-  const [sideBarLeft] = useAtomState(SideBarAtom);
-  const [editorDarkMode] = useAtomState(DarkModeAtom);
-  const { context: commandContext } = useRegistries();
-
   const { isOpen, panel, close } = usePanelUrl();
-
-  // Feed the dynamic-title inputs into the command context so each
-  // menu item's `titleOverride` (and `ph.ui.toggleDarkMode`'s built-in
-  // dynamic title) can read them via ctx[key]. Host-set keys are flat on
-  // CommandContext; we already mirror SDK-derived fields elsewhere.
-  useEffect(() => {
-    commandContext.setCommandContext({
-      showGridLines,
-      showBreakpointMarkers,
-      showDeviceGuides,
-      showHidden,
-      sidebarLayersOpen,
-      sideBarLeft,
-      editorDarkMode,
-    } as never);
-  }, [
-    commandContext,
-    showGridLines,
-    showBreakpointMarkers,
-    showDeviceGuides,
-    showHidden,
-    sidebarLayersOpen,
-    sideBarLeft,
-    editorDarkMode,
-  ]);
 
   // Resolve the four navmenu locations. The registry handles `when`
   // gating (e.g. `ph.site.selectBackground` only renders for tenants).
@@ -170,7 +122,8 @@ export const EditorNavigation = ({ settings: _settings, isTenant }: EditorNaviga
     return () => document.removeEventListener("mousedown", handler);
   }, [isOpen, panel, close]);
 
-  if (!isOpen) return null;
+  // `layers` names a host panel tab, not a drawer.
+  if (!isOpen || panel === "layers") return null;
 
   // The Preferences label only renders if at least one preference item
   // is visible (gated by settingsPanelSwitcher / darkModeSwitcher feature

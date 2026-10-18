@@ -4,6 +4,7 @@ import { useAtomState } from "@zedux/react";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { phStorage } from "../../../utils/phStorage";
 import { useSDKSafe } from "../../../core/context";
+import { useEditorRootRect } from "../../shell/editorRootRect";
 
 export const zoomPresets = [
   { label: "25%", value: 0.25 },
@@ -96,6 +97,10 @@ export function CanvasZoom({
   const currentZoomLabel =
     zoomPresets.find(p => p.value === zoom)?.label || `${Math.round(zoom * 100)}%`;
 
+  // Fit against the editor's own box, not the browser window.
+  const rootWidth = useEditorRootRect(r => r.width);
+  const rootHeight = useEditorRootRect(r => r.height);
+
   useEffect(() => {
     if (!fitToWindow) return;
 
@@ -103,14 +108,14 @@ export function CanvasZoom({
       const max = fitMode.max ?? 2;
       let calculated: number;
       if (fitMode.kind === "both") {
-        const availW = window.innerWidth - (fitMode.chromeOffsetW ?? 80);
-        const availH = window.innerHeight - (fitMode.chromeOffsetH ?? 350);
+        const availW = rootWidth - (fitMode.chromeOffsetW ?? 80);
+        const availH = rootHeight - (fitMode.chromeOffsetH ?? 350);
         calculated = Math.min(availW / fitMode.targetW, availH / fitMode.targetH);
       } else if (fitMode.kind === "height") {
-        const available = window.innerHeight - (fitMode.chromeOffset ?? 350);
+        const available = rootHeight - (fitMode.chromeOffset ?? 350);
         calculated = available / fitMode.target;
       } else {
-        const available = window.innerWidth - (fitMode.chromeOffset ?? 80);
+        const available = rootWidth - (fitMode.chromeOffset ?? 80);
         calculated = available / fitMode.target;
       }
       const next = Math.max(0.25, Math.min(max, calculated));
@@ -119,9 +124,7 @@ export function CanvasZoom({
     };
 
     calculateFitZoom();
-    window.addEventListener("resize", calculateFitZoom);
-    return () => window.removeEventListener("resize", calculateFitZoom);
-  }, [fitToWindow, setZoom, fitMode]);
+  }, [fitToWindow, setZoom, fitMode, rootWidth, rootHeight]);
 
   const handleZoomChange = (newZoom: number, isFitToWindow = false) => {
     setZoom(newZoom);
