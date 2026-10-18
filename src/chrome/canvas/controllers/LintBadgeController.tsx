@@ -6,6 +6,7 @@ import { TbAlertTriangle, TbCircleX, TbWand } from "react-icons/tb";
 import { lintNode, maxSeverity, type LintIssue } from "../../../utils/lint/responsiveLint";
 import { OVERLAY_Z_LINT_BADGE, OVERLAY_Z_TOOLTIP } from "../../popovers/overlayZIndex";
 import { getPortalTarget } from "../../popovers/getPortalTarget";
+import { useEditorActive } from "../../../core/context";
 
 /**
  * Persistent responsive-lint badge — always visible (no hover/select gate)
@@ -79,9 +80,11 @@ export const LintBadgeController = () => {
   );
   const severity = maxSeverity(issues);
   const badgeRef = useRef<HTMLSpanElement>(null);
+  // The position loop runs every frame; it stops while the host keeps the editor hidden.
+  const editorActive = useEditorActive();
 
   useEffect(() => {
-    if (!severity || !dom || !badgeRef.current) return;
+    if (!severity || !dom || !badgeRef.current || !editorActive) return;
 
     let animFrameId: number;
 
@@ -98,7 +101,7 @@ export const LintBadgeController = () => {
     return () => {
       cancelAnimationFrame(animFrameId);
     };
-  }, [severity, dom]);
+  }, [severity, dom, editorActive]);
 
   if (!severity || typeof document === "undefined") return null;
 

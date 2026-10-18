@@ -27,6 +27,7 @@ import { getNodeGeometry } from "../state/nodeGeometry";
 import { isRotateActive, setRotateActive } from "../state/rotateActiveState";
 import { OVERLAY_Z_CANVAS_CONTROLS } from "../../popovers/overlayZIndex";
 import { sdkLog } from "../../../utils/logger";
+import { useEditorActive } from "../../../core/context";
 
 const SKIP_DISPLAY_NAMES = new Set(["Container", "Background"]);
 const SKIP_TYPES = new Set(["page", "header", "footer"]);
@@ -83,6 +84,13 @@ function stripRotation(className: string | undefined): string {
     .trim();
 }
 
+/** Only events on the canvas count: the selected node keeps its geometry while
+ *  the editor is hidden, and a host page can sit right where its corner was. */
+function isCanvasTarget(e: MouseEvent): boolean {
+  const t = e.target as HTMLElement | null;
+  return !!t?.closest?.("#viewport");
+}
+
 function isInCornerZone(el: HTMLElement, x: number, y: number): boolean {
   // Bottom-left corner in element-local coords is (-w/2, +h/2). Convert cursor
   // to local first so the zone tracks the rotated corner.
@@ -110,6 +118,7 @@ export function RotateHandleController() {
   });
 
   const { actions } = useEditor();
+  const editorActive = useEditorActive();
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);
@@ -132,6 +141,7 @@ export function RotateHandleController() {
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
 
   const isRotatable =
+    editorActive &&
     !!selectedId &&
     !!dom &&
     !isLocked &&
@@ -145,7 +155,7 @@ export function RotateHandleController() {
     let inZone = false;
 
     const onMove = (e: MouseEvent) => {
-      const next = isInCornerZone(el, e.clientX, e.clientY);
+      const next = isCanvasTarget(e) && isInCornerZone(el, e.clientX, e.clientY);
       if (next === inZone) return;
       inZone = next;
       if (next) {
@@ -179,7 +189,7 @@ export function RotateHandleController() {
     const el = dom as HTMLElement;
 
     const onDown = (e: MouseEvent) => {
-      if (!isInCornerZone(el, e.clientX, e.clientY)) return;
+      if (!isCanvasTarget(e) || !isInCornerZone(el, e.clientX, e.clientY)) return;
       e.preventDefault();
       e.stopPropagation();
 

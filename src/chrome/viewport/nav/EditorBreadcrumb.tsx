@@ -12,16 +12,21 @@ import { NodeBreadcrumb } from "./NodeBreadcrumb";
 
 export function EditorBreadcrumb({
   showPageSelector = true,
+  compact = false,
 }: {
   /** Lead the path with the inline page switcher. Off when the host shows its own. */
   showPageSelector?: boolean;
+  /** A shorter, muted row with plain crumbs, for a host panel that already has a tab bar above it. */
+  compact?: boolean;
 }): React.JSX.Element {
   const viewMode = useAtomValue(ViewModeAtom);
   return viewMode === "canvas" ? (
-    <div className="border-base-300 flex h-10 min-h-10 shrink-0 items-center border-b px-3 py-0">
+    <div
+      className={`border-base-300 flex shrink-0 items-center border-b px-3 py-0 ${compact ? "h-8 min-h-8" : "h-10 min-h-10"}`}
+    >
       <ComponentSelector className="w-full" />
     </div>
   ) : (
-    <NodeBreadcrumb showPageSelector={showPageSelector} />
+    <NodeBreadcrumb showPageSelector={showPageSelector} compact={compact} />
   );
 }

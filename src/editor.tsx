@@ -39,7 +39,6 @@ import { RotateHandleController } from "./chrome/canvas/controllers/RotateHandle
 import { ChromeErrorBoundary } from "./chrome/shell/ChromeErrorBoundary";
 import { DragPreviewLayer } from "./chrome/shell/DragPreviewLayer";
 import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
-import { EditorActiveGate } from "./chrome/shell/EditorActiveGate";
 import { MediaLibraryMirror } from "./utils/media/useMirrorMediaLibraryToRoot";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
 import { DefaultEditorLayout } from "./chrome/shell/DefaultEditorLayout";
@@ -167,9 +166,13 @@ function PageHubEditorStandalone(props: PageHubEditorProps & { callbacks: PageHu
   );
 }
 
+// Stable defaults, so the memoised resolver and component defs hold across renders.
+const NO_RESOLVER = {};
+const NO_COMPONENTS: NonNullable<PageHubEditorProps["components"]> = [];
+
 function PageHubEditorInner({
-  resolver = {},
-  components = [],
+  resolver = NO_RESOLVER,
+  components = NO_COMPONENTS,
   onQueryReady,
   onNodesChange,
   layout = "default",
@@ -240,7 +243,11 @@ function PageHubEditorInner({
   // Always merge the SDK's built-in resolver so CraftJS can resolve deserialized
   // node types (Container, Button, etc.) even with no outer app resolver.
   // The outer app resolver takes precedence so host apps can override components.
-  const mergedResolver = { ...DEFAULT_CRAFT_RESOLVER, ...customResolver, ...resolver };
+  // Memoised: a new object every render would hand Craft new options each time.
+  const mergedResolver = React.useMemo(
+    () => ({ ...DEFAULT_CRAFT_RESOLVER, ...customResolver, ...resolver }),
+    [customResolver, resolver]
+  );
 
   const customComponentsValue = React.useMemo(() => ({ toolboxCategories }), [toolboxCategories]);
 
@@ -341,7 +348,6 @@ function PageHubEditorInner({
             }}
           >
             <EditorSelectionDomProvider>
-              <EditorActiveGate />
               <MediaLibraryMirror />
               <DropZoneIndicator />
               <DragPreviewLayer />

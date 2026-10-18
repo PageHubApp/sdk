@@ -5,6 +5,7 @@ import { useAtomState, useAtomValue } from "@zedux/react";
 import { SideBarAtom } from "../../../utils/atoms";
 import { useDraggableWindow } from "../../hooks/useDraggableWindow";
 import { useOverlay } from "../../../registry/hooks/useOverlay";
+import { getPortalTarget } from "../../popovers/getPortalTarget";
 
 export const Dialog = ({
   dialogName,
@@ -396,6 +397,6 @@ export const Dialog = ({
         </div>
       )}
     </>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    getPortalTarget()
   );
 };

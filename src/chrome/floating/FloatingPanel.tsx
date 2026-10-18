@@ -16,6 +16,7 @@ import { useFocusTrap } from "../../utils/hooks/useAccessibility";
 import { AutoHideScrollbar } from "../primitives/layout/AutoHideScrollbar";
 import { useOverlay } from "../../registry/hooks/useOverlay";
 import { sdkLog } from "../../utils/logger";
+import { getPortalTarget } from "../popovers/getPortalTarget";
 
 type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
@@ -545,6 +546,6 @@ export function FloatingPanel({
         </FloatingPanelDragContext.Provider>
       </div>
     </FloatingPanelContext.Provider>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    getPortalTarget()
   );
 }

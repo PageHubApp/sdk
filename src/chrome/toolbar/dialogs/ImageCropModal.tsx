@@ -5,6 +5,7 @@ import { CropControlsPanel } from "./ImageCrop/components/CropControlsPanel";
 import { useImageCrop } from "./ImageCrop/hooks/useImageCrop";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 import { OVERLAY_Z_CRITICAL_MODAL } from "../../popovers/overlayZIndex";
+import { getPortalTarget } from "../../popovers/getPortalTarget";
 
 interface ImageCropModalProps {
   isOpen: boolean;
@@ -58,6 +59,6 @@ export function ImageCropModal({ isOpen, onClose, media, onSave }: ImageCropModa
         </div>
       </div>
     </div>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    getPortalTarget()
   );
 }

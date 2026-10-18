@@ -8,6 +8,7 @@ import { useFloatingPanelZIndex } from "../../../floating/FloatingPanel";
 import { useAnchoredPopover } from "../../../popovers/useAnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 import { ValueType } from "./types";
+import { getPortalTarget } from "../../../popovers/getPortalTarget";
 
 interface TypeSelectorProps {
   types: { id: ValueType; label: string | React.ReactNode }[];
@@ -207,7 +208,7 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
                 </button>
               ))}
             </div>,
-            document.querySelector(".pagehub-sdk-root") || document.body
+            getPortalTarget()
           )}
       </>
     );

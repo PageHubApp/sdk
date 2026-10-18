@@ -13,6 +13,7 @@ import { CATEGORY_LABELS } from "./designVarConstants";
 import { useDesignVarOptions, type DesignVar } from "./useDesignVarOptions";
 import { ToolbarIconButton } from "../../../primitives/ToolbarIconButton";
 import { OVERLAY_Z_MODAL } from "@/chrome/popovers/overlayZIndex";
+import { getPortalTarget } from "../../../popovers/getPortalTarget";
 
 interface DesignVarSelectorProps {
   propKey: string;
@@ -250,6 +251,6 @@ function DesignVarDialog({
         </div>
       </div>
     </>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    getPortalTarget()
   );
 }

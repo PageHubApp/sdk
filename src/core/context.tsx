@@ -52,8 +52,6 @@ interface SDKContextValue {
   setFeatures: (features: Partial<PageHubFeatures>) => void;
   readOnly: boolean;
   setReadOnly: (readOnly: boolean) => void;
-  /** False while the host keeps the editor mounted but hidden (see `PageHubProviderProps.active`). */
-  active: boolean;
   /**
    * Authoritative save — returns a Promise that resolves with
    * `{ pageId, updatedAt }` or rejects with `SaveConflictError` /
@@ -99,6 +97,18 @@ export function useHasSDKProvider(): boolean {
   return useContext(SDKContext) !== null;
 }
 
+/**
+ * Its own context, not part of `useSDK()`: a host flips it every time it shows
+ * or hides the editor, and only the few readers below should re-render then,
+ * not every `useSDK()` consumer.
+ */
+const EditorActiveContext = createContext(true);
+
+/** False while the host keeps the editor mounted but hidden (see `PageHubProviderProps.active`). */
+export function useEditorActive(): boolean {
+  return useContext(EditorActiveContext);
+}
+
 export interface PageHubProviderProps {
   config: ResolvedConfig;
   emitter: EventEmitter;
@@ -115,13 +125,14 @@ export interface PageHubProviderProps {
    * instant) passes false while it is hidden. The editor then:
    * - claims no keyboard chords (the keybinding dispatcher sees
    *   `editorActive: false` in the command context and leaves every event alone),
-   * - turns Craft editing off, so canvas handlers, selection chrome and
-   *   body-portalled node overlays go away — the previous enabled state comes
-   *   back when it turns true again (`EditorActiveGate`),
-   * - stops the canvas zoom chords (⌘+ / ⌘− / ⌘0).
-   * The host is still responsible for hiding the editor's box and making it
-   * inert (`inert`, `visibility: hidden`); keep its size so measured layouts
-   * don't collapse.
+   * - stops the canvas zoom chords (⌘+ / ⌘− / ⌘0),
+   * - pauses the canvas chrome that runs on a timer (lint badges, the
+   *   selected container's padding overlay).
+   * Craft editing, the selection and the document stay as they are, so
+   * showing the editor again re-renders only `useEditorActive()` readers. The
+   * host is responsible for hiding the editor's box and making it inert
+   * (`inert`, `visibility: hidden`), which keeps pointer and focus out of the
+   * canvas; keep its size so measured layouts don't collapse.
    */
   active?: boolean;
   children?: React.ReactNode;
@@ -239,7 +250,6 @@ export function PageHubProvider({
       setFeatures,
       readOnly,
       setReadOnly,
-      active,
       save,
       subscribeSaveStatus,
       commands: registries.commands,
@@ -249,31 +259,23 @@ export function PageHubProvider({
       keybindings: registries.keybindings,
       commandContext: registries.context,
     }),
-    [
-      config,
-      emitter,
-      theme,
-      features,
-      readOnly,
-      active,
-      save,
-      subscribeSaveStatus,
-      registries,
-    ]
+    [config, emitter, theme, features, readOnly, save, subscribeSaveStatus, registries]
   );
 
   return (
     <SDKContext.Provider value={value}>
-      <RegistriesProvider registries={registries}>
-        <EditorStoreProvider>{children}</EditorStoreProvider>
-        <ModalHost />
-        <ReactTooltip
-          id={PAGEHUB_RTT_GLOBAL_ID}
-          variant="light"
-          classNameArrow="hidden"
-          className={REACT_TOOLTIP_SURFACE_CLASS}
-        />
-      </RegistriesProvider>
+      <EditorActiveContext.Provider value={active}>
+        <RegistriesProvider registries={registries}>
+          <EditorStoreProvider>{children}</EditorStoreProvider>
+          <ModalHost />
+          <ReactTooltip
+            id={PAGEHUB_RTT_GLOBAL_ID}
+            variant="light"
+            classNameArrow="hidden"
+            className={REACT_TOOLTIP_SURFACE_CLASS}
+          />
+        </RegistriesProvider>
+      </EditorActiveContext.Provider>
     </SDKContext.Provider>
   );
 }

@@ -1,5 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
+import { useEditorActive } from "../../../core/context";
 import { editorCanvasViewToClassPrefixKey } from "../../../utils/tailwind/className";
 import { EditModifiersAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/state/atoms";
@@ -16,8 +17,11 @@ export function ContainerPaddingOverlay() {
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);
+  // Its position timer keeps ticking while shown, so it steps aside while the
+  // host keeps the editor hidden (the selection itself stays).
+  const editorActive = useEditorActive();
 
-  if (!dom || !isSelected) return null;
+  if (!dom || !isSelected || !editorActive) return null;
 
   return (
     <PaddingOverlay

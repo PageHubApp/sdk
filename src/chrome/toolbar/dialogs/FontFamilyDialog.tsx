@@ -8,6 +8,7 @@ import { loadGoogleFont } from "@/utils/fonts/googleFonts";
 import { useGoogleFontList } from "@/utils/fonts/useGoogleFontList";
 import { ItemToggle } from "../primitives/ItemSelector";
 import { useOverlay } from "../../../registry/hooks/useOverlay";
+import { getPortalTarget } from "../../popovers/getPortalTarget";
 
 export { FontFamilyDialogAtom } from "./dialogAtoms";
 
@@ -287,6 +288,6 @@ export const FontFamilyDialog = () => {
         </div>
       </div>
     </>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    getPortalTarget()
   );
 };

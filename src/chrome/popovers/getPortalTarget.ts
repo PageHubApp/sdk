@@ -2,6 +2,8 @@
  * Resolve the portal target for overlays.
  * Prefers `.pagehub-sdk-root` (editor container) to ensure all portaled
  * overlays render within the same stacking context.
+ * Overlay primitives a host also renders outside the editor use
+ * `usePortalTarget` instead.
  */
 export function getPortalTarget(target?: HTMLElement | null): HTMLElement {
   if (target) return target;

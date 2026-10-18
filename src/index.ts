@@ -54,7 +54,7 @@ export { init };
 // ─── Exports ────────────────────────────────────────────────────────────────
 
 // Named exports for React usage
-export { PageHubProvider, useSDK, useSDKSafe } from "./core/context";
+export { PageHubProvider, useEditorActive, useSDK, useSDKSafe } from "./core/context";
 export { useAiEnabled } from "./utils/hooks/useAiEnabled";
 export { PageHubEditor } from "./editor";
 export { resolveConfig } from "./config";

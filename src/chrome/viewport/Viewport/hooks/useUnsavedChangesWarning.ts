@@ -1,7 +1,7 @@
 import Router from "next/router";
 import { useEffect, useRef } from "react";
 
-import { useSDK } from "../../../../core/context";
+import { useEditorActive, useSDK } from "../../../../core/context";
 import { useConfirm } from "../../../primitives/layout/useConfirm";
 
 /** Next.js treats a thrown routeChangeStart handler as a cancelled navigation. */
@@ -23,7 +23,8 @@ const CANCEL_NAVIGATION = "ph:navigation-cancelled-unsaved-changes";
  * Returns the dialog; the caller renders it.
  */
 export function useUnsavedChangesWarning(unsavedChanges: string | null) {
-  const { active, config } = useSDK();
+  const { config } = useSDK();
+  const active = useEditorActive();
   const keepsEditor = config.urlStrategy?.keepsEditor;
   const hasDirtyChanges = typeof unsavedChanges === "string" && unsavedChanges.length > 0;
   const { ask, dialog } = useConfirm();

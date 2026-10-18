@@ -1,5 +1,5 @@
 import { Element, useEditor } from "@craftjs/core";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TbLayoutGridAdd, TbSearch, TbX } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { ComponentsAtom } from "../../../utils/atoms";
@@ -136,7 +136,12 @@ export const SectionPickerDialog = ({
     return baseCategories;
   }, [customSections, baseCategories]);
 
+  // Built only while the dialog is open (each entry builds a Craft element
+  // tree). Closed, it keeps the last list, so the closing fade shows it, and
+  // re-renders of the editor around a closed dialog cost nothing.
+  const lastTemplates = useRef<any[]>([]);
   const templates = useMemo(() => {
+    if (!isOpen) return lastTemplates.current;
     const resolver = query.getOptions().resolver;
 
     if (isSearchMode && searchQuery.trim()) {
@@ -163,7 +168,18 @@ export const SectionPickerDialog = ({
     }
 
     return convertTemplates(selectedCategory, resolver, templateData);
-  }, [selectedCategory, isSearchMode, searchQuery, customSections, categories, templateData]);
+  }, [
+    isOpen,
+    selectedCategory,
+    isSearchMode,
+    searchQuery,
+    customSections,
+    categories,
+    templateData,
+  ]);
+  useEffect(() => {
+    lastTemplates.current = templates;
+  }, [templates]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);

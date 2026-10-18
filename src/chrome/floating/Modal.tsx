@@ -19,7 +19,7 @@ import { twMerge } from "tailwind-merge";
 import { useFocusTrap } from "../../utils/hooks/useAccessibility";
 import { useScrollLock } from "../../utils/hooks/useScrollLock";
 import { useOverlay } from "../../registry/hooks/useOverlay";
-import { getPortalTarget } from "../popovers/getPortalTarget";
+import { usePortalTarget } from "../popovers/usePortalTarget";
 import { OVERLAY_Z_MODAL } from "../popovers/overlayZIndex";
 import type { ModalSize, ModalVariant } from "../../registry/types";
 import { MODAL_EASING, useModalPresence } from "./useModalPresence";
@@ -113,6 +113,7 @@ export function Modal({
   const { mounted, shown, durationMs } = useModalPresence(isOpen);
   const focusTrapRef = useFocusTrap(isOpen);
   useScrollLock(isOpen);
+  const portalTarget = usePortalTarget();
 
   const onCloseRef = useRef(onClose);
   useEffect(() => {
@@ -225,6 +226,6 @@ export function Modal({
         </div>
       </div>
     </>,
-    getPortalTarget()
+    portalTarget
   );
 }

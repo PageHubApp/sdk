@@ -13,9 +13,10 @@ interface MarkdownTextProps {
   className?: string;
   onMediaClick?: (url: string) => void;
   /**
-   * When provided, every list item (ordered or unordered) renders as a button
-   * that calls this handler with the item's text, markdown removed. Used by chat consumers
-   * to turn "here are 4 things you could do" into one-tap actions.
+   * When provided, a short list item (ordered or unordered) that reads like a
+   * reply renders as a button that calls this handler with the item's text,
+   * markdown removed. Used by chat consumers to turn "here are 4 things you
+   * could do" into one-tap actions; findings and links stay plain bullets.
    */
   onListItemClick?: (text: string) => void;
 }
@@ -113,17 +114,28 @@ function plainText(raw: string): string {
     .trim();
 }
 
+/**
+ * Whether a bullet reads like something the user would send back ("home",
+ * "warm rustic", "Add a pricing section") rather than information to read.
+ * A link, a labelled finding ("**Copy:** …") or a sentence or two stays text.
+ */
+function isReplyOption(raw: string): boolean {
+  if (/https?:\/\/|\]\(/.test(raw)) return false;
+  if (/^\s*\*\*[^*]+:\*\*/.test(raw)) return false;
+  const text = plainText(raw);
+  return text.length <= 60 && !/[.!?]\s/.test(text);
+}
+
 export function MarkdownText({ content, className, onMediaClick, onListItemClick }: MarkdownTextProps) {
   const renderListItem = (raw: string, key: string): React.ReactNode => {
     const parsed = parseInline(raw, onMediaClick);
-    // A bullet holding a link is information, not a reply — and a link can't sit inside a button.
-    if (!onListItemClick || /https?:\/\/|\]\(/.test(raw)) return <li key={key}>{parsed}</li>;
+    if (!onListItemClick || !isReplyOption(raw)) return <li key={key}>{parsed}</li>;
     return (
       <li key={key} className="list-none">
         <button
           type="button"
           onClick={() => onListItemClick(plainText(raw))}
-          className="group border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 my-1 flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/0.05)] transition-colors"
+          className="group border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 my-1 flex w-full items-center gap-2 rounded-lg border px-3 py-1.5 text-left text-[13px] font-medium transition-colors"
         >
           <span className="min-w-0 flex-1">{parsed}</span>
           <TbChevronRight className="text-base-content/35 group-hover:text-base-content size-4 shrink-0 transition-colors" />

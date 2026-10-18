@@ -54,7 +54,18 @@ interface PageSelectorProps {
   showHashIcon?: boolean;
   /** Show the current page's name in the trigger (with `inlineTrigger`), not only its icon or slug. */
   showName?: boolean;
+  /**
+   * Address-bar look, for a host that draws the field (`className` on the
+   * wrapper): the trigger reads `host` + the page's path, like a browser's
+   * address bar, and `previewHref(path)` adds an open-page link inside it.
+   */
+  address?: { host: string; previewHref?: (path: string) => string | null };
 }
+
+const ADDRESS_TRIGGER_CLASS =
+  "hover:text-base-content flex h-8 min-w-0 flex-1 items-center gap-1 rounded-full text-left text-sm transition-colors";
+const ADDRESS_LINK_CLASS =
+  "text-base-content/50 hover:bg-base-content/10 hover:text-base-content inline-flex size-6 shrink-0 items-center justify-center rounded-full transition-colors";
 
 export function PageSelector({
   onPageChange,
@@ -66,6 +77,7 @@ export function PageSelector({
   buttonClassName,
   showHashIcon = true,
   showName = false,
+  address,
 }: PageSelectorProps) {
   const { query, actions } = useEditor();
   const settings = useAtomValue(SettingsAtom) as { _id?: string; draftId?: string } | null;
@@ -210,10 +222,12 @@ export function PageSelector({
   const liveUrl = currentPage
     ? pageRoute(currentPage, !!isCurrentHomePage).slice(1) // strip leading "/"
     : null;
+  const addressPreview =
+    address?.previewHref && currentPageRoute ? address.previewHref(currentPageRoute) : null;
 
   return (
     <EditorListPicker
-      className={`${className} flex items-center gap-2`.trim()}
+      className={`${className} flex items-center ${address ? "gap-1" : "gap-2"}`.trim()}
       isOpen={isOpen}
       setIsOpen={setIsOpen}
       trigger={
@@ -222,9 +236,11 @@ export function PageSelector({
           onClick={() => setIsOpen(!isOpen)}
           className={
             buttonClassName ||
-            (inlineTrigger
-              ? "hover:bg-base-200/80 text-neutral-content hover:text-base-content inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md py-1.5 pr-1.5 pl-0 text-xs font-medium transition-[color,background-color,transform] active:scale-95"
-              : "ph-menu-trigger py-1.5 text-sm")
+            (address
+              ? ADDRESS_TRIGGER_CLASS
+              : inlineTrigger
+                ? "hover:bg-base-200/80 text-neutral-content hover:text-base-content inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md py-1.5 pr-1.5 pl-0 text-xs font-medium transition-[color,background-color,transform] active:scale-95"
+                : "ph-menu-trigger py-1.5 text-sm")
           }
           aria-label="Page selector"
           aria-expanded={isOpen}
@@ -239,7 +255,15 @@ export function PageSelector({
           data-tooltip-place="bottom"
           data-tooltip-offset={10}
         >
-          {pickerMode && !currentPage ? (
+          {address && !pickerMode ? (
+            <span className="min-w-0 flex-1 truncate">
+              <span className="text-base-content/45">{address.host}</span>
+              {/* Like a browser: the home page is the bare host. */}
+              {currentPageRoute && currentPageRoute !== "/" ? (
+                <span className="text-base-content">{currentPageRoute}</span>
+              ) : null}
+            </span>
+          ) : pickerMode && !currentPage ? (
             <span className="truncate text-xs">{displayText}</span>
           ) : (
             <>
@@ -263,7 +287,23 @@ export function PageSelector({
         </button>
       }
       afterTrigger={
-        !pickerMode && liveUrl ? (
+        address ? (
+          addressPreview ? (
+            <a
+              className={ADDRESS_LINK_CLASS}
+              href={addressPreview}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open page in a new tab"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Open page in a new tab"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={10}
+            >
+              <TbExternalLink className="size-3.5" />
+            </a>
+          ) : undefined
+        ) : !pickerMode && liveUrl ? (
           <a
             className="text-neutral-content hover:text-base-content shrink-0 p-0 text-xs transition-colors"
             href={liveUrl}

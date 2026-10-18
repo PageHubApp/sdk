@@ -12,12 +12,12 @@
  */
 import type { Boundary, FlipOptions, Placement, RootBoundary } from "@floating-ui/react-dom";
 import type { CSSProperties, ReactNode, RefObject } from "react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { useFloatingPanelPortalRegister } from "../floating/FloatingPanel";
 import { OVERLAY_Z_ANCHORED } from "./overlayZIndex";
 import { useAnchoredPopover } from "./useAnchoredPopover";
-import { getPortalTarget } from "./getPortalTarget";
+import { usePortalTarget } from "./usePortalTarget";
 
 const FADE_OUT_MS = 75;
 
@@ -141,7 +141,7 @@ export function AnchoredPopover({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, anchor, anchorRect]);
 
-  const target = useMemo(() => getPortalTarget(portalTarget), [portalTarget]);
+  const target = usePortalTarget(portalTarget);
 
   // If we're rendered inside a FloatingPanel, register our portal root with
   // its outside-click skip set. Without this, clicking inside this popover

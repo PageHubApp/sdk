@@ -14,6 +14,7 @@ import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
 import { MiniPreviewTile } from "@/chrome/primitives/MiniPreviewTile";
 import { getPageHubApiBaseUrl } from "@/core/apiConfig";
 import { TbSearch, TbX } from "react-icons/tb";
+import { getPortalTarget } from "../../../popovers/getPortalTarget";
 
 const DEMO_COLORS = {
   patternColor1: "rgba(59, 130, 246, 0.8)",
@@ -149,7 +150,7 @@ export const PatternsDialogInput = ({
             }}
             onClose={() => setIsOpen(false)}
           />,
-          document.querySelector(".pagehub-sdk-root") || document.body
+          getPortalTarget()
         )}
     </div>
   );

@@ -22,6 +22,7 @@ import { TokenPicker } from "./TokenPicker";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
 import { useRegisterFloatingPanelPortal } from "../../../floating/FloatingPanel";
 import type { ReactNode } from "react";
+import { getPortalTarget } from "../../../popovers/getPortalTarget";
 
 export const ColorInput = (__props: any) => {
   const {
@@ -254,6 +255,6 @@ function ColorPickerPortal({
     <div ref={ref} className="pagehub-sdk-root fixed z-[1200]" style={{ top, right }}>
       {children}
     </div>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    getPortalTarget()
   );
 }

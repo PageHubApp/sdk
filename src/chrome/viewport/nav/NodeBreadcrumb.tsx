@@ -23,9 +23,11 @@ interface BreadcrumbItem {
 interface NodeBreadcrumbProps {
   /** Lead the row with the inline page switcher. Default true; off when the host renders it (`features.topBar: false`). */
   showPageSelector?: boolean;
+  /** Shorter and muted, with no dashed box on the current element (see `EditorBreadcrumb`). */
+  compact?: boolean;
 }
 
-export const NodeBreadcrumb = ({ showPageSelector = true }: NodeBreadcrumbProps) => {
+export const NodeBreadcrumb = ({ showPageSelector = true, compact = false }: NodeBreadcrumbProps) => {
   const { query, actions } = useEditor((state, query) => ({
     selectedId: query.getEvent("selected").first(),
   }));
@@ -211,13 +213,22 @@ export const NodeBreadcrumb = ({ showPageSelector = true }: NodeBreadcrumbProps)
 
   /** Same outline width/style on every crumb control so selection never changes box metrics (no layout shift). */
   const crumbOutlineIdle = "outline-1 -outline-offset-1 outline-dashed outline-transparent";
-  const crumbTextSegment =
-    "box-border inline-flex max-w-full min-w-0 items-center truncate whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium leading-snug transition-[color,outline-color,transform]";
+  const crumbTextSegment = `box-border inline-flex max-w-full min-w-0 items-center truncate whitespace-nowrap rounded px-1.5 py-0.5 ${compact ? "text-[11px]" : "text-xs"} font-medium leading-snug transition-[color,outline-color,transform]`;
+  /** The current element: a dashed box that says "click to rename", or in `compact` a plain muted crumb. */
+  const currentCrumbClass = compact
+    ? `text-base-content/70 hover:text-base-content hover:bg-base-200/80 ${crumbOutlineIdle}`
+    : "text-base-content hover:outline-base-content/40 outline-base-content/25 bg-transparent outline-1 -outline-offset-1 outline-dashed";
 
   return (
     <div
       className={`bg-base-100 text-base-content border-base-300 flex w-full items-center justify-between border-b px-3 text-sm ${
-        isEditing ? "min-h-10 py-1.5" : "h-10 shrink-0 py-0"
+        compact
+          ? isEditing
+            ? "min-h-8 py-1"
+            : "h-8 shrink-0 py-0"
+          : isEditing
+            ? "min-h-10 py-1.5"
+            : "h-10 shrink-0 py-0"
       }`}
     >
       <div className="flex min-h-0 min-w-0 flex-1 items-center gap-1">
@@ -307,7 +318,7 @@ export const NodeBreadcrumb = ({ showPageSelector = true }: NodeBreadcrumbProps)
               type="button"
               onClick={handleParentClick}
               onContextMenu={e => handleNodeContextMenu(e, parentItem.id)}
-              className={`text-neutral-content hover:text-base-content max-w-[80px] min-w-0 ${crumbTextSegment} ${crumbOutlineIdle} hover:bg-base-200/80 active:scale-95`}
+              className={`${compact ? "text-base-content/45" : "text-neutral-content"} hover:text-base-content max-w-[80px] min-w-0 ${crumbTextSegment} ${crumbOutlineIdle} hover:bg-base-200/80 active:scale-95`}
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
               data-tooltip-content={`Select ${parentItem.name} (${parentItem.type})`}
               data-tooltip-place="bottom"
@@ -352,7 +363,7 @@ export const NodeBreadcrumb = ({ showPageSelector = true }: NodeBreadcrumbProps)
                 type="button"
                 onClick={handleRenameClick}
                 onContextMenu={e => handleNodeContextMenu(e, currentItem.id)}
-                className={`text-base-content hover:outline-base-content/40 inline-flex w-fit max-w-full min-w-0 shrink ${crumbTextSegment} outline-base-content/25 bg-transparent outline-1 -outline-offset-1 outline-dashed active:scale-95`}
+                className={`inline-flex w-fit max-w-full min-w-0 shrink ${crumbTextSegment} ${currentCrumbClass} active:scale-95`}
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                 data-tooltip-content={`Click to edit "${currentItem.name}"`}
                 data-tooltip-place="bottom"

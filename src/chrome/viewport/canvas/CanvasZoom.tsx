@@ -3,7 +3,7 @@ import { TbMinus, TbPlus, TbZoomReset, TbZoomScan } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { phStorage } from "../../../utils/phStorage";
-import { useSDKSafe } from "../../../core/context";
+import { useEditorActive } from "../../../core/context";
 import { useEditorRootRect } from "../../shell/editorRootRect";
 
 export const zoomPresets = [
@@ -74,7 +74,7 @@ export function CanvasZoom({
 }: CanvasZoomProps) {
   const [zoom, setZoom] = useAtomState(zoomAtom);
   // A hidden editor leaves ⌘+ / ⌘− / ⌘0 to the browser.
-  const editorActive = useSDKSafe()?.active !== false;
+  const editorActive = useEditorActive();
   const [showDropdown, setShowDropdown] = useState(false);
   const [fitToWindow, setFitToWindow] = useState(() => {
     // Default: prefer fit-to-window unless the user explicitly saved a manual zoom.
