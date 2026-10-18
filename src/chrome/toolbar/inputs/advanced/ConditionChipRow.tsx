@@ -26,6 +26,7 @@ import {
   type Condition,
   type ConditionType,
 } from "../../../../utils/conditions/types";
+import { describeMembershipCondition } from "./AuthConditionFields";
 
 const ConditionEditorPanel = lazy(() => import("./ConditionEditorPanel"));
 
@@ -77,6 +78,8 @@ function conditionTypeLabel(c: Condition): string {
  *  chip (row-label pattern, mirrors `EffectRowInputPopover`), so DON'T
  *  prefix the type here. */
 function describeCondition(c: Condition): string {
+  const membership = describeMembershipCondition(c);
+  if (membership) return membership;
   // Device is implicit-equals + always has a value default — show value directly.
   if (c.type === "device") return c.value || "";
   if (!c.key) return "";

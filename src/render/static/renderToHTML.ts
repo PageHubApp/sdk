@@ -6,6 +6,8 @@ import { preloadIcons } from "../../utils/icons/serverResolve";
 import { PageHubError } from "../../utils/errors";
 import { escapeHTML } from "../../utils/staticHtml";
 import type { StaticRenderContext } from "../../utils/staticHtml";
+import type { AuthState } from "../../utils/design/variableStores";
+import { hasConditionType } from "../../utils/conditions/evaluate";
 import { processForStatic } from "../../define/processors/forStatic";
 import { styleGuideGoogleFontFamily } from "./fonts";
 import { googleFontFamilyParam } from "../../utils/fonts/familyParam";
@@ -66,24 +68,47 @@ function buildPageIndexFromNodes(nodes: SerializedNodes): PageIndex {
 }
 
 /**
- * Inline `<script>` that seeds `window.__PH_AUTH__` (from `ph-customer`
- * cookie presence), `window.__PH_COMPANY__` (from `ROOT.props.company`), and
- * `window.__PH_CONNECTOR__` (from server-fetched connector data) so the
- * condition evaluator's `auth` / `company` / `connector` branches see real
- * data instead of fail-open `null`. Emitted only when the page actually
- * carries client-side conditions (parity with `getConditionEvalScript`).
+ * Inline `<script>` that seeds `window.__PH_AUTH__`, `window.__PH_COMPANY__`
+ * (from `ROOT.props.company`) and `window.__PH_CONNECTOR__` (from
+ * server-fetched connector data) so the condition evaluator's `auth` /
+ * `company` / `connector` branches see real data instead of fail-open
+ * `null`. Emitted only when the page actually carries client-side conditions
+ * (parity with `getConditionEvalScript`).
  *
- * `authStatus` is the server's answer (`requestContext.isAuthenticated`, from
- * the request's `ph-customer` cookie). The cookie is HttpOnly, so without
- * it the script can only look for it and always finds nothing; that fallback
- * is kept for exports rendered with no request. A magic-link sign-in on the
- * page updates `__PH_AUTH__` itself (aux.ts). Finer customer fields
- * (orderCount etc.) hydrate via the `customer` data provider.
+ * `auth` is the server's answer (`requestContext.auth`: the visitor's status
+ * plus customer plans), so client re-evaluation agrees with what the server
+ * pruned. The `ph-customer` cookie is HttpOnly, so with no request (exports)
+ * the script can only look for it and always finds nothing; that fallback
+ * seeds status alone. A magic-link sign-in on the page reloads it (aux.ts).
  */
+/**
+ * The slice of `auth` the client condition evaluator needs. Only pages that
+ * carry `auth` conditions (served `private, no-store`) get customer fields,
+ * and never identity (email, name, id): a cacheable page must not embed one
+ * visitor's account.
+ */
+function authSeed(auth: AuthState | undefined, nodes: SerializedNodes): AuthState | undefined {
+  if (!auth) return undefined;
+  const gated = Object.values(nodes).some(n => hasConditionType(n?.props?.conditionGroups, "auth"));
+  const c = auth.customer;
+  if (!gated || !c) return { status: auth.status, customer: null };
+  return {
+    status: auth.status,
+    customer: {
+      isMember: c.isMember,
+      plans: c.plans,
+      planDays: c.planDays,
+      hasSubscription: c.hasSubscription,
+      orderCount: c.orderCount,
+      totalSpent: c.totalSpent,
+    },
+  };
+}
+
 function buildConditionContextSeedScript(
   company: Record<string, any> | undefined,
   connectorData: Record<string, { bindings: Record<string, any[]> }> | null,
-  authStatus?: "logged-in" | "logged-out"
+  auth?: AuthState
 ): string {
   const safeJSON = (v: any) =>
     JSON.stringify(v ?? null).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
@@ -98,7 +123,7 @@ function buildConditionContextSeedScript(
         return c.trim().indexOf('ph-customer=') === 0;
       });
     } catch (e) {}
-    window.__PH_AUTH__ = { status: ${authStatus ? JSON.stringify(authStatus) : "hasCookie ? 'logged-in' : 'logged-out'"} };
+    window.__PH_AUTH__ = ${auth ? safeJSON(auth) : "{ status: hasCookie ? 'logged-in' : 'logged-out' }"};
     window.__PH_COMPANY__ = ${companyLit};
     window.__PH_CONNECTOR__ = ${connectorLit};
   } catch (e) {}
@@ -330,11 +355,7 @@ export function renderToHTML(
       ? buildConditionContextSeedScript(
           rootProps.company,
           options.connectorData ?? null,
-          typeof options.requestContext?.isAuthenticated === "boolean"
-            ? options.requestContext.isAuthenticated
-              ? "logged-in"
-              : "logged-out"
-            : undefined
+          authSeed(options.requestContext?.auth, nodes)
         )
       : "") +
     // The static-publish runtime IIFE registers a `data-ph-condition-groups`

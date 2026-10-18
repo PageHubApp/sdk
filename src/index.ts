@@ -159,6 +159,21 @@ export {
   DENSITY_STEPS,
 } from "./utils/defaults";
 
+// Membership plans provider — host-injected plan list for the auth condition editor.
+export {
+  registerMembershipPlansProvider,
+  getMembershipPlansProvider,
+} from "./utils/conditions/membershipPlansRegistry";
+export type {
+  MembershipPlanOption,
+  MembershipPlansProvider,
+} from "./utils/conditions/membershipPlansRegistry";
+// Server-side auth pruning — strips auth-gated nodes a visitor may not see.
+export {
+  pruneAuthGatedNodes,
+  hasUnprovableAuthGate,
+} from "./utils/conditions/pruneAuthGated";
+
 // Blocks provider — host-injected source for the Blocks toolbox panel catalog.
 // Default: HTTP fetcher at `/api/v1/components*` (PageHub cloud).
 export {

@@ -9,6 +9,7 @@ import parse from "style-to-object";
 import { migrateActions, actionToHref } from "./action";
 import { applyHandlerOptions, readHandlerOptions } from "./actions/handlerCode";
 import type { PageIndex } from "./page/pageManagement";
+import type { AuthState } from "./design/variableStores";
 import {
   getCdnUrl,
   generateSrcSet,
@@ -89,13 +90,13 @@ export interface StaticRenderContext {
   repeaterChildIds?: string[];
   /**
    * Optional request hints supplied by the host (Next.js page) for SSR
-   * condition resolution: cookie-derived auth state, UA-derived viewport
+   * condition resolution: the visitor's member auth, UA-derived viewport
    * class, parsed URL query. Lets `auth` / `device` / `url-param`
    * conditions resolve definitively at SSR instead of deferring to the
    * client re-eval script.
    */
   requestContext?: {
-    isAuthenticated?: boolean;
+    auth?: AuthState;
     userAgentClass?: "mobile" | "tablet" | "desktop";
     urlParams?: Record<string, string>;
   };

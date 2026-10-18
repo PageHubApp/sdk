@@ -30,7 +30,7 @@
  *                   from `theme.breakpoints.md` in each consumer's preamble)
  *   - `state`     → `window.__PH_STATE__` (seeded by the load-action script)
  *   - `auth`      → `window.__PH_AUTH__` (seeded by `renderToHTML.ts` from the
- *                   `ph-customer` cookie presence)
+ *                   request's member auth: status, plans, planDays)
  *   - `company`   → `window.__PH_COMPANY__` (serialized `rootProps.company`)
  *   - `connector` → `window.__PH_CONNECTOR__` (serialized connector data)
  * All object reads walk dot-paths matching `evaluate.ts`.
@@ -60,7 +60,8 @@ export const CONDITION_EVAL_CHUNK = stringifyChunk(function $conditionEval() {
     return value;
   }
 
-  function applyOp(actual: any, op: string, expected: any): boolean {
+  function applyOp(actual: any, op: string, rawExpected: any): boolean {
+    const expected = rawExpected == null ? "" : String(rawExpected);
     if (op === "exists") return actual != null && actual !== "";
     if (op === "not-exists") return actual == null || actual === "";
     if (actual == null) return false;
@@ -124,6 +125,8 @@ export const CONDITION_EVAL_CHUNK = stringifyChunk(function $conditionEval() {
         return false;
       }
       const av = walkPath(auth, c.key.split("."));
+      // Mirrors evaluate.ts: a missing field is not equal to anything.
+      if (av == null && (c.operator === "not-equals" || c.operator === "not-contains")) return true;
       return applyOp(av == null ? null : String(av), c.operator, c.value);
     }
     if (c.type === "company") {

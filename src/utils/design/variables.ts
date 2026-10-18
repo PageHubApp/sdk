@@ -388,7 +388,9 @@ export const getAvailableVariables = (rootProps: RootProps | null | undefined): 
     if (auth) {
       variables.push("auth.status");
       if (auth.customer) {
-        for (const key of Object.keys(auth.customer)) {
+        for (const [key, value] of Object.entries(auth.customer)) {
+          // `plans` / `planDays` are maps, not printable values.
+          if (value !== null && typeof value === "object") continue;
           variables.push(`auth.customer.${key}`);
         }
       }

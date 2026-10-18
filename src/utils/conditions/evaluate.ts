@@ -12,8 +12,13 @@ import type {
 /** Default mobile breakpoint (Tailwind `md`) — overridden per-site via `ctx.mobileBreakpoint`. */
 const DEFAULT_MOBILE_BREAKPOINT = 768;
 
-/** Compare an actual value against an expected value with the given operator. */
-function applyOperator(actual: string | null, op: Operator, expected: string): boolean {
+/**
+ * Compare an actual value against an expected value with the given operator.
+ * `expected` is coerced to a string: a condition saved with a boolean `true`
+ * (JSON / MCP authored) must match the same as the string `"true"`.
+ */
+function applyOperator(actual: string | null, op: Operator, rawExpected: unknown): boolean {
+  const expected = rawExpected == null ? "" : String(rawExpected);
   if (op === "exists") return actual != null && actual !== "";
   if (op === "not-exists") return actual == null || actual === "";
   if (actual == null) return false;
@@ -92,6 +97,12 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
     case "auth": {
       if (!ctx.auth) return null;
       const val = walkPath(ctx.auth, cond.key.split("."));
+      // A field the visitor doesn't have (logged out: no `customer`) is not
+      // equal to anything, so `customer.isMember not-equals true` shows an
+      // upsell to signed-out visitors too. Mirrored in clientScript.ts.
+      if (val == null && (cond.operator === "not-equals" || cond.operator === "not-contains")) {
+        return true;
+      }
       return applyOperator(val == null ? null : String(val), cond.operator, cond.value);
     }
 
@@ -180,11 +191,12 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
 function evaluateConditions(
   conditions: Condition[],
   logic: ConditionLogic,
-  ctx: ConditionContext
+  ctx: ConditionContext,
+  evalOne: SingleConditionEvaluator
 ): boolean | null {
   if (!conditions || conditions.length === 0) return true;
 
-  const results = conditions.map(c => evaluateSingleCondition(c, ctx));
+  const results = conditions.map(c => evalOne(c, ctx));
 
   if (logic === "all") {
     // AND: any false → false, any null with no false → null, all true → true
@@ -217,20 +229,26 @@ export function hasConditionType(
   return groups.some(g => Array.isArray(g?.conditions) && g.conditions.some(c => c?.type === type));
 }
 
+/** Per-condition evaluator `evaluateConditionGroups` combines. */
+export type SingleConditionEvaluator = (cond: Condition, ctx: ConditionContext) => boolean | null;
+
 /**
  * Evaluate condition groups (OR between groups, AND/OR within each group).
- * Groups are the Elementor-style "condition group" model.
+ * Groups are the Elementor-style "condition group" model. `evalOne` lets a
+ * caller narrow which condition types count as known (server-side auth
+ * pruning treats every non-`auth` condition as indeterminate).
  */
 export function evaluateConditionGroups(
   groups: ConditionGroup[],
-  ctx: ConditionContext
+  ctx: ConditionContext,
+  evalOne: SingleConditionEvaluator = evaluateSingleCondition
 ): boolean | null {
   if (!groups || groups.length === 0) return true;
 
   // OR between groups: any group true → true
   let hasNull = false;
   for (const group of groups) {
-    const result = evaluateConditions(group.conditions, group.logic, ctx);
+    const result = evaluateConditions(group.conditions, group.logic, ctx, evalOne);
     if (result === true) return true;
     if (result === null) hasNull = true;
   }

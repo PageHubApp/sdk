@@ -66,13 +66,26 @@ export function getClientDataFetcher(): ClientDataFetcher | null {
 
 // ── Auth state (set by app, read by condition evaluator) ──────────────────────
 
+/**
+ * The signed-in site customer as `auth` conditions see it. The host's
+ * member-auth resolver fills the membership fields; conditions reach them by
+ * dot-path (`customer.plans.<slug> exists`, `customer.planDays.<slug>
+ * greater-than 6`).
+ */
 export interface AuthCustomer {
+  id?: string;
   email?: string;
-  name?: string;
+  name?: string | null;
   orderCount?: number;
   totalSpent?: number;
   hasSubscription?: boolean;
   currency?: string;
+  /** Holds at least one active membership plan. */
+  isMember?: boolean;
+  /** Active plan slugs. A missing key means the plan isn't held. */
+  plans?: Record<string, true>;
+  /** Whole days since each active plan started, for drip rules. */
+  planDays?: Record<string, number>;
 }
 
 export interface AuthState {

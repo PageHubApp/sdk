@@ -1,5 +1,6 @@
 import type { ResolvedComponentDef } from "../../define/types";
 import type { ToHTMLFn } from "../../utils/staticHtml";
+import type { AuthState } from "../../utils/design/variableStores";
 
 export interface SerializedNode {
   type: { resolvedName: string } | string;
@@ -53,13 +54,13 @@ export interface RenderToHTMLOptions {
    * Optional request hints from the calling Next.js page. When supplied, the
    * walker resolves `auth` / `device` / `url-param` conditions at SSR instead
    * of wrapping the node for the client re-eval script:
-   *  - `isAuthenticated` — cookie-derived (e.g. `ph-customer` presence)
+   *  - `auth`            — the visitor's resolved member auth (status, plans, planDays)
    *  - `userAgentClass`  — UA-derived viewport class
    *  - `urlParams`       — parsed query (only meaningful for `getServerSideProps`)
    * Any field omitted leaves the corresponding condition type indeterminate.
    */
   requestContext?: {
-    isAuthenticated?: boolean;
+    auth?: AuthState;
     userAgentClass?: "mobile" | "tablet" | "desktop";
     urlParams?: Record<string, string>;
   };

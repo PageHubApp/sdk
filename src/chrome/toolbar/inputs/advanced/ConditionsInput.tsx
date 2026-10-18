@@ -32,6 +32,11 @@ import {
 import { useAtomValue } from "@zedux/react";
 import { ConditionChipRow } from "./ConditionChipRow";
 import {
+  AuthConditionFields,
+  isMembershipAuthCondition,
+  UnprovableAuthGateWarning,
+} from "./AuthConditionFields";
+import {
   PopoverOpenRequestAtom,
   popoverRequestKey,
 } from "../../inspector/popoverOpenRequestAtom";
@@ -56,16 +61,9 @@ export const CONDITION_TYPE_OPTIONS: { value: ConditionType; label: string }[] =
 
 const CATEGORY_OPTIONS = CONDITION_TYPE_OPTIONS;
 
-const AUTH_FIELDS = [
-  { value: "status", label: "Login status" },
-  { value: "customer.hasSubscription", label: "Has subscription" },
-  { value: "customer.orderCount", label: "Order count" },
-  { value: "customer.totalSpent", label: "Total spent" },
-];
-
 const AUTH_STATUS_VALUES = [
-  { value: "logged-in", label: "Logged in" },
-  { value: "logged-out", label: "Logged out" },
+  { value: "logged-in", label: "Signed in" },
+  { value: "logged-out", label: "Signed out" },
 ];
 
 const AUTH_BOOL_VALUES = [
@@ -134,6 +132,7 @@ export function ConditionFields({
   connectorOptions: ReturnType<typeof useConnectorOptions>;
 }) {
   const operators = OPERATORS_BY_TYPE[cond.type] || OPERATORS_BY_TYPE["url-param"];
+  const ownsOperator = isMembershipAuthCondition(cond);
 
   return (
     <>
@@ -168,27 +167,7 @@ export function ConditionFields({
         </ToolbarDropdown>
       )}
 
-      {cond.type === "auth" && (
-        <ToolbarDropdown
-          value={cond.key || "status"}
-          onChange={(val: string) => {
-            const defaults: Record<string, Partial<Condition>> = {
-              status: { operator: "equals", value: "logged-in" },
-              "customer.hasSubscription": { operator: "equals", value: "true" },
-              "customer.orderCount": { operator: "greater-than", value: "0" },
-              "customer.totalSpent": { operator: "greater-than", value: "0" },
-            };
-            onChange({ key: val, ...(defaults[val] || { operator: "equals", value: "" }) });
-          }}
-          propKey="condAuthField"
-        >
-          {AUTH_FIELDS.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </ToolbarDropdown>
-      )}
+      {cond.type === "auth" && <AuthConditionFields cond={cond} onChange={onChange} />}
 
       {cond.type === "company" && (
         <ToolbarDropdown
@@ -299,8 +278,9 @@ export function ConditionFields({
         </Chip>
       )}
 
-      {/* Operator — skip for device (implicit equals) */}
-      {cond.type !== "device" && (
+      {/* Operator — skip for device (implicit equals) and membership rules
+          (their operator is part of the rule) */}
+      {cond.type !== "device" && !ownsOperator && (
         <ToolbarDropdown
           value={cond.operator}
           onChange={(val: string) => onChange({ operator: val as Operator })}
@@ -316,6 +296,7 @@ export function ConditionFields({
 
       {/* Value — hidden for exists/not-exists and device */}
       {cond.type !== "device" &&
+        !ownsOperator &&
         !NO_VALUE_OPERATORS.includes(cond.operator) &&
         (cond.type === "auth" && cond.key === "status" ? (
           <ToolbarDropdown
@@ -474,6 +455,8 @@ export function ConditionGroupUI({
         />
       ))}
 
+      {group.logic === "any" && <UnprovableAuthGateWarning groups={[group]} />}
+
       <ToolbarDashedButton onClick={addCondition}>Add condition</ToolbarDashedButton>
     </div>
   );
@@ -561,6 +544,9 @@ export const ConditionsInput = () => {
           onRemove={() => removeAt(i)}
         />
       ))}
+      {/* Only multi-group data from page settings can be unprovable here;
+          the toolbar itself writes a single AND group. */}
+      <UnprovableAuthGateWarning groups={conditionGroups} />
     </div>
   );
 };

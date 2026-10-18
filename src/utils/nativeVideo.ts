@@ -2,11 +2,25 @@
  * Helpers for HTML5 <video> vs iframe embeds (Video component).
  */
 
-/** Treat as direct file when path (before query) ends with a known video extension. */
+/**
+ * Same-origin members-only download streamed inline:
+ * `/api/downloads/<24-hex id>?inline=1`. The route checks the visitor's
+ * session on every request, so a `<video>` pointed at it plays only for
+ * members. Relative only — the request must carry the site's own cookie.
+ */
+const INLINE_DOWNLOAD_RE = /^\/api\/downloads\/[a-f0-9]{24}\?(?:[^#]*&)?inline=1(?:&|#|$)/i;
+
+export function isInlineDownloadUrl(raw: string | undefined | null): boolean {
+  return typeof raw === "string" && INLINE_DOWNLOAD_RE.test(raw.trim());
+}
+
+/** Treat as direct file when path (before query) ends with a known video
+ *  extension, or is a same-origin inline download (`isInlineDownloadUrl`). */
 export function isDirectVideoFileUrl(raw: string | undefined | null): boolean {
   if (!raw || typeof raw !== "string") return false;
   const s = raw.trim();
   if (!s) return false;
+  if (isInlineDownloadUrl(s)) return true;
   try {
     const u = new URL(s);
     return /\.(mp4|webm|ogg|ogv|mov|m4v)(\?|$)/i.test(u.pathname);

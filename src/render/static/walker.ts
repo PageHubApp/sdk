@@ -1,6 +1,5 @@
 import { buildStaticContext } from "../../utils/conditions/context";
 import { evaluateConditionGroups, hasStateCondition } from "../../utils/conditions/evaluate";
-import type { AuthState } from "../../utils/design/variables";
 import type { StaticRenderContext, ToHTMLFn } from "../../utils/staticHtml";
 import type { SerializedNodes } from "./types";
 import { sdkLog } from "../../utils/logger";
@@ -15,7 +14,7 @@ import { migrateActions } from "../../utils/action";
  * `url-param` conditions can resolve definitively at SSR.
  *
  * Hint mapping:
- *  - `isAuthenticated` → `auth = { status: "logged-in" | "logged-out" }`
+ *  - `auth`            → the visitor's resolved member auth (status + customer plans)
  *  - `userAgentClass`  → `viewportWidth` (375 mobile, 768 tablet, 1280 desktop)
  *  - `urlParams`       → `URLSearchParams`
  */
@@ -27,10 +26,7 @@ function buildWalkerContext(
   const base = buildStaticContext(rootProps, item, ctx.connectorData ?? null);
   const hints = ctx.requestContext;
   if (!hints) return base;
-  if (typeof hints.isAuthenticated === "boolean") {
-    const auth: AuthState = { status: hints.isAuthenticated ? "logged-in" : "logged-out" };
-    base.auth = auth;
-  }
+  if (hints.auth) base.auth = hints.auth;
   if (hints.userAgentClass) {
     base.viewportWidth =
       hints.userAgentClass === "mobile" ? 375 : hints.userAgentClass === "tablet" ? 768 : 1280;

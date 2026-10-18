@@ -48,7 +48,7 @@ export const VideoMainTab = () => {
       case "twitch":
         return "Copy the Video ID from the Twitch video URL (e.g., '1234567890' from twitch.tv/videos/1234567890)";
       case "url":
-        return "Paste a direct file URL ending in .mp4, .webm, .mov, etc. Uses native HTML5 video (not an iframe). For fullscreen backgrounds, enable Playback: Autoplay, Loop, Muted, turn off Controls.";
+        return "Paste a direct file URL ending in .mp4, .webm, .mov, etc. Uses native HTML5 video (not an iframe). For fullscreen backgrounds, enable Playback: Autoplay, Loop, Muted, turn off Controls. For a members-only video, paste its download link with ?inline=1 on the end (e.g. /api/downloads/<id>?inline=1).";
       case "r2":
         return "Pick a video file from your media library.";
       default:
@@ -81,6 +81,13 @@ export const VideoMainTab = () => {
         <p className="text-md text-neutral-content px-3 pt-2 pb-3 text-sm">
           {getProviderInstructions()}
         </p>
+
+        {provider === "r2" && (
+          <p className="text-warning px-3 pb-3 text-[11px] leading-snug">
+            Uploaded videos are public: anyone with the link can watch them. For paid lessons,
+            add the file as a members-only download and choose Direct URL instead.
+          </p>
+        )}
 
         {provider === "r2" ? (
           <ToolbarSection title="">
