@@ -1,12 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createCommandsRegistry } from "./commands";
+import { createHeadlessCommandsRegistry } from "./commands.test-helpers";
 import { createContextRegistry } from "./context";
 import type { CommandDef } from "./types";
 
 function setup() {
   const context = createContextRegistry();
-  const commands = createCommandsRegistry({ context });
+  const commands = createHeadlessCommandsRegistry({ context });
   return { context, commands };
 }
 
@@ -48,6 +49,16 @@ test("commands: execute calls run with ctx + args", async () => {
   assert.equal((captured as any).ctx.trigger, "menu");
   // includes the base context snapshot
   assert.ok((captured as any).ctx.selection);
+});
+
+test("commands: execute is a no-op when no editor is mounted", async () => {
+  const commands = createCommandsRegistry({ context: createContextRegistry() });
+  let ran = false;
+  commands.register({ id: "headless", title: "Headless", run: () => { ran = true; } });
+  await commands.execute("headless");
+  assert.equal(ran, false);
+  await commands.execute("headless", undefined, { query: {} as never, actions: {} as never });
+  assert.equal(ran, true);
 });
 
 test("commands: when=false prevents execute", async () => {

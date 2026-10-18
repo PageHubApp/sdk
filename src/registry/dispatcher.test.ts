@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createContextRegistry } from "./context";
-import { createCommandsRegistry } from "./commands";
+import { createHeadlessCommandsRegistry } from "./commands.test-helpers";
 import { createKeybindingsRegistry } from "./keybindings";
 import { mountKeybindingDispatcher } from "./dispatcher";
 import type { CommandDef } from "./types";
@@ -82,7 +82,7 @@ function inputTarget(): EventTarget {
 
 function setup() {
   const context = createContextRegistry();
-  const commands = createCommandsRegistry({ context });
+  const commands = createHeadlessCommandsRegistry({ context });
   const keybindings = createKeybindingsRegistry({ context });
   const doc = makeFakeDoc();
   return { context, commands, keybindings, doc };
@@ -310,6 +310,36 @@ test("dispatcher: trigger is 'keybinding' on execute", async () => {
   await Promise.resolve();
 
   assert.equal(observedTrigger, "keybinding");
+  unmount();
+});
+
+test("dispatcher: editorActive:false leaves every chord to the host", async () => {
+  const { commands, keybindings, context, doc } = setup();
+  const cmd = makeCmd("editor.undo");
+  commands.register(cmd);
+  keybindings.register({ command: "editor.undo", key: "mod+z" });
+  const unmount = mountKeybindingDispatcher({
+    commands,
+    keybindings,
+    context,
+    target: doc as unknown as Document,
+  });
+  const calls = () => (cmd as unknown as { _calls: () => number })._calls();
+
+  context.setCommandContext({ editorActive: false });
+  const hidden = fakeEvent({ key: "z", meta: true, target: plainTarget() });
+  doc.dispatch(hidden);
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(calls(), 0);
+  assert.equal(hidden.defaultPrevented, false);
+  assert.equal((hidden as unknown as { _stopped: boolean })._stopped, false);
+
+  context.setCommandContext({ editorActive: true });
+  doc.dispatch(fakeEvent({ key: "z", meta: true, target: plainTarget() }));
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(calls(), 1);
   unmount();
 });
 

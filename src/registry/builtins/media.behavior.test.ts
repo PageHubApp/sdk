@@ -12,7 +12,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createContextRegistry } from "../context";
-import { createCommandsRegistry } from "../commands";
+import { createHeadlessCommandsRegistry } from "../commands.test-helpers";
 import { createKeybindingsRegistry } from "../keybindings";
 import { BUILTIN_COMMANDS } from "./commands";
 import { BUILTIN_KEYBINDINGS } from "./keybindings";
@@ -20,7 +20,7 @@ import { setMediaBackref } from "../mediaBackref";
 
 function makeRegistries() {
   const context = createContextRegistry();
-  const commands = createCommandsRegistry({ context });
+  const commands = createHeadlessCommandsRegistry({ context });
   const keybindings = createKeybindingsRegistry({ context });
   for (const def of BUILTIN_COMMANDS) commands.register(def);
   for (const def of BUILTIN_KEYBINDINGS) keybindings.register(def);

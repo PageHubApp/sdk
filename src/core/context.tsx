@@ -52,6 +52,8 @@ interface SDKContextValue {
   setFeatures: (features: Partial<PageHubFeatures>) => void;
   readOnly: boolean;
   setReadOnly: (readOnly: boolean) => void;
+  /** False while the host keeps the editor mounted but hidden (see `PageHubProviderProps.active`). */
+  active: boolean;
   /**
    * Authoritative save — returns a Promise that resolves with
    * `{ pageId, updatedAt }` or rejects with `SaveConflictError` /
@@ -107,6 +109,21 @@ export interface PageHubProviderProps {
    * the Provider build a default bundle with only the SDK builtins.
    */
   registries?: Omit<import("../registry").RegistriesBundle, "tick">;
+  /**
+   * Whether the editor is the thing on screen. Default true. A host that keeps
+   * the editor mounted while showing other screens (so coming back is
+   * instant) passes false while it is hidden. The editor then:
+   * - claims no keyboard chords (the keybinding dispatcher sees
+   *   `editorActive: false` in the command context and leaves every event alone),
+   * - turns Craft editing off, so canvas handlers, selection chrome and
+   *   body-portalled node overlays go away — the previous enabled state comes
+   *   back when it turns true again (`EditorActiveGate`),
+   * - stops the canvas zoom chords (⌘+ / ⌘− / ⌘0).
+   * The host is still responsible for hiding the editor's box and making it
+   * inert (`inert`, `visibility: hidden`); keep its size so measured layouts
+   * don't collapse.
+   */
+  active?: boolean;
   children?: React.ReactNode;
 }
 
@@ -114,6 +131,7 @@ export function PageHubProvider({
   config,
   emitter,
   registries: hostRegistries,
+  active = true,
   children,
 }: PageHubProviderProps) {
   const [theme, setThemeState] = useState<Required<PageHubTheme>>(config.theme);
@@ -135,6 +153,11 @@ export function PageHubProvider({
   React.useEffect(() => {
     registries.context.setCommandContext({ features });
   }, [registries, features]);
+
+  // Every dispatcher on this bundle (ours, or `PageHub.init()`'s) reads it.
+  React.useEffect(() => {
+    registries.context.setCommandContext({ editorActive: active });
+  }, [registries, active]);
 
   // Mount the keybinding dispatcher exactly once per registries bundle.
   // PageHub.init() also mounts a dispatcher; when the host uses the provider
@@ -219,6 +242,7 @@ export function PageHubProvider({
       setFeatures,
       readOnly,
       setReadOnly,
+      active,
       save,
       subscribeSaveStatus,
       commands: registries.commands,
@@ -234,6 +258,7 @@ export function PageHubProvider({
       theme,
       features,
       readOnly,
+      active,
       save,
       subscribeSaveStatus,
       registries,

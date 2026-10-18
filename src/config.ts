@@ -24,6 +24,8 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   custom404Page: true,
   restrictedComponents: [],
   canvasWidth: null,
+  topBar: true,
+  commandPalette: true,
   directSave: false,
   saveButton: true,
   settingsPanelSwitcher: true,

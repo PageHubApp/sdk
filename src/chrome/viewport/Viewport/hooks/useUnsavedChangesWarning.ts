@@ -1,6 +1,7 @@
 import Router from "next/router";
 import { useEffect, useRef } from "react";
 
+import { useSDK } from "../../../../core/context";
 import { useConfirm } from "../../../primitives/layout/useConfirm";
 
 /** Next.js treats a thrown routeChangeStart handler as a cancelled navigation. */
@@ -13,9 +14,17 @@ const CANCEL_NAVIGATION = "ph:navigation-cancelled-unsaved-changes";
  * `ConfirmDialog`, and replayed if you choose to leave. Page switches use
  * `pushState` (not the Next.js router), so they never trigger this.
  *
+ * A host that keeps the editor mounted behind its other screens is asked first
+ * (`UrlStrategy.keepsEditor`): a navigation that keeps it loses nothing, so it
+ * isn't stopped. A hidden editor (`active` false) keeps the tab-close prompt
+ * but never stops a navigation: its dialog would render inside the hidden box,
+ * so the navigation would stop with nothing on screen.
+ *
  * Returns the dialog; the caller renders it.
  */
 export function useUnsavedChangesWarning(unsavedChanges: string | null) {
+  const { active, config } = useSDK();
+  const keepsEditor = config.urlStrategy?.keepsEditor;
   const hasDirtyChanges = typeof unsavedChanges === "string" && unsavedChanges.length > 0;
   const { ask, dialog } = useConfirm();
   const leaving = useRef(false);
@@ -28,7 +37,7 @@ export function useUnsavedChangesWarning(unsavedChanges: string | null) {
       e.returnValue = "";
     };
     const handleBrowseAway = (url: string) => {
-      if (leaving.current) return;
+      if (leaving.current || keepsEditor?.(url)) return;
       Router.events.emit("routeChangeError");
       void ask({
         title: "Leave without saving?",
@@ -45,12 +54,12 @@ export function useUnsavedChangesWarning(unsavedChanges: string | null) {
     };
 
     window.addEventListener("beforeunload", handleWindowClose);
-    Router.events.on("routeChangeStart", handleBrowseAway);
+    if (active) Router.events.on("routeChangeStart", handleBrowseAway);
     return () => {
       window.removeEventListener("beforeunload", handleWindowClose);
       Router.events.off("routeChangeStart", handleBrowseAway);
     };
-  }, [hasDirtyChanges, ask]);
+  }, [hasDirtyChanges, active, ask, keepsEditor]);
 
   return dialog;
 }

@@ -21,7 +21,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createContextRegistry } from "../context";
-import { createCommandsRegistry } from "../commands";
+import { createHeadlessCommandsRegistry } from "../commands.test-helpers";
 import { createMenusRegistry } from "../menus";
 import { BUILTIN_COMMANDS } from "./commands";
 import { BUILTIN_MENUS } from "./menus";
@@ -93,7 +93,7 @@ function installFakeEcosystem() {
 
 function setupCommands(opts?: { tiptapActive?: boolean; selectionEmpty?: boolean }) {
   const context = createContextRegistry();
-  const commands = createCommandsRegistry({ context });
+  const commands = createHeadlessCommandsRegistry({ context });
   const menus = createMenusRegistry({ commands, context });
   for (const def of BUILTIN_COMMANDS) commands.register(def);
   for (const { location, items } of BUILTIN_MENUS) menus.contribute(location, items);

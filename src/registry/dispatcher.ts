@@ -73,6 +73,11 @@ export function mountKeybindingDispatcher(
   const handler = (event: KeyboardEvent) => {
     const ctx = opts.getCtx ? opts.getCtx() : opts.context.getSnapshot();
 
+    // A hidden editor (`<PageHubProvider active={false}>`, set as the
+    // `editorActive` context key) owns no chords: the event is left alone so
+    // the host page keeps ⌘Z, Delete, paste and the rest.
+    if (ctx.editorActive === false) return;
+
     // Gate: if focus is in a text-editing surface, only allow bindings whose
     // matched command is text-scoped. Cheap pre-check before iterating.
     const inTextSurface = isInsideTextEditingSurface(event.target);

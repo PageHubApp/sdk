@@ -34,9 +34,10 @@ import type {
   PageHubTheme,
 } from "./types";
 import { BatchOperationAtom, EditorSaveBannerAtom, useSetAtomState } from "./utils/atoms";
-import { compressAsync, decompressAsync } from "./utils/compressionAsync";
+import { compressAsync } from "./utils/compressionAsync";
+import { applyFetchedTree, safeSerialize } from "./core/editorTree";
 import { ConfigError } from "./utils/errors";
-import { clearLoadedPages, listPageNodeIds, markPageLoaded } from "./utils/page/pageManagement";
+import { listPageNodeIds } from "./utils/page/pageManagement";
 import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
 
 // ─── Import the real Viewport, Toolbar, and all dialog components from the editor chrome ──
@@ -47,6 +48,7 @@ import { RotateHandleController } from "./chrome/canvas/controllers/RotateHandle
 import { ChromeErrorBoundary } from "./chrome/shell/ChromeErrorBoundary";
 import { DragPreviewLayer } from "./chrome/shell/DragPreviewLayer";
 import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
+import { EditorActiveGate } from "./chrome/shell/EditorActiveGate";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
 import { EditorSaveBanner } from "./chrome/shell/EditorSaveBanner";
 import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
@@ -58,7 +60,6 @@ import { Toolbar } from "./chrome/toolbar";
 import { Viewport } from "./chrome/viewport/Viewport/Viewport";
 import { UnsavedChangesAtom } from "./chrome/viewport/state/atoms";
 import { Container } from "./components/Container/Container";
-import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 import { sdkLog } from "./utils/logger";
 
 // Lazy-loaded dialogs — only loaded when user opens them
@@ -82,28 +83,6 @@ const ToolTipDialog = React.lazy(() =>
 
 // Side-effect import: RegistrySettings self-registers with InspectorRegistry
 import "./chrome/toolbar/inspector/RegistrySettings";
-
-/**
- * Replace the editor tree with a fetched one. Page fetches hand back the
- * tree LZ-compressed (a node map is accepted too), and the loaded-pages set
- * must follow the tree so the next save describes exactly what is in it.
- */
-async function applyFetchedTree(content: unknown, query: any, actions: any): Promise<void> {
-  const raw = typeof content === "string" ? content : JSON.stringify(content);
-  const json = raw.trimStart().startsWith("{") ? raw : await decompressAsync(raw);
-  actions.history.ignore().deserialize(sanitizeCraftSerializedContent(json) || "");
-  clearLoadedPages();
-  for (const id of listPageNodeIds(query)) markPageLoaded(id);
-}
-
-// ─── Safe serialize — catches CraftJS invariant when nodes have unresolved types ─
-function safeSerialize(query: any): string | null {
-  try {
-    return query.serialize();
-  } catch {
-    return null;
-  }
-}
 
 // ─── Internal editor wrapper that handles save/load ──────────────────────────
 
@@ -339,6 +318,8 @@ interface PageHubEditorProps {
   apiBaseUrl?: string;
   /** Start in read-only mode. Default: false */
   readOnly?: boolean;
+  /** False while the host keeps the editor mounted but hidden. See `PageHubProviderProps.active`. */
+  active?: boolean;
   /** Host-rendered docked panel (e.g. assistant). Same as `PageHubConfig.aiPanel`. */
   aiPanel?: PageHubConfig["aiPanel"];
   /** Content rendered inside the CraftJS <Editor> tree (has access to useEditor) */
@@ -393,7 +374,7 @@ function PageHubEditorStandalone(props: PageHubEditorProps & { callbacks: PageHu
   );
 
   return (
-    <PageHubProvider config={config} emitter={emitter}>
+    <PageHubProvider config={config} emitter={emitter} active={props.active}>
       <PageHubEditorInner
         resolver={props.resolver}
         components={props.components}
@@ -556,6 +537,7 @@ function PageHubEditorInner({
             }}
           >
             <EditorSelectionDomProvider>
+              <EditorActiveGate />
               <DropZoneIndicator />
               <DragPreviewLayer />
               <BorderResizeController />

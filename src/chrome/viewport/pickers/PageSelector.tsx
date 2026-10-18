@@ -14,7 +14,7 @@ import useSWR from "swr";
 import { SettingsAtom } from "../../../utils/atoms";
 import { IsolateAtom } from "../../../utils/atoms";
 import { hasPageIsolation, isolatePageInTree } from "../../../utils/page/pageManagement";
-import { usePageNavigation } from "../../../utils/page/pageNavigation";
+import { setKnownPages, usePageNavigation } from "../../../utils/page/pageNavigation";
 import { EditorListPicker } from "./EditorListPicker";
 import { sdkLog } from "../../../utils/logger";
 
@@ -80,6 +80,20 @@ export function PageSelector({
     isHomePage: !!p.isHomePage,
     pageSlug: p.pageSlug || "",
   }));
+
+  // The nav store resolves URLs to pages whose shard isn't loaded from this list.
+  const listedPages = pageData?.pages;
+  useEffect(() => {
+    if (!siteId || !Array.isArray(listedPages)) return;
+    setKnownPages(
+      siteId,
+      listedPages.map((p: any) => ({
+        id: p.nodeId,
+        slug: resolvePageSlug({ pageSlug: p.pageSlug, displayName: p.displayName }, p.nodeId),
+        isHomePage: !!p.isHomePage,
+      }))
+    );
+  }, [siteId, listedPages]);
 
   // Pages from CraftJS tree (source of truth for newly created pages not yet saved)
   const craftPages: Page[] = (() => {

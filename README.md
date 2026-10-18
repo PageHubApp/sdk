@@ -197,6 +197,7 @@ Toggle editor capabilities on or off:
 features: {
   sidebar: true,                  // component panel
   toolbar: true,                  // top toolbar
+  topBar: true,                   // header row + breadcrumb page selector (false = host renders EditorTopBarActions)
   saveButton: true,               // save/publish button in top toolbar
   aiGeneration: false,            // AI content generation (requires ai config)
   multiPage: true,                // multi-page site editing

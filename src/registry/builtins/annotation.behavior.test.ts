@@ -5,13 +5,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createContextRegistry } from "../context";
-import { createCommandsRegistry } from "../commands";
+import { createHeadlessCommandsRegistry } from "../commands.test-helpers";
 import { BUILTIN_COMMANDS } from "./commands";
 import { setAnnotationBackref } from "../annotationBackref";
 
 function makeRegistries() {
   const context = createContextRegistry();
-  const commands = createCommandsRegistry({ context });
+  const commands = createHeadlessCommandsRegistry({ context });
   for (const def of BUILTIN_COMMANDS) commands.register(def);
   return { context, commands };
 }

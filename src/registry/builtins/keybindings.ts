@@ -41,7 +41,11 @@ export const BUILTIN_KEYBINDINGS: KeybindingDef[] = [
   {
     command: "ph.editor.openCommandPalette",
     key: "mod+k",
-    when: notInTextEditing,
+    // `features.commandPalette: false` hands ⌘K to the host: no match, so the
+    // event isn't prevented or stopped.
+    when: ctx =>
+      ctx.features?.commandPalette !== false &&
+      notInTextEditing(ctx),
   },
   {
     command: "ph.sidebar.search",

@@ -1,26 +1,23 @@
 /**
  * Editor top bar — Phase 2 C2a (command-registry migration).
  *
- * Thin renderer: every button comes from `useMenuItems("topbar")`. Click
- * dispatches via `sdk.commands.execute(id, args, { trigger: "menu" })`. The
- * keybinding dispatcher owns chord handling — there is no longer a
- * `useHeaderShortcuts` hook.
+ * The header row is `<EditorTopBarActions />` (every `useMenuItems("topbar")`
+ * button plus the BreakpointSwitcher). `features.topBar: false` drops the
+ * header and the breadcrumb's page selector so a host can render those
+ * controls in its own chrome; everything below still mounts. The keybinding
+ * dispatcher owns chord handling.
  *
- * Special-cases kept inline:
- *  - <BreakpointSwitcher /> — its dropdown is a custom popover (mode grid +
- *    breakpoint chips + zoom slider), not a single button. Mounted in the
- *    "view" group slot.
+ * Also mounted here:
  *  - The breadcrumb / page selector row below the header.
  *  - Lazy modal mounts (Layers, Modifiers, MediaManager) — driven by atoms,
  *    no longer prop-drilled.
- *  - --editor-nav-height ResizeObserver.
+ *  - --editor-nav-height ResizeObserver (0px without a header).
  *  - <CommandPaletteRoot /> singleton.
  */
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
-import React, { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import {
   LayersDialogOpenAtom,
   MediaManagerModalAtom,
@@ -31,15 +28,13 @@ import {
 } from "../../../utils/atoms";
 import { useSDK } from "../../../core/context";
 import { useRegistries } from "../../../registry/provider";
-import { useMenuItems } from "../../../registry/hooks";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
 import { ChipPopover } from "../../toolbar/breakpoint-chip/ChipPopover";
 import { PreviewAtom } from "../state/atoms";
 import { ComponentSelector } from "../pickers/ComponentSelector";
 import { EditorNavigation } from "../nav/EditorNavigation";
 import { NodeBreadcrumb } from "../nav/NodeBreadcrumb";
-import { BreakpointSwitcher } from "./BreakpointSwitcher";
-import { HeaderItem as Item } from "./HeaderItem";
+import { EditorTopBarActions } from "./EditorTopBarActions";
 import { useDarkMode } from "./useDarkMode";
 import { useTopBarComponents } from "./useTopBarComponents";
 
@@ -79,9 +74,10 @@ export const ViewportTopBar = () => {
 
   useTopBarComponents({ query, enabled, componentFingerprint });
 
-  const { features, commands } = useSDK();
+  const { features } = useSDK();
   const { context: commandContext } = useRegistries();
   const isTenant = features.directSave;
+  const showTopBar = features.topBar !== false;
 
   // Atom-backed modal state — lifted in Phase 1 Wave A, consumed here in C2a.
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useAtomState(
@@ -115,8 +111,13 @@ export const ViewportTopBar = () => {
   useLayoutEffect(() => {
     if (!enabled) return;
     const toolbar = document.getElementById("toolbar");
+    if (!toolbar) return;
+    if (!showTopBar) {
+      toolbar.style.setProperty("--editor-nav-height", "0px");
+      return () => toolbar.style.removeProperty("--editor-nav-height");
+    }
     const el = editorChromeNavRef.current;
-    if (!toolbar || !el) return;
+    if (!el) return;
     const sync = () => {
       const h = Math.ceil(el.getBoundingClientRect().height);
       toolbar.style.setProperty("--editor-nav-height", `${h}px`);
@@ -128,61 +129,22 @@ export const ViewportTopBar = () => {
       ro.disconnect();
       toolbar.style.removeProperty("--editor-nav-height");
     };
-  }, [enabled]);
-
-  const topbarItems = useMenuItems("topbar");
+  }, [enabled, showTopBar]);
 
   if (!enabled) return null;
 
   return (
     <>
-      <header
-        ref={editorChromeNavRef}
-        role="banner"
-        className="border-base-300 bg-base-100 text-base-content pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b px-1 py-1"
-        data-tutorial="header"
-      >
-        {topbarItems.map((item, idx) => {
-          const node = (
-            <Item
-              key={item.command + JSON.stringify(item.args ?? null)}
-              ariaLabel={item.title}
-              disabled={!item.enabled}
-              onClick={e => {
-                e.stopPropagation();
-                void commands.execute(item.command, item.args, { trigger: "menu" });
-              }}
-              onMouseDown={
-                item.command === "ph.editor.insert" || item.command === "ph.editor.openMore"
-                  ? e => e.stopPropagation()
-                  : undefined
-              }
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content={item.title}
-              data-tooltip-place="bottom"
-              data-tooltip-offset={10}
-            >
-              {item.icon}
-            </Item>
-          );
-          // BreakpointSwitcher is a custom popover surface (mode toggle +
-          // breakpoint chip grid + zoom slider) — not a single button, so
-          // it can't be a registered menu item. Inject it at the natural
-          // visual slot between `history` and `view` groups (i.e. after
-          // ph.editor.undo and before ph.editor.togglePreview in array order;
-          // under flex-row-reverse that places it left of undo).
-          // A locked canvas width (`features.canvasWidth`) has no breakpoints to switch.
-          if (item.command === "ph.editor.undo" && !features.canvasWidth) {
-            return (
-              <React.Fragment key={`__frag_${idx}`}>
-                {node}
-                <BreakpointSwitcher />
-              </React.Fragment>
-            );
-          }
-          return node;
-        })}
-      </header>
+      {showTopBar && (
+        <header
+          ref={editorChromeNavRef}
+          role="banner"
+          className="border-base-300 bg-base-100 text-base-content pointer-events-auto relative z-50 flex items-center border-b px-1 py-1"
+          data-tutorial="header"
+        >
+          <EditorTopBarActions className="w-full justify-between gap-0" showPageSelector={false} />
+        </header>
+      )}
 
       {/* Combined breadcrumb / page selector row - Below Header */}
       <div className="bg-base-100 pointer-events-auto">
@@ -191,7 +153,7 @@ export const ViewportTopBar = () => {
             <ComponentSelector className="w-full" />
           </div>
         ) : (
-          <NodeBreadcrumb />
+          <NodeBreadcrumb showPageSelector={showTopBar} />
         )}
       </div>
 
@@ -217,10 +179,12 @@ export const ViewportTopBar = () => {
       {/* Singleton breakpoint-chip popover — anchored to whichever chip is open. */}
       <ChipPopover />
 
-      {/* Singleton command palette (⌘K) — listens for the chord on its own. */}
-      <Suspense fallback={null}>
-        <CommandPaletteRoot />
-      </Suspense>
+      {/* Singleton command palette (⌘K). Off when the host owns ⌘K. */}
+      {features.commandPalette !== false && (
+        <Suspense fallback={null}>
+          <CommandPaletteRoot />
+        </Suspense>
+      )}
     </>
   );
 };

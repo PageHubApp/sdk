@@ -3,6 +3,7 @@ import { TbMinus, TbPlus, TbZoomReset, TbZoomScan } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { phStorage } from "../../../utils/phStorage";
+import { useSDKSafe } from "../../../core/context";
 
 export const zoomPresets = [
   { label: "25%", value: 0.25 },
@@ -71,6 +72,8 @@ export function CanvasZoom({
   storageKey,
 }: CanvasZoomProps) {
   const [zoom, setZoom] = useAtomState(zoomAtom);
+  // A hidden editor leaves ⌘+ / ⌘− / ⌘0 to the browser.
+  const editorActive = useSDKSafe()?.active !== false;
   const [showDropdown, setShowDropdown] = useState(false);
   const [fitToWindow, setFitToWindow] = useState(() => {
     // Default: prefer fit-to-window unless the user explicitly saved a manual zoom.
@@ -140,7 +143,7 @@ export function CanvasZoom({
   };
 
   useEffect(() => {
-    if (disabled) return;
+    if (disabled || !editorActive) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!document.querySelector(activeSelector)) return;
 
@@ -174,7 +177,7 @@ export function CanvasZoom({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setZoom, activeSelector, disabled]);
+  }, [setZoom, activeSelector, disabled, editorActive]);
 
   return (
     <div

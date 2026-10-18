@@ -20,7 +20,12 @@ interface BreadcrumbItem {
   role?: string;
 }
 
-export const NodeBreadcrumb = () => {
+interface NodeBreadcrumbProps {
+  /** Lead the row with the inline page switcher. Default true; off when the host renders it (`features.topBar: false`). */
+  showPageSelector?: boolean;
+}
+
+export const NodeBreadcrumb = ({ showPageSelector = true }: NodeBreadcrumbProps) => {
   const { query, actions } = useEditor((state, query) => ({
     selectedId: query.getEvent("selected").first(),
   }));
@@ -216,8 +221,8 @@ export const NodeBreadcrumb = () => {
       }`}
     >
       <div className="flex min-h-0 min-w-0 flex-1 items-center gap-1">
-        {/* Page selector — always visible, acts as the page context + navigation */}
-        {!isEditing && <PageSelector inlineTrigger />}
+        {/* Page selector — the page context + navigation, unless the host renders it */}
+        {showPageSelector && !isEditing && <PageSelector inlineTrigger />}
 
         {/* Ancestry dropdown — sits between home and breadcrumbs, replacing the first chevron */}
         {!isEditing && !showOnlyPageContext && breadcrumb.length > 1 && (

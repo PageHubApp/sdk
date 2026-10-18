@@ -10,7 +10,7 @@
 
 import { useSyncExternalStore } from "react";
 import { sdkLog } from "../logger";
-import { resolvePageSlug } from "./pageSlug";
+import { pageSlugMatches, resolvePageSlug } from "./pageSlug";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -23,6 +23,20 @@ export interface UrlStrategy {
   parsePageSlug: () => string | null;
   /** Parse the current URL to extract the site ID. null = not yet saved. */
   parseSiteId: () => string | null;
+  /**
+   * True when the current URL is one of the editor's own. Optional; omitted =
+   * every URL is. A host that keeps the editor mounted on other screens
+   * returns false there, so Back / Forward between those screens (and
+   * `syncPageFromUrl`) leave the editor's page alone.
+   */
+  ownsUrl?: () => boolean;
+  /**
+   * True when a host navigation to `url` leaves the editor mounted (a host
+   * that keeps it alive, hidden, behind its other screens). Optional; omitted =
+   * every navigation unmounts it. The unsaved-changes prompt only asks before
+   * navigations that unmount the editor, since nothing is lost otherwise.
+   */
+  keepsEditor?: (url: string) => boolean;
 }
 
 export interface PageNavState {
@@ -58,6 +72,32 @@ let initOpts: PageNavInit | null = null;
 
 /** Tracks in-flight isolation to prevent races from rapid page switches. */
 let isolationSeq = 0;
+
+/** A page of the site as the server lists it, whether or not its shard is loaded. */
+export interface KnownPage {
+  id: string;
+  /** Canonical URL slug (`resolvePageSlug`). */
+  slug: string;
+  isHomePage: boolean;
+}
+
+/**
+ * Every page of the site, from the page list (`PageSelector` feeds it). The
+ * tree only holds the shared shard plus the page being edited, so a URL that
+ * names any other page — Back / Forward, or a host link into the editor —
+ * resolves here.
+ */
+let knownPages: { siteId: string; pages: KnownPage[] } | null = null;
+
+/** Replace the site's page list used to resolve URLs (see `knownPages`). */
+export function setKnownPages(siteId: string, pages: KnownPage[]): void {
+  knownPages = { siteId, pages };
+}
+
+/** The known pages, only when they belong to the site being edited. */
+function knownPagesForSite(): KnownPage[] {
+  return knownPages && knownPages.siteId === currentSnapshot.siteId ? knownPages.pages : [];
+}
 
 // ── External store API (for useSyncExternalStore) ───────────────────────────
 
@@ -98,30 +138,47 @@ async function doIsolate(pageId: string | null): Promise<void> {
   if (seq !== isolationSeq) return;
 }
 
-// ── Popstate (back/forward) ─────────────────────────────────────────────────
+// ── URL → active page (back/forward, host navigation) ──────────────────────
+
+/**
+ * Show the page the current URL names (the home page when it names none).
+ * Runs on every popstate. A host whose own router changed the URL to an
+ * editor URL — a link into the editor while it was already mounted and
+ * hidden — calls it after that navigation, since a router push fires no
+ * popstate. No-op when the URL isn't the editor's (`UrlStrategy.ownsUrl`).
+ */
+export function syncPageFromUrl(): void {
+  const strategy = initOpts?.urlStrategy;
+  if (!initOpts || !strategy) return;
+  if (strategy.ownsUrl && !strategy.ownsUrl()) return;
+  const slug = strategy.parsePageSlug();
+  const siteId = strategy.parseSiteId();
+
+  if (siteId) currentSnapshot.siteId = siteId;
+
+  const listed = knownPagesForSite();
+  let targetId: string | null = null;
+  if (slug) {
+    targetId =
+      initOpts.resolvePageIdFromSlug(slug) ??
+      listed.find(p => pageSlugMatches(p.slug, slug))?.id ??
+      null;
+  }
+  if (!targetId) {
+    // The tree's own pick falls back to its first page, which is just the
+    // loaded one once another page's shard has replaced the home page.
+    targetId = listed.find(p => p.isHomePage)?.id ?? initOpts.getHomePageId();
+  }
+
+  if (targetId && targetId !== currentSnapshot.activePageId) {
+    currentSnapshot.activePageId = targetId;
+    doIsolate(targetId);
+    notify();
+  }
+}
 
 if (typeof window !== "undefined") {
-  window.addEventListener("popstate", () => {
-    if (!initOpts?.urlStrategy) return;
-    const slug = initOpts.urlStrategy.parsePageSlug();
-    const siteId = initOpts.urlStrategy.parseSiteId();
-
-    if (siteId) currentSnapshot.siteId = siteId;
-
-    let targetId: string | null = null;
-    if (slug) {
-      targetId = initOpts.resolvePageIdFromSlug(slug);
-    }
-    if (!targetId) {
-      targetId = initOpts.getHomePageId();
-    }
-
-    if (targetId && targetId !== currentSnapshot.activePageId) {
-      currentSnapshot.activePageId = targetId;
-      doIsolate(targetId);
-      notify();
-    }
-  });
+  window.addEventListener("popstate", syncPageFromUrl);
 }
 
 // ── Public API ──────────────────────────────────────────────────────────────

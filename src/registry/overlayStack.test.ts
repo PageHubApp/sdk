@@ -12,7 +12,7 @@ import {
   pushOverlay,
   subscribeOverlayStack,
 } from "./overlayStack";
-import { createCommandsRegistry } from "./commands";
+import { createHeadlessCommandsRegistry } from "./commands.test-helpers";
 import { createContextRegistry } from "./context";
 import { BUILTIN_COMMANDS } from "./builtins/commands";
 
@@ -73,7 +73,7 @@ test("overlayStack: subscribe fires on push / pop / dismiss", () => {
 
 test("ph.overlay.dismissTop: not stubbed", () => {
   const context = createContextRegistry();
-  const commands = createCommandsRegistry({ context });
+  const commands = createHeadlessCommandsRegistry({ context });
   for (const def of BUILTIN_COMMANDS) commands.register(def);
   const cmd = commands.get("ph.overlay.dismissTop");
   assert.ok(cmd, "command exists");
@@ -83,7 +83,7 @@ test("ph.overlay.dismissTop: not stubbed", () => {
 test("ph.overlay.dismissTop: when-clause gated on stackDepth", async () => {
   _resetOverlayStackForTests();
   const context = createContextRegistry();
-  const commands = createCommandsRegistry({ context });
+  const commands = createHeadlessCommandsRegistry({ context });
   for (const def of BUILTIN_COMMANDS) commands.register(def);
 
   // Stack empty → when() returns false.
@@ -100,7 +100,7 @@ test("ph.overlay.dismissTop: when-clause gated on stackDepth", async () => {
 test("ph.overlay.dismissTop: run pops the top entry", async () => {
   _resetOverlayStackForTests();
   const context = createContextRegistry();
-  const commands = createCommandsRegistry({ context });
+  const commands = createHeadlessCommandsRegistry({ context });
   for (const def of BUILTIN_COMMANDS) commands.register(def);
 
   let dismissed = false;

@@ -19,7 +19,7 @@ const TOPBAR: MenuItem[] = [
   { command: "ph.editor.insert", group: "primary@10" },
   { command: "ph.editor.redo", group: "history@20" },
   { command: "ph.editor.undo", group: "history@30" },
-  // BreakpointSwitcher is a special-case submenu — see ViewportTopBar render
+  // BreakpointSwitcher is a special-case submenu — see EditorTopBarActions render
   // for the inline mount. It's not contributed here because its dropdown is
   // a custom popover (mode/breakpoint chip grid + zoom slider). Visually it
   // sits at order ~40 (between undo and togglePreview).

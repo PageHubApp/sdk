@@ -254,7 +254,9 @@ export const EDITOR_COMMANDS: CommandDef[] = [
     id: "ph.editor.openCommandPalette",
     title: "Command palette",
     category: "View",
-    when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
+    when: ctx =>
+      ctx.features?.commandPalette !== false &&
+      !isInsideTextEditingSurfaceCtx(ctx),
     // Don't list the palette inside itself.
     paletteHide: true,
     run: () => {

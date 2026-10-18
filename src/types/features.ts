@@ -53,6 +53,20 @@ export interface PageHubFeatures {
    * Default: null (canvas follows the breakpoint / device controls).
    */
   canvasWidth?: number | null;
+  /**
+   * Show the editor's header row (undo/redo, breakpoints, preview, save,
+   * More menu) and the page selector in the breadcrumb row. Default: true.
+   * Set false when the host renders those controls in its own chrome via
+   * `EditorTopBarActions`; the breadcrumb, nav flyouts, modals and command
+   * palette still mount.
+   */
+  topBar?: boolean;
+  /**
+   * The editor's own command palette and its ⌘K chord. Default: true. Set
+   * false when the host page has its own ⌘K palette: the editor then neither
+   * mounts its palette nor claims the chord, so the host's handler gets it.
+   */
+  commandPalette?: boolean;
   /** Save directly without showing the domain/publish picker. Default: false */
   directSave?: boolean;
   /** Show the save/publish button in the top toolbar. Default: true */
