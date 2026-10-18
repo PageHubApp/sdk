@@ -63,7 +63,7 @@ interface PageSelectorProps {
 }
 
 const ADDRESS_TRIGGER_CLASS =
-  "hover:text-base-content flex h-8 min-w-0 flex-1 items-center gap-1 rounded-full text-left text-sm transition-colors";
+  "hover:text-base-content flex h-8 min-w-0 flex-1 items-center gap-1 rounded-full text-left text-sm transition-colors focus:outline-none";
 const ADDRESS_LINK_CLASS =
   "text-base-content/50 hover:bg-base-content/10 hover:text-base-content inline-flex size-6 shrink-0 items-center justify-center rounded-full transition-colors";
 
@@ -244,7 +244,8 @@ export function PageSelector({
           }
           aria-label="Page selector"
           aria-expanded={isOpen}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          // In address mode the field already shows the URL; a tooltip would cover the list.
+          data-tooltip-id={address ? undefined : PAGEHUB_RTT_GLOBAL_ID}
           data-tooltip-content={
             pickerMode && !currentPage
               ? "Select a page"
