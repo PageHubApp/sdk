@@ -57,6 +57,14 @@ function bindingFiresInsideTextSurface(
   return false;
 }
 
+/**
+ * Live dispatchers per keybindings registry, ref-counted. A bundle gets exactly
+ * one document listener no matter how many callers mount it — `PageHub.init()`
+ * and `<PageHubProvider>` both mount, and a host that builds its own bundle
+ * relies on the provider's mount.
+ */
+const mounted = new WeakMap<KeybindingsRegistry, { count: number; unmount: () => void }>();
+
 export function mountKeybindingDispatcher(
   opts: KeybindingDispatcherOptions
 ): () => void {
@@ -67,6 +75,31 @@ export function mountKeybindingDispatcher(
         : null
       : opts.target;
   if (!doc) return () => {};
+
+  // An explicit target is a test / isolated surface: it gets its own listener.
+  if (opts.target !== undefined) return attachDispatcher(doc, opts);
+
+  const existing = mounted.get(opts.keybindings);
+  if (existing) {
+    existing.count++;
+  } else {
+    mounted.set(opts.keybindings, { count: 1, unmount: attachDispatcher(doc, opts) });
+  }
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    const entry = mounted.get(opts.keybindings);
+    if (!entry) return;
+    entry.count--;
+    if (entry.count === 0) {
+      entry.unmount();
+      mounted.delete(opts.keybindings);
+    }
+  };
+}
+
+function attachDispatcher(doc: Document, opts: KeybindingDispatcherOptions): () => void {
 
   const seenConflicts = new Set<string>();
 

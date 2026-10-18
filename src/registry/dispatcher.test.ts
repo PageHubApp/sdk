@@ -356,6 +356,37 @@ test("dispatcher: unmount removes listener", () => {
   assert.equal(doc.listenerCount(), 0);
 });
 
+test("dispatcher: one document listener per bundle, released on the last unmount", () => {
+  const { commands, keybindings, context, doc } = setup();
+  const g = globalThis as { document?: unknown };
+  const prev = g.document;
+  g.document = doc;
+  try {
+    const a = mountKeybindingDispatcher({ commands, keybindings, context });
+    const b = mountKeybindingDispatcher({ commands, keybindings, context });
+    assert.equal(doc.listenerCount(), 1);
+    a();
+    a(); // a second call on the same handle is a no-op
+    assert.equal(doc.listenerCount(), 1);
+    b();
+    assert.equal(doc.listenerCount(), 0);
+    // A different bundle gets its own listener.
+    const other = setup();
+    const c = mountKeybindingDispatcher({ commands, keybindings, context });
+    const d = mountKeybindingDispatcher({
+      commands: other.commands,
+      keybindings: other.keybindings,
+      context: other.context,
+    });
+    assert.equal(doc.listenerCount(), 2);
+    c();
+    d();
+    assert.equal(doc.listenerCount(), 0);
+  } finally {
+    g.document = prev;
+  }
+});
+
 test("dispatcher: no-ops when target is null (SSR)", () => {
   const { commands, keybindings, context } = setup();
   const unmount = mountKeybindingDispatcher({

@@ -2,8 +2,8 @@
  * Builtin keybinding catalog — full list from v2 doc "Keybinding registration
  * plan". Each entry references a command id from `./commands.tsx`.
  *
- * Wave A: the registry stores these, but the doc-level dispatcher is NOT
- * mounted. Phase 2 wires the loop.
+ * The document-level dispatcher (`../dispatcher.ts`, mounted by
+ * `<PageHubProvider>`) matches these against every keydown.
  */
 import type { KeybindingDef, CommandContext } from "../types";
 
