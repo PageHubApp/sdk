@@ -1,3 +1,4 @@
+import { useEffect, useId, useRef } from "react";
 import ReactDOM from "react-dom";
 import { TbCrop, TbX } from "react-icons/tb";
 import { CropCanvas } from "./ImageCrop/components/CropCanvas";
@@ -5,24 +6,54 @@ import { CropControlsPanel } from "./ImageCrop/components/CropControlsPanel";
 import { useImageCrop } from "./ImageCrop/hooks/useImageCrop";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 import { OVERLAY_Z_CRITICAL_MODAL } from "../../popovers/overlayZIndex";
-import { getPortalTarget } from "../../popovers/getPortalTarget";
+import { usePortalTarget } from "../../popovers/usePortalTarget";
+import { shouldCloseOnEscape } from "../../floating/modalEscape";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 
 interface ImageCropModalProps {
   isOpen: boolean;
   onClose: () => void;
   media: any;
   onSave: (croppedImage: any) => void;
+  /** Stacking layer; defaults to the critical-modal layer. Raise it when opening over a higher overlay. */
+  zIndex?: number;
 }
 
-export function ImageCropModal({ isOpen, onClose, media, onSave }: ImageCropModalProps) {
+export function ImageCropModal({
+  isOpen,
+  onClose,
+  media,
+  onSave,
+  zIndex = OVERLAY_Z_CRITICAL_MODAL,
+}: ImageCropModalProps) {
   const crop = useImageCrop({ media, onSave, onClose });
+  // Not `getPortalTarget()`: outside the editor it finds this dialog's own
+  // `.pagehub-sdk-root` backdrop on the next render and portals into itself.
+  const portalTarget = usePortalTarget();
+
+  // On the overlay stack like `Modal`, so Escape closes the cropper and not
+  // whatever it was opened from.
+  const overlayId = `image-crop:${useId()}`;
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  useOverlay({ id: overlayId, isOpen, onDismiss: () => onCloseRef.current() });
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!shouldCloseOnEscape(event, overlayId)) return;
+      event.preventDefault();
+      onCloseRef.current();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, overlayId]);
 
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
     <div
       className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center"
-      style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL }}
+      style={{ zIndex }}
       onClick={onClose}
     >
       <div
@@ -59,6 +90,6 @@ export function ImageCropModal({ isOpen, onClose, media, onSave }: ImageCropModa
         </div>
       </div>
     </div>,
-    getPortalTarget()
+    portalTarget
   );
 }
