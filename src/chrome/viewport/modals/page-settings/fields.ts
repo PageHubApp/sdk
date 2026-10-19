@@ -51,6 +51,8 @@ export const PAGE_SETTINGS_FIELDS: readonly PageSettingsFieldDef[] = [
   // Advanced
   { key: "canonicalUrl", nodePath: "seo.canonicalUrl", defaultValue: "" },
   { key: "headCode", defaultValue: "" },
+  // Raw HTML at the end of this page's <body>, after its content (scripts that need the DOM).
+  { key: "footerCode", defaultValue: "" },
   { key: "bodyClass", defaultValue: "" },
   { key: "hideHeader", defaultValue: false },
   { key: "hideFooter", defaultValue: false },

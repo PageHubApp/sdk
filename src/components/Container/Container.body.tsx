@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { TbArrowDown, TbContainer, TbNote } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
+import { InjectedHeadTags } from "../../chrome/static/runtime/InjectedHeadTags";
 import { useSDKSafe } from "../../core/context";
 import { useIsolate, usePreview, useView } from "../../core/store";
 import { ViewModeAtom } from "../../utils/atoms";
@@ -68,6 +69,13 @@ export interface ContainerProps extends BaseSelectorProps {
   type: string;
   isHomePage?: boolean;
   is404Page?: boolean;
+  /**
+   * Page only (`type: "page"`): raw HTML for this page's `<head>` / for the end
+   * of its `<body>` (after the content, like `ROOT.props.inject.footer`). The
+   * host routes emit them; the editor applies only their styles.
+   */
+  headCode?: string;
+  footerCode?: string;
   anchor?: string;
   tabGroup?: string;
   /**
@@ -359,6 +367,10 @@ export function renderContainerBody(
     ...(props.type === "componentCanvas" ? { "data-component-canvas": "true" } : {}),
     children: (
       <RenderPatternBody props={props}>
+        {/* The page's own CSS, so the canvas matches the published page. Scripts never run in the editor. */}
+        {ctx.enabled && props.type === "page" && (props.headCode || props.footerCode) ? (
+          <InjectedHeadTags html={[props.headCode, props.footerCode].filter(Boolean).join("\n")} stylesOnly />
+        ) : null}
         {/* React passes `children` as an empty array (truthy!) for canvas
             containers with no child nodes — `resolvedChildren ?` would always
             take the truthy branch and the empty-state hint would never render.
