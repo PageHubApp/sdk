@@ -55,6 +55,32 @@ function remainderInlineStyle(styleAttr: string | null | undefined): string | nu
 }
 
 /**
+ * `id` / `role` / `aria-*` / `data-*` on an inline tag. Kept through an edit so a
+ * site's own script (`getElementById("year")`) and accessible names still work.
+ * Names are matched, never wildcarded, so `on*` handlers and `style` can't ride along.
+ */
+const PASSTHROUGH_ATTR = /^(id|role|aria-[a-z0-9-]+|data-[a-z0-9_.:-]+)$/i;
+
+function readPassthroughAttrs(element: HTMLElement): Record<string, string> | null {
+  const out: Record<string, string> = {};
+  for (const { name, value } of Array.from(element.attributes)) {
+    if (PASSTHROUGH_ATTR.test(name)) out[name] = value;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+const passthroughAttrs = () => ({
+  passthrough: {
+    default: null as Record<string, string> | null,
+    parseHTML: readPassthroughAttrs,
+    renderHTML: (attributes: Record<string, unknown>) => {
+      const p = attributes.passthrough;
+      return p && typeof p === "object" ? (p as Record<string, string>) : {};
+    },
+  },
+});
+
+/**
  * Default TipTap marks parse common tags but often omit `style` / `class` from the schema,
  * so template HTML with inline CSS is stripped on edit. We extend marks to round-trip those attrs.
  */
@@ -77,6 +103,7 @@ const inlineAttrsOnMark = () => ({
       return { class: String(c) };
     },
   },
+  ...passthroughAttrs(),
 });
 
 const extendMarkWithInlineAttrs = <
@@ -127,11 +154,12 @@ const PagehubHighlight = Highlight.extend({
   },
 });
 
-/** Link already declares `class`; add `style` only so we do not duplicate class handling. */
+/** Link already declares `class`; add `style` + passthrough only so we do not duplicate class handling. */
 const PagehubLink = TiptapLink.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
+      ...passthroughAttrs(),
       style: {
         default: null as string | null,
         parseHTML: (element: HTMLElement) => element.getAttribute("style"),
@@ -146,6 +174,26 @@ const PagehubLink = TiptapLink.extend({
 });
 
 const PagehubTextStyle = TextStyle.extend({
+  /**
+   * TextStyle only parses `<span style>`; a `<span id="year">` or `<span class>`
+   * (imported sites) would otherwise unwrap on the first edit. Variable chips
+   * (`span[data-variable]`) belong to VariableNode.
+   */
+  parseHTML() {
+    return [
+      ...(this.parent?.() ?? []),
+      {
+        tag: "span",
+        consuming: false,
+        getAttrs: (element: HTMLElement) =>
+          !element.hasAttribute("style") &&
+          !element.hasAttribute("data-variable") &&
+          (element.hasAttribute("class") || readPassthroughAttrs(element) !== null)
+            ? {}
+            : false,
+      },
+    ];
+  },
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -167,6 +215,7 @@ const PagehubTextStyle = TextStyle.extend({
           return { class: String(c) };
         },
       },
+      ...passthroughAttrs(),
     };
   },
 });
