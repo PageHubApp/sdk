@@ -11,8 +11,14 @@
  * `@media` / `@supports` / `@container` wrappers; leaves `@keyframes`,
  * `@property`, `@font-face`, `@import` untouched (orphan keyframes are
  * dropped later by `stripUnusedKeyframes`).
+ *
+ * Comments go first: every DaisyUI file opens with `/*! 🌼 daisyUI 5.7.0 … *\/`,
+ * which would otherwise read as part of the first rule's selector (classes
+ * `.7`, `.0`) and drop that rule — the base `.hero`, `.card`, `.navbar`, ….
+ * `minifyCSS` strips them from the output anyway.
  */
 export function purgeDaisyUIRules(css: string, candidates: Set<string>): string {
+  css = css.replace(/\/\*[\s\S]*?\*\//g, "");
   if (!css.trim() || candidates.size === 0) return css;
 
   // CSS class tokens in a selector — `\w` plus `-`, prefixed by `.`.
