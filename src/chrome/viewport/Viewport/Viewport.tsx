@@ -238,15 +238,18 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         {/* Scope band + first-run coachmark are page-editor concerns.
             Component-editor mode (`viewMode === "canvas"`) edits a single
             isolated component and has its own mental model — suppress both
-            so we don't shout "EDITING MD BREAKPOINT" over a component card. */}
-        {enabled && viewMode !== "canvas" && <CanvasScopeBand />}
+            so we don't shout "EDITING MD BREAKPOINT" over a component card.
+            A locked width (`features.canvasWidth`) has no breakpoints either. */}
+        {enabled && viewMode !== "canvas" && !lockedWidth && <CanvasScopeBand />}
+        {/* A locked width wider than the editor scrolls sideways from its left
+            edge: centring it would push its start out of reach. */}
         <div
           className={`relative flex w-full min-w-0 flex-1 ${
-            breakpointActive && !responsive
+            lockedWidth || (breakpointActive && !responsive)
               ? "overflow-x-auto overflow-y-hidden"
               : "overflow-hidden"
           } ${
-            deviceFrame || isEditorCanvasBreakpointView(view)
+            !lockedWidth && (deviceFrame || isEditorCanvasBreakpointView(view))
               ? "bg-neutral/50 items-center justify-center"
               : "flex-row"
           }`}
@@ -258,7 +261,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             overlay
             onComplete={handleLoadComplete}
           />
-          {enabled && viewMode !== "canvas" && <ViewportScopeCoachmark />}
+          {enabled && viewMode !== "canvas" && !lockedWidth && <ViewportScopeCoachmark />}
           {!enabled && !screenshot && (
             <PreviewEditButton
               sideBarLeft={sideBarLeft}
