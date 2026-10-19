@@ -23,6 +23,7 @@ import {
 import { LoadingBar } from "../../primitives/LoadingBar";
 import { CanvasScopeBand } from "../canvas/CanvasScopeBand";
 import { ComponentCanvasViewport } from "../canvas/ComponentCanvasViewport";
+import { componentBoardEnabled } from "../canvas/componentBoard";
 import { DeviceScrollbar } from "../canvas/DeviceScrollbar";
 import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "../canvas/deviceFrames";
 import { SideBySideFrame, resolveSecondaryWidthPx } from "../canvas/SideBySideFrame";
@@ -275,7 +276,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
           {enabled && !online && <DeviceOffline />}
 
-          {enabled && viewMode === "canvas" && (
+          {enabled && viewMode === "canvas" && componentBoardEnabled(features) && (
             <ComponentCanvasViewport className="absolute inset-0 z-30" />
           )}
 

@@ -26,6 +26,7 @@ import {
   ViewModeAtom,
   useSetAtomState,
 } from "../../utils/atoms";
+import { CanvasIsolateAtom } from "../../utils/component/componentIsolation";
 import { useAutoOpenSidebar } from "../hooks/useAutoOpenSidebar";
 import { useComponentSync } from "../hooks/useComponentSync";
 import { useShowOnLoadAutoReveal } from "../hooks/useShowOnLoadAutoReveal";
@@ -94,6 +95,14 @@ export function useEditorWideEffects(): React.ReactNode {
       viewMode: viewMode === "canvas" ? "canvas" : "page",
     });
   }, [commandContext, canUndo, canRedo, preview, viewMode]);
+
+  // Back on the page editor, no component stays isolated. The board resets
+  // this on its own unmount; without the board (`features.componentBoard:
+  // false`) nothing else would.
+  const setCanvasIsolate = useSetAtomState(CanvasIsolateAtom);
+  useEffect(() => {
+    if (viewMode === "page") setCanvasIsolate(null);
+  }, [viewMode, setCanvasIsolate]);
 
   // Inputs to the menu items' dynamic titles ("Hide Layers Panel" vs "Dock
   // Layers Panel", the dark-mode toggle, …), read by `titleOverride` via ctx[key].

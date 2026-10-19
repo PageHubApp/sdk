@@ -30,6 +30,8 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   commandPalette: true,
   panelUrlPrefix: "",
   chrome: "default",
+  componentBoard: true,
+  maxReusableComponents: null,
   directSave: false,
   saveButton: true,
   settingsPanelSwitcher: true,

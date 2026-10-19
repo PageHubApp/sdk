@@ -10,6 +10,7 @@ import {
   TbFileText,
 } from "react-icons/tb";
 import { savedComponentsAllowed } from "../../../define/componentAllowlist";
+import { componentBoardEnabled } from "../../../chrome/viewport/canvas/componentBoard";
 import type { CommandDef } from "../../types";
 import { setAtomExternal, getAtomExternal } from "../../../utils/atoms/external";
 import {
@@ -146,7 +147,9 @@ export const CANVAS_COMMANDS: CommandDef[] = [
     category: "View",
     icon: ctx => (ctx.viewMode === "canvas" ? <TbFileText /> : <TbBoxModel2 />),
     // The components editor is where saved components are built; leaving it stays possible.
-    when: ctx => savedComponentsAllowed() || ctx.viewMode === "canvas",
+    // Without the board (`features.componentBoard: false`) components edit in isolation only.
+    when: ctx =>
+      componentBoardEnabled(ctx.features) && (savedComponentsAllowed() || ctx.viewMode === "canvas"),
     run: ctx => {
       const { query, actions } = ctx as { query: any; actions: any };
       toggleViewModeRun(query, actions);

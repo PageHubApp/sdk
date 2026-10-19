@@ -11,6 +11,8 @@ import {
   TbWand,
 } from "react-icons/tb";
 import { savedComponentsAllowed } from "../../../define/componentAllowlist";
+import { editorAtComponentCap } from "../../../chrome/viewport/canvas/componentCap";
+import { getEditorQuery } from "../../editorBackref";
 import type { CommandDef } from "../../types";
 import { setAtomExternal } from "../../../utils/atoms/external";
 import { CanvasIsolateAtom } from "../../../utils/component/componentIsolation";
@@ -230,7 +232,8 @@ export const NODE_COMMANDS: CommandDef[] = [
     category: "Edit",
     when: ctx => canCopySelection(ctx) && savedComponentsAllowed(),
     enablement: ctx =>
-      Boolean((ctx as Record<string, unknown>)["canMakeSavedComponent"]),
+      Boolean((ctx as Record<string, unknown>)["canMakeSavedComponent"]) &&
+      !editorAtComponentCap(getEditorQuery(), ctx.features.maxReusableComponents),
     run: ctx => nodeConvertToComponentRun(ctx),
   },
   {

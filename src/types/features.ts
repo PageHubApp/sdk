@@ -97,6 +97,19 @@ export interface PageHubFeatures {
    * default class strings as they are.
    */
   chrome?: ChromeStyle;
+  /**
+   * Whether the components editor shows the spatial board (every component
+   * pinned on a pannable canvas). Default: true. `false` = no board and no
+   * page/components toggle; a component edits in isolation only, rendered in
+   * flow inside `#viewport`. Read through `componentBoardEnabled()`.
+   */
+  componentBoard?: boolean;
+  /**
+   * The most reusable components (`type: "component"` containers under ROOT)
+   * a site may hold. Default: null (no cap). At the cap the editor won't make
+   * another and says why; existing ones stay. Hosts set it from their plans.
+   */
+  maxReusableComponents?: number | null;
   /** Save directly without showing the domain/publish picker. Default: false */
   directSave?: boolean;
   /** Show the save/publish button in the top toolbar. Default: true */

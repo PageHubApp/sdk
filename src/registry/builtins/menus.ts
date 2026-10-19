@@ -9,6 +9,8 @@
  * `group@order` keys are globally monotonic so the resolved sort matches
  * visual order exactly. Group label is documentation only.
  */
+import { editorAtComponentCap } from "../../chrome/viewport/canvas/componentCap";
+import { getEditorQuery } from "../editorBackref";
 import type { MenuItem, MenuLocation } from "../types";
 
 /**
@@ -152,7 +154,10 @@ const CANVAS_CONTEXT: MenuItem[] = [
       const canMake = Boolean(
         (ctx as Record<string, unknown>)["canMakeSavedComponent"]
       );
-      return canMake ? "Convert to component" : "Component exists";
+      if (!canMake) return "Component exists";
+      return editorAtComponentCap(getEditorQuery(), ctx.features.maxReusableComponents)
+        ? "Component limit reached"
+        : "Convert to component";
     },
   },
   { command: "ph.node.delete", group: "dupDel@160" },

@@ -34,6 +34,7 @@ import {
 import { unifiedDeleteNode } from "../../../chrome/hooks/unifiedDelete";
 import { AddElement } from "../../../chrome/viewport/toolbox/toolboxUtils";
 import { sdkLog } from "../../../utils/logger";
+import { blockedByComponentCap } from "../../../chrome/viewport/canvas/componentCapNotice";
 
 /**
  * Resolve the selection id the command should operate on. Commands fired
@@ -216,6 +217,7 @@ export function nodeConvertToComponentRun(ctx: any): void {
   const { query, actions } = ctx as { query: any; actions: any };
   const id = selectedId(query);
   if (!id) return;
+  if (blockedByComponentCap(query, ctx.features?.maxReusableComponents)) return;
   void (async () => {
     try {
       const comp = await saveHandler({

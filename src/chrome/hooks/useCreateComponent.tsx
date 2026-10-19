@@ -11,6 +11,9 @@ import type { EditorCanvasViewMode, SavedComponent } from "../../utils/atoms";
 import { getAtomExternal, setAtomExternal } from "../../utils/atoms/external";
 import { getEditorActions, getEditorQuery } from "../../registry/editorBackref";
 import { sdkLog } from "../../utils/logger";
+import { useSDK } from "../../core/context";
+import type { PageHubFeatures } from "../../types";
+import { blockedByComponentCap } from "../viewport/canvas/componentCapNotice";
 
 /**
  * Non-hook helper that does the actual work — extracted so the registry
@@ -24,6 +27,8 @@ import { sdkLog } from "../../utils/logger";
 export function createReusableComponentRun(args?: {
   query?: any;
   actions?: any;
+  /** The host's cap (`features.maxReusableComponents`); unset = none. */
+  maxReusableComponents?: PageHubFeatures["maxReusableComponents"];
 }): void {
   const query = args?.query ?? getEditorQuery();
   const actions = args?.actions ?? getEditorActions();
@@ -31,6 +36,7 @@ export function createReusableComponentRun(args?: {
     sdkLog.warn("[createReusableComponentRun] missing editor backref");
     return;
   }
+  if (blockedByComponentCap(query, args?.maxReusableComponents)) return;
   try {
     const componentName = "New Component";
     const tree = query
@@ -91,6 +97,7 @@ export function createReusableComponentRun(args?: {
  */
 export function useCreateComponent(): () => void {
   const { query, actions } = useEditor();
+  const max = useSDK().features.maxReusableComponents;
   // Subscribe to atoms so consumers re-render on the same triggers as
   // before; the helper itself reads via external accessors.
   useAtomState(ComponentsAtom);
@@ -98,6 +105,6 @@ export function useCreateComponent(): () => void {
   useSetAtomState(CanvasIsolateAtom);
 
   return React.useCallback(() => {
-    createReusableComponentRun({ query, actions });
-  }, [query, actions]);
+    createReusableComponentRun({ query, actions, maxReusableComponents: max });
+  }, [query, actions, max]);
 }
