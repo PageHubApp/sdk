@@ -1,3 +1,4 @@
+import { useNode } from "@craftjs/core";
 import { TbAdjustments } from "react-icons/tb";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
@@ -9,6 +10,8 @@ interface PanelProps {
 }
 
 export default function PropertiesPanel({ initialPosition, onClose }: PanelProps) {
+  const { type } = useNode(node => ({ type: node.data?.props?.type as string | undefined }));
+  const isTick = type === "checkbox" || type === "radio";
   return (
     <FloatingPanel
       isOpen
@@ -45,6 +48,15 @@ export default function PropertiesPanel({ initialPosition, onClose }: PanelProps
           label="Read Only"
           on={true}
         />
+        {isTick && (
+          <ToolbarItem
+            propKey="defaultChecked"
+            propType="component"
+            type="checkbox"
+            label="Checked by default"
+            on={true}
+          />
+        )}
         <ToolbarItem
           propKey="autoComplete"
           propType="component"

@@ -26,6 +26,12 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const sb = bound ? { ...rawSb, key: interpolate(rawSb.key, ctx) } : rawSb;
   const fieldDefault =
     props.defaultValue != null && props.defaultValue !== "" ? String(props.defaultValue) : undefined;
+  const isTick = props.type === "checkbox" || props.type === "radio";
+  const stateSeed =
+    fieldDefault ??
+    (bound && sb.mode === "checked" && isTick && props.defaultChecked
+      ? String(props.attrs?.value ?? "on")
+      : undefined);
   const seededDefault: string | undefined =
     (bound && typeof sb.defaultValue === "string" && sb.defaultValue) || fieldDefault;
 
@@ -42,6 +48,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     name: props.name ? interpolate(props.name, ctx) : undefined,
     placeholder: props.placeholder ? interpolate(props.placeholder, ctx) : undefined,
     value: t === "input" && seededDefault !== undefined ? seededDefault : undefined,
+    checked: isTick && props.defaultChecked ? true : undefined,
     required: props.required || undefined,
     disabled: props.disabled || undefined,
     autocomplete: formAutocomplete(props),
@@ -56,10 +63,11 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     ),
     ...ariaAttrs(props),
     ...handlerAttrs(props),
-    // React seeds a bound field's empty state from `defaultValue` too.
+    // React seeds a bound field's empty state from `defaultValue` too
+    // (a pre-ticked checked-mode box seeds its submitted value).
     ...stateAttrs(
       bound
-        ? { ...props, stateBinding: !sb.defaultValue && fieldDefault ? { ...sb, defaultValue: fieldDefault } : sb }
+        ? { ...props, stateBinding: !sb.defaultValue && stateSeed ? { ...sb, defaultValue: stateSeed } : sb }
         : props,
       ctx
     ),

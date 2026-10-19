@@ -50,6 +50,8 @@ export interface FormElementProps extends BaseSelectorProps {
   name?: string;
   label?: string;
   defaultValue?: string;
+  /** Checkbox / radio: ticked on first render (HTML `checked`). */
+  defaultChecked?: boolean;
   required?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
@@ -140,7 +142,12 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
   React.useEffect(() => {
     if (ctx.enabled || !boundKey) return;
     const current = externalValue;
-    const fallback = stateBinding?.defaultValue ?? props.defaultValue;
+    // A pre-ticked checkbox / radio in checked mode seeds its submitted value.
+    const checkedSeed =
+      stateBinding?.mode === "checked" && props.defaultChecked
+        ? String(props.attrs?.value ?? "on")
+        : undefined;
+    const fallback = stateBinding?.defaultValue ?? props.defaultValue ?? checkedSeed;
     if ((current == null || current === "") && fallback) {
       setState(
         boundKey,
@@ -185,6 +192,13 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
     // readers would announce a sample instead of the field's purpose.
     "aria-label": props.label || props.name || `${props.type || "text"} input`,
   };
+
+  if (props.type === "checkbox" || props.type === "radio") {
+    // A tick's `value` is its submitted string, not its state; an empty
+    // `defaultValue` beside `attrs.value` makes React warn.
+    if (prop.defaultValue === "") delete prop.defaultValue;
+    if (props.defaultChecked) prop.defaultChecked = true;
+  }
 
   if (boundKey && !ctx.enabled) {
     const isCheckedMode = stateBinding?.mode === "checked";
@@ -287,6 +301,7 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
     const {
       type: _t,
       defaultValue: _dv,
+      defaultChecked: _dc,
       autoComplete: _ac,
       placeholder: _ph,
       name: _n,

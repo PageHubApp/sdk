@@ -8,7 +8,7 @@ const PropertiesPanel = lazy(() => import("./PropertiesPanel"));
 
 const PANEL_WIDTH = 280;
 
-const PROPERTY_KEYS = ["required", "disabled", "readOnly", "autoComplete", "defaultValue"] as const;
+const PROPERTY_KEYS = ["required", "disabled", "readOnly", "autoComplete", "defaultValue", "defaultChecked"] as const;
 
 function describe(props: {
   required?: boolean;
@@ -16,11 +16,13 @@ function describe(props: {
   readOnly?: boolean;
   autoComplete?: string;
   defaultValue?: string;
+  defaultChecked?: boolean;
 }): string {
   const flags: string[] = [];
   if (props.required) flags.push("Required");
   if (props.disabled) flags.push("Disabled");
   if (props.readOnly) flags.push("Read-only");
+  if (props.defaultChecked) flags.push("Checked");
   if (props.autoComplete) flags.push(`autoComplete: ${props.autoComplete}`);
   if (props.defaultValue) flags.push(`default: ${props.defaultValue}`);
   return flags.length === 0 ? "None" : flags.join(", ");
@@ -38,15 +40,17 @@ export function PropertiesInput() {
     readOnly,
     autoComplete,
     defaultValue,
+    defaultChecked,
   } = useNode(node => ({
     required: !!node.data?.props?.required,
     disabled: !!node.data?.props?.disabled,
     readOnly: !!node.data?.props?.readOnly,
     autoComplete: (node.data?.props?.autoComplete as string) || "",
     defaultValue: (node.data?.props?.defaultValue as string) || "",
+    defaultChecked: !!node.data?.props?.defaultChecked,
   }));
 
-  const summary = describe({ required, disabled, readOnly, autoComplete, defaultValue });
+  const summary = describe({ required, disabled, readOnly, autoComplete, defaultValue, defaultChecked });
 
   const openPanel = () => {
     setInitialPos(computePosition());
