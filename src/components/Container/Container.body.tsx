@@ -324,7 +324,12 @@ export function renderContainerBody(
    *  Page containers always show the hint — their `bg-base-100` is the default surface, not decorative. */
   const suppressEmptyCanvasHint =
     props.type !== "page" &&
-    (!!props.background?.image || !!props.root?.style || /\bbg-/.test(className.trim()));
+    (!!props.background?.image ||
+      !!props.root?.style ||
+      /\bbg-/.test(className.trim()) ||
+      // An empty box an HTML import brought in is the site's own decoration
+      // (a meter segment, a glow), drawn by its CSS; a hint would push it out of shape.
+      (ctx.enabled && ctx.query?.node(ctx.id).get()?.data?.custom?.source?.type === "html-import"));
 
   if (overflowUxActive) {
     if (!/\boverflow-x-[^\s]+/.test(className)) {

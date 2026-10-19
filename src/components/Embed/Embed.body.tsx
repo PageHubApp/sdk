@@ -208,14 +208,16 @@ function EditorEmbedFrame({ html, title }: { html: string; title: string }) {
   return (
     <iframe
       sandbox="allow-scripts"
-      srcDoc={html}
+      srcDoc={`<style>html,body{margin:0;overflow:hidden;background:transparent}</style>${html}`}
       title={title}
+      scrolling="no"
       style={{
         display: "block",
         width: "100%",
         height: "100%",
         minHeight: 150,
         border: 0,
+        colorScheme: "normal",
         pointerEvents: "none",
       }}
     />

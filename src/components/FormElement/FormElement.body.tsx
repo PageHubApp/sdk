@@ -15,6 +15,8 @@ import { useCustomHandlers } from "../../utils/actions/customHandlers";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 
+const TEXTLESS_INPUT_TYPES = new Set(["range", "checkbox", "radio", "color", "file"]);
+
 export const inputTypes = [
   "text",
   "textarea",
@@ -296,6 +298,21 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
   // In edit mode, render a fake div instead of a real input.
   // Real inputs steal clicks (focus, autocomplete, submit) from the editor.
   // A div with the same classes looks identical but is just a dumb box.
+  // Controls with no text (a slider, a tick box) can't be faked with a div —
+  // it would print "range". The real control, inert: still selectable (Craft's
+  // connector sees the mousedown), but it never moves, ticks or takes focus.
+  if (ctx.enabled && ctx.isMounted && TEXTLESS_INPUT_TYPES.has(String(props.type))) {
+    const stop = (e: React.SyntheticEvent) => e.preventDefault();
+    const inert: any = applyAnimation(
+      { ...prop, key: `${ctx.id}`, tabIndex: -1, onMouseDown: stop, onClick: stop, onKeyDown: stop },
+      props,
+      null,
+      ctx.enabled
+    );
+    inert.type = props.type;
+    return React.createElement(motionIt(props, "input", ctx.enabled), inert);
+  }
+
   if (ctx.enabled && ctx.isMounted) {
     // Remove input-specific attributes that don't apply to divs
     const {
