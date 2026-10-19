@@ -5,7 +5,7 @@
  * Used by:
  *   - SSR `compileCSS` (compile-css.ts) — applies site `theme.breakpoints` to
  *     just-compiled Tailwind/DaisyUI output before it ships in the page.
- *   - Editor `/build` ViewportShell — applies live drag-commit changes to the
+ *   - Editor ViewportShell — applies live drag-commit changes to the
  *     in-page `<style id="tailwind-compiled">` content for instant reactivity
  *     (no server roundtrip).
  *

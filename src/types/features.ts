@@ -90,7 +90,7 @@ export interface PageHubFeatures {
   panelUrlPrefix?: string;
   /**
    * Which chrome styling the editor's pieces use. Default `"default"`: the
-   * stock `/build` look. `"dashboard"`: the pieces take the PageHub dashboard
+   * stock look of the standalone layout. `"dashboard"`: the pieces take the PageHub dashboard
    * kit's look (neutral tints as `base-content` alphas, a black selection,
    * `rounded-lg` panels, 32px pill tabs) so they sit in a host panel without
    * CSS overrides. Read through `useChromeStyle()`; every branch keeps the

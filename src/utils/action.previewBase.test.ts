@@ -8,7 +8,7 @@ test("root-relative links mount under the preview prefix", () => {
   assert.equal(href("/shop", "/view/abc/product/x"), "/view/abc/shop");
   assert.equal(href("/shop?category=tees", "/view/abc"), "/view/abc/shop?category=tees");
   assert.equal(href("/#visit", "/view/abc/shop"), "/view/abc#visit");
-  assert.equal(href("/", "/build/abc"), "/build/abc");
+  assert.equal(href("/", "/view/abc"), "/view/abc");
   assert.equal(href("/care", "/static/site123/plants"), "/static/site123/care");
 });
 

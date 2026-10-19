@@ -65,7 +65,7 @@ export async function compileCSS(options: {
   // Keep Tailwind's preflight intact — `unwrapLayerBlocks` below flattens the
   // `@layer base { … }` block so it ships as plain CSS in the static export
   // (no host preflight to rely on). For host-embedded paths (/view, /static
-  // React, /build) the host's own globals.css ships preflight too — the
+  // React, the editor) the host's own globals.css ships preflight too — the
   // duplicate rules are byte-bloat but byte-for-byte identical, so they're
   // harmless. The previous approach (strip + manually re-emit a curated
   // subset) silently lost rules every time Tailwind preflight grew, and was
@@ -95,7 +95,7 @@ export async function compileCSS(options: {
   // Apply per-site breakpoint rewrite (no-op when defaults). Must run BEFORE minify
   // so the `@media (width >= 48rem)` form (with spaces) is intact for the regex.
   // `editor: true` ALSO rewrites `@media` → `@container ph-editor-canvas` so the
-  // /build canvas responds to its own width (enables Phase 3 side-by-side).
+  // The editor canvas responds to its own width (enables Phase 3 side-by-side).
   stripped = applyBreakpointRewrite(stripped, breakpoints, { editor });
 
   // Strip @keyframes nothing on the page uses

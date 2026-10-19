@@ -3,7 +3,7 @@
  *
  * The editor puts two stylesheets in the document: the site's compiled CSS and
  * the Tailwind browser runtime's output. Both are unlayered (so they beat the
- * page's own layered utilities) and global. On `/build` the canvas is the whole
+ * page's own layered utilities) and global. In the full-window default layout the canvas is the whole
  * page, so that's fine. A host that embeds the editor in its own app
  * (the dashboard) would have its chrome restyled by them: an unlayered
  * `.hidden { display: none }` beats the host's layered `lg:flex`.

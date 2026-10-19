@@ -109,7 +109,7 @@ export interface StaticRenderContext {
   /**
    * Current request path (e.g. `/static/<siteId>/about` or `/about`). Lets
    * `resolvePageRef` prefix internal `ref:<pageId>` hrefs so navigation works
-   * under preview routes (`/static/<id>`, `/view/<id>`, `/build/<id>`). On
+   * under preview routes (`/static/<id>`, `/view/<id>`). On
    * production custom domains this is the bare slug path and no prefix is
    * applied — that's intentional.
    */

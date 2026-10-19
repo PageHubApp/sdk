@@ -3,7 +3,7 @@
  * to "the editor" rather than the browser window: the overlay-vs-docked
  * sidebar switch, canvas fit-to-window, sidebar-anchored dialogs.
  *
- * On `/build` the root fills the window, so the numbers match the window. A
+ * In the default layout the root fills the window, so the numbers match the window. A
  * host that puts the editor in part of its page (the dashboard's content
  * column) gets that part's size instead.
  *

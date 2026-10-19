@@ -156,13 +156,13 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     if (visible || enabled || nodeType !== "page" || didRedirect.current) return;
 
     // Resolve a relative path against the current route context.
-    // On /view/siteId or /build/siteId, prepend the base so "/login" → "/view/siteId/login".
+    // On /view/siteId, prepend the base so "/login" → "/view/siteId/login".
     // On custom domains (no prefix), leave as-is.
     const resolveUrl = (url: string) => {
       if (!url.startsWith("/") || /^https?:\/\//.test(url)) return url;
       const pathOnly = window.location.pathname.split(/[?#]/)[0];
       const parts = pathOnly.split("/").filter(Boolean);
-      if (parts.length >= 2 && (parts[0] === "build" || parts[0] === "view")) {
+      if (parts.length >= 2 && parts[0] === "view") {
         return `/${parts[0]}/${parts[1]}${url}`;
       }
       return url;

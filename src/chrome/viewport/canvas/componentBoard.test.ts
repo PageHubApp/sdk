@@ -1,5 +1,5 @@
 /**
- * `features.componentBoard` — on by default so `/build` keeps the board; only
+ * `features.componentBoard` — on by default so the standalone layout keeps the board; only
  * an explicit `false` (the dashboard) turns it off.
  */
 import test from "node:test";

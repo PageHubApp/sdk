@@ -47,7 +47,7 @@ function stripLayers(css: string): string {
 
 let injected = false;
 let layerObserver: MutationObserver | null = null;
-/** `@scope` selector for the runtime's output, or null for global output (`/build`). */
+/** `@scope` selector for the runtime's output, or null for global output (a full-window editor). */
 let outputScope: string | null = null;
 
 export interface TailwindBrowserOptions {

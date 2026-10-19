@@ -5,7 +5,7 @@
  * single source of truth for which page is active in the editor.
  *
  * The host app provides a `urlStrategy` via config so the SDK stays
- * host-agnostic (no Next.js, no /build/ prefix knowledge).
+ * host-agnostic (no Next.js, no route-prefix knowledge).
  */
 
 import { useSyncExternalStore } from "react";
@@ -251,7 +251,7 @@ export function navigateToPage(
 
 /**
  * Called when the host app's first save returns a site ID.
- * Uses replaceState (not pushState) so back doesn't go to /build with no slug.
+ * Uses replaceState (not pushState) so back doesn't land on the editor URL with no page slug.
  */
 export function setSiteId(id: string): void {
   if (!initOpts) return;

@@ -237,7 +237,7 @@ export function buildPageIndexFromQuery(query: any): PageIndex {
 }
 
 /**
- * The site's URL prefix on a preview route — `/view/<id>`, `/build/<id>`,
+ * The site's URL prefix on a preview route — `/view/<id>`,
  * `/static/<siteId>` — or "" when the site is served at its own root.
  * Internal links (`ref:` and root-relative `/path`) are mounted under it.
  */
@@ -248,7 +248,7 @@ export function previewBasePath(currentPath?: string): string {
   const pathParts = pathOnly.split("/").filter((p: string) => p && !p.startsWith("?"));
   if (
     pathParts.length < 2 ||
-    !(pathParts[0] === "build" || pathParts[0] === "view" || pathParts[0] === "static")
+    !(pathParts[0] === "view" || pathParts[0] === "static")
   ) {
     return "";
   }
@@ -256,7 +256,7 @@ export function previewBasePath(currentPath?: string): string {
   // `/static/<host>`, so `<host>` is an INTERNAL routing segment — its
   // user-facing base is "/". Emitting `/static/<host>/…` here leaks the
   // internal path into visible URLs. A host segment is detectable by its
-  // dot; preview routes (`/static/<siteId>`, `/view/<id>`, `/build/<id>`)
+  // dot; preview routes (`/static/<siteId>`, `/view/<id>`)
   // use dot-free ids and still get the prefix.
   const seg = pathParts[1];
   if (pathParts[0] === "static" && seg.includes(".")) return "";

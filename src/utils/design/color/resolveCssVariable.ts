@@ -8,7 +8,7 @@ import { resolveTheme } from "../resolveTheme";
  * e.g., "var(--ph-heading-font-family)" → "Inter"
  *
  * NOTE: reads `window.__CRAFT_EDITOR__` when no `query` is passed — editor-only
- * coupling. Safe under SSR (typeof window guard) but only useful on /build.
+ * coupling. Safe under SSR (typeof window guard) but only useful in the editor.
  * Keep this out of any path reachable by the SSR CSS pipeline / static walker.
  */
 export const resolveCSSVariable = (value: string, query: any = null): string => {

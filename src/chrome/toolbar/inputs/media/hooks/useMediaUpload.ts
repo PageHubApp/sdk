@@ -30,7 +30,7 @@ export function useMediaUpload({ isOpen, library }: UseMediaUploadOptions) {
   const { config, save: sdkSave } = useSDK();
 
   /** Ensure the current page has been persisted (has a `_id` + URL) before
-   *  attaching media. On `/build` (brand new page), this triggers the host
+   *  attaching media. On a brand-new page (no site id yet), this triggers the host
    *  app's save flow so the resulting URL update + page record exist before
    *  we mutate `pageMedia`. No-op when already saved. Concurrent callers
    *  (e.g. multi-file upload, upload while paste pending) share one in-flight

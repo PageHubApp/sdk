@@ -1,5 +1,5 @@
 /**
- * The editor's own arrangement (`layout="default"`, used by `/build`): the save
+ * The editor's own arrangement (`layout="default"`, a standalone full-window editor): the save
  * banner on top, the settings sidebar (`Toolbar`: header, breadcrumb, Add /
  * Theme drawer, inspector, docked layers) beside the canvas, and the host's
  * docked AI panel under the canvas.

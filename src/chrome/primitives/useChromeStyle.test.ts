@@ -1,5 +1,5 @@
 /**
- * `features.chrome` — the default column must stay what `/build` renders
+ * `features.chrome` — the default column must stay what the default layout renders
  * today (the strings below are the ones the components carried before the
  * option existed), and the dashboard column must differ without any of the
  * old hard-coded palette.
@@ -18,7 +18,7 @@ test("resolveChromeStyle: only \"dashboard\" leaves the default", () => {
   assert.equal(resolveChromeStyle("dashboard"), "dashboard");
 });
 
-test("default: the /build class strings, byte for byte", () => {
+test("default: the standalone layout class strings, byte for byte", () => {
   assert.equal(def.layerRowSelected, "bg-blue-600 text-white dark:bg-blue-500");
   assert.equal(
     def.layerRowIdle,

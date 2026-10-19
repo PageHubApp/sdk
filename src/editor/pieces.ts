@@ -8,7 +8,7 @@
  * `<PageHubEditor>`. The editor's document load/save, shortcuts, ⌘K palette
  * and dialogs run on their own; pieces are only what you see.
  *
- * `layout="default"` (what `/build` uses) is built from these same pieces.
+ * `layout="default"` (the standalone layout) is built from these same pieces.
  * See docs/sdk/editor-pieces.md.
  */
 export { EditorCanvas } from "../chrome/shell/EditorCanvas";

@@ -67,7 +67,7 @@ export interface RenderToHTMLOptions {
   /**
    * Current request path (e.g. `/static/<siteId>/about` or `/about`). Passed
    * through to toHTML emitters so `ref:<pageId>` action hrefs prefix correctly
-   * for preview routes (`/static/<id>`, `/view/<id>`, `/build/<id>`). On
+   * for preview routes (`/static/<id>`, `/view/<id>`). On
    * custom-domain production hits this is the bare slug path — `resolvePageRef`
    * only prefixes recognized preview prefixes, so no false prefixing occurs.
    */

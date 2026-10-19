@@ -2,7 +2,7 @@
  * Chrome styling for the editor's pieces — `features.chrome`.
  *
  * Every class string a piece picks per style lives here, so a host can see the
- * whole difference in one file and the `default` column stays what `/build`
+ * whole difference in one file and the `default` column stays what the default layout
  * renders today. Components read it through `useChromeStyle()` and never
  * branch on the style themselves beyond "is this control shown".
  */

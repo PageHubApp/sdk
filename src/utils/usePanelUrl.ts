@@ -52,7 +52,7 @@ export function stripPanelParams(search: string, prefix = ""): string {
   return sp.toString();
 }
 
-/** Param prefix for the mounted editor (`features.panelUrlPrefix`); "" on `/build`. */
+/** Param prefix for the mounted editor (`features.panelUrlPrefix`); "" when the host sets none. */
 let paramPrefix = "";
 
 function readParams(): PanelUrlState {
