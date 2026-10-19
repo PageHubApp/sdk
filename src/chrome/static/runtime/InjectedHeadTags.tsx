@@ -12,6 +12,7 @@
 
 import Head from "next/head";
 import React, { useMemo } from "react";
+import { scopeCss } from "../../../utils/canvasScope";
 import { parseHeadHTML, hashTag, type HeadTag } from "../../../utils/parseHeadHTML";
 
 interface Props {
@@ -22,6 +23,11 @@ interface Props {
    * never run there — its styles still do, so the canvas looks right.
    */
   stylesOnly?: boolean;
+  /**
+   * Editor canvas: wrap each <style> in `@scope` to the canvas box, so a site's
+   * own CSS (`body`, `h1`, `.hero`…) styles the page, not the editor around it.
+   */
+  scoped?: boolean;
 }
 
 function isStyleTag(t: HeadTag): boolean {
@@ -29,11 +35,14 @@ function isStyleTag(t: HeadTag): boolean {
   return t.tag === "link" && String(t.attrs?.rel || "").toLowerCase().split(/\s+/).includes("stylesheet");
 }
 
-function useInjectedTags(html: Props["html"], stylesOnly: boolean | undefined): HeadTag[] {
+function useInjectedTags(html: Props["html"], stylesOnly: boolean | undefined, scoped?: boolean): HeadTag[] {
   return useMemo(() => {
     const tags = parseHeadHTML(html);
-    return stylesOnly ? tags.filter(isStyleTag) : tags;
-  }, [html, stylesOnly]);
+    const kept = stylesOnly ? tags.filter(isStyleTag) : tags;
+    return scoped
+      ? kept.map(t => (t.tag === "style" && t.inner ? { ...t, inner: scopeCss(t.inner) } : t))
+      : kept;
+  }, [html, stylesOnly, scoped]);
 }
 
 // htmlparser2 reports boolean attributes (async, defer, nomodule) as empty
@@ -79,8 +88,8 @@ function renderScript(t: HeadTag, location: "head" | "body") {
   return <script key={key} {...reactAttrs} dangerouslySetInnerHTML={{ __html: deferred }} />;
 }
 
-export function InjectedHeadTags({ html, stylesOnly }: Props) {
-  const tags = useInjectedTags(html, stylesOnly);
+export function InjectedHeadTags({ html, stylesOnly, scoped }: Props) {
+  const tags = useInjectedTags(html, stylesOnly, scoped);
   if (!tags.length) return null;
 
   const scriptTags = tags.filter(t => t.tag === "script");
@@ -112,8 +121,8 @@ export function InjectedHeadTags({ html, stylesOnly }: Props) {
   );
 }
 
-export function InjectedBodyTags({ html, stylesOnly }: Props) {
-  const tags = useInjectedTags(html, stylesOnly);
+export function InjectedBodyTags({ html, stylesOnly, scoped }: Props) {
+  const tags = useInjectedTags(html, stylesOnly, scoped);
   if (!tags.length) return null;
   return (
     <>

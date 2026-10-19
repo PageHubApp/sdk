@@ -369,7 +369,7 @@ export function renderContainerBody(
       <RenderPatternBody props={props}>
         {/* The page's own CSS, so the canvas matches the published page. Scripts never run in the editor. */}
         {ctx.enabled && props.type === "page" && (props.headCode || props.footerCode) ? (
-          <InjectedHeadTags html={[props.headCode, props.footerCode].filter(Boolean).join("\n")} stylesOnly />
+          <InjectedHeadTags html={[props.headCode, props.footerCode].filter(Boolean).join("\n")} stylesOnly scoped />
         ) : null}
         {/* React passes `children` as an empty array (truthy!) for canvas
             containers with no child nodes — `resolvedChildren ?` would always
