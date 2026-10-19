@@ -389,7 +389,7 @@ export function useImageCrop({ media, onSave, onClose }: UseImageCropOptions) {
           }
           const baseName =
             versionName.trim() ||
-            `${media.metadata?.title || media.id}-${customWidth}x${customHeight}`;
+            `${media.metadata?.title || media.name || media.id}-${customWidth}x${customHeight}`;
           const finalName =
             saveMode === "new"
               ? `${baseName}-${Date.now()}.${imageFormat}`
@@ -427,7 +427,7 @@ export function useImageCrop({ media, onSave, onClose }: UseImageCropOptions) {
           ...media.metadata,
           title:
             versionName.trim() ||
-            `${media.metadata?.title || media.id} (${customWidth}x${customHeight})`,
+            `${media.metadata?.title || media.name || media.id} (${customWidth}x${customHeight})`,
           versionName: versionName.trim() || `${customWidth}x${customHeight}`,
           cropArea,
           customWidth,

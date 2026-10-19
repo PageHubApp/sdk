@@ -69,7 +69,7 @@ export function ImageCropModal({
             <div>
               <h2 className="text-base-content text-xl font-semibold">Image Cropper</h2>
               <p className="text-neutral-content text-sm font-medium">
-                {media?.metadata?.title || media?.id}
+                {media?.metadata?.title || media?.name || media?.id}
               </p>
             </div>
           </div>
