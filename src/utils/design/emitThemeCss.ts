@@ -189,4 +189,14 @@ const SHOW_HIDE_LAYOUT_CSS = `/* Overlays toggled by the show-hide action.
   display: flex;
   flex-direction: column;
 }
+
+/* An open overlay owns the scroll: the page behind it stops scrolling, so a
+   tall modal shows one scrollbar (its own) instead of two. Drawers (nav,
+   cookie bars) stay out of it — a bottom banner must not freeze the page.
+   The editor rewrites \`body\` to its canvas root (canvasScope.ts), which
+   carries data-ph-canvas, so there the rule is inert and the canvas keeps
+   scrolling while an author works inside an open modal. */
+body:not([data-ph-canvas]):has(.ph-overlay:not(.hidden)) {
+  overflow: hidden;
+}
 `;

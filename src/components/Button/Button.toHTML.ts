@@ -40,6 +40,13 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     collectClasses(extra, ctx);
   }
 
+  // Same default as Button.body: a bare <button> sits at `cursor: default`
+  // under Tailwind's preflight; `btn` carries its own pointer.
+  if (!/\bbtn\b/.test(cls) && !/\bcursor-\S+/.test(cls)) {
+    extra = [extra, "cursor-pointer"].filter(Boolean).join(" ");
+    collectClasses("cursor-pointer", ctx);
+  }
+
   const fullCls = [cls, extra].filter(Boolean).join(" ");
   // First link stays on `<a href>` for SEO + no-JS fallback. The full
   // action chain ALSO ships as `data-ph-actions` so the vanilla runtime

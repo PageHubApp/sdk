@@ -113,6 +113,12 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
       prop.className = prop.className + " " + defaults.join(" ");
     }
   }
+  // A clickable thing shows a pointer. Tailwind's preflight leaves a bare
+  // <button> at `cursor: default`; DaisyUI `btn` brings its own, so only
+  // buttons styled from utilities need it. An author's `cursor-*` wins.
+  if (!hasBtnClass && !/\bcursor-\S+/.test(prop.className)) {
+    prop.className = prop.className + " cursor-pointer";
+  }
 
   // Resolve actions; first link in the chain drives the visible <a href>.
   // Anchor tokens (`{{anchor.X}}`) in target/key/anchor/value/field/dismissTarget
