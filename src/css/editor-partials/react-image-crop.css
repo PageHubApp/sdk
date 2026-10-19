@@ -1,0 +1,215 @@
+/* =============================================================================
+   react-image-crop (ImageCropModal). The library's own ReactCrop.css, carried
+   here so it ships in the one SDK stylesheet every host already loads
+   (`@pagehub/sdk/editor.css`) instead of a CSS import from a .tsx file, which
+   the SDK's builds and Next's pages router handle differently.
+   Differences from upstream: a solid selection border instead of the animated
+   "marching ants", and white handles with a dark edge so they read on any photo.
+   ============================================================================= */
+
+.ReactCrop {
+  --rc-drag-handle-size: 12px;
+  --rc-drag-handle-mobile-size: 24px;
+  --rc-drag-bar-size: 6px;
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  cursor: crosshair;
+}
+.ReactCrop *,
+.ReactCrop *::before,
+.ReactCrop *::after {
+  box-sizing: border-box;
+}
+.ReactCrop--disabled,
+.ReactCrop--locked {
+  cursor: inherit;
+}
+.ReactCrop__child-wrapper {
+  max-height: inherit;
+  overflow: hidden;
+}
+.ReactCrop__child-wrapper > img,
+.ReactCrop__child-wrapper > video {
+  display: block;
+  max-width: none;
+  max-height: inherit;
+}
+.ReactCrop:not(.ReactCrop--disabled) .ReactCrop__child-wrapper > img,
+.ReactCrop:not(.ReactCrop--disabled) .ReactCrop__child-wrapper > video,
+.ReactCrop:not(.ReactCrop--disabled) .ReactCrop__crop-selection {
+  touch-action: none;
+}
+.ReactCrop__crop-mask {
+  position: absolute;
+  inset: 0;
+  width: calc(100% + 0.5px);
+  height: calc(100% + 0.5px);
+  pointer-events: none;
+}
+.ReactCrop__crop-selection {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(0, 0);
+  cursor: move;
+  border: 1px solid rgb(255 255 255 / 0.9);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35);
+}
+.ReactCrop--disabled .ReactCrop__crop-selection {
+  cursor: inherit;
+}
+.ReactCrop__crop-selection:focus {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+.ReactCrop--invisible-crop .ReactCrop__crop-mask,
+.ReactCrop--invisible-crop .ReactCrop__crop-selection {
+  display: none;
+}
+.ReactCrop__rule-of-thirds-vt::before,
+.ReactCrop__rule-of-thirds-vt::after,
+.ReactCrop__rule-of-thirds-hz::before,
+.ReactCrop__rule-of-thirds-hz::after {
+  content: "";
+  position: absolute;
+  display: block;
+  background-color: rgb(255 255 255 / 0.4);
+}
+.ReactCrop__rule-of-thirds-vt::before,
+.ReactCrop__rule-of-thirds-vt::after {
+  width: 1px;
+  height: 100%;
+}
+.ReactCrop__rule-of-thirds-vt::before {
+  left: 33.3333%;
+}
+.ReactCrop__rule-of-thirds-vt::after {
+  left: 66.6667%;
+}
+.ReactCrop__rule-of-thirds-hz::before,
+.ReactCrop__rule-of-thirds-hz::after {
+  width: 100%;
+  height: 1px;
+}
+.ReactCrop__rule-of-thirds-hz::before {
+  top: 33.3333%;
+}
+.ReactCrop__rule-of-thirds-hz::after {
+  top: 66.6667%;
+}
+.ReactCrop__drag-handle {
+  position: absolute;
+  width: var(--rc-drag-handle-size);
+  height: var(--rc-drag-handle-size);
+  background-color: #fff;
+  border: 1px solid rgb(0 0 0 / 0.45);
+  border-radius: 2px;
+}
+.ReactCrop__drag-handle:focus {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.ReactCrop .ord-nw {
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  cursor: nw-resize;
+}
+.ReactCrop .ord-n {
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: n-resize;
+}
+.ReactCrop .ord-ne {
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  cursor: ne-resize;
+}
+.ReactCrop .ord-e {
+  top: 50%;
+  right: 0;
+  transform: translate(50%, -50%);
+  cursor: e-resize;
+}
+.ReactCrop .ord-se {
+  bottom: 0;
+  right: 0;
+  transform: translate(50%, 50%);
+  cursor: se-resize;
+}
+.ReactCrop .ord-s {
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  cursor: s-resize;
+}
+.ReactCrop .ord-sw {
+  bottom: 0;
+  left: 0;
+  transform: translate(-50%, 50%);
+  cursor: sw-resize;
+}
+.ReactCrop .ord-w {
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%);
+  cursor: w-resize;
+}
+.ReactCrop--disabled .ReactCrop__drag-handle {
+  cursor: inherit;
+}
+.ReactCrop__drag-bar {
+  position: absolute;
+}
+.ReactCrop__drag-bar.ord-n {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--rc-drag-bar-size);
+  transform: translateY(-50%);
+}
+.ReactCrop__drag-bar.ord-e {
+  top: 0;
+  right: 0;
+  width: var(--rc-drag-bar-size);
+  height: 100%;
+  transform: translateX(50%);
+}
+.ReactCrop__drag-bar.ord-s {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--rc-drag-bar-size);
+  transform: translateY(50%);
+}
+.ReactCrop__drag-bar.ord-w {
+  top: 0;
+  left: 0;
+  width: var(--rc-drag-bar-size);
+  height: 100%;
+  transform: translateX(-50%);
+}
+.ReactCrop--new-crop .ReactCrop__drag-bar,
+.ReactCrop--new-crop .ReactCrop__drag-handle,
+.ReactCrop--fixed-aspect .ReactCrop__drag-bar,
+.ReactCrop--fixed-aspect .ReactCrop__drag-handle.ord-n,
+.ReactCrop--fixed-aspect .ReactCrop__drag-handle.ord-e,
+.ReactCrop--fixed-aspect .ReactCrop__drag-handle.ord-s,
+.ReactCrop--fixed-aspect .ReactCrop__drag-handle.ord-w {
+  display: none;
+}
+@media (pointer: coarse) {
+  .ReactCrop .ord-n,
+  .ReactCrop .ord-e,
+  .ReactCrop .ord-s,
+  .ReactCrop .ord-w {
+    display: none;
+  }
+  .ReactCrop__drag-handle {
+    width: var(--rc-drag-handle-mobile-size);
+    height: var(--rc-drag-handle-mobile-size);
+  }
+}

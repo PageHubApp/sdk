@@ -6,6 +6,7 @@
 @import "./editor-partials/viewport-layout.css";
 @import "./editor-partials/toolbar-forms.css";
 @import "./editor-partials/third-party.css";
+@import "./editor-partials/react-image-crop.css";
 @import "./editor-partials/dropdowns.css";
 
 @import "./editor-partials/modifiers.css";
