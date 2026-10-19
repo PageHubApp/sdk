@@ -12,6 +12,7 @@ import { makeWalkerCtx } from "../../render/react/RenderCtx";
 // own script (`getElementById("year")`); losing the id throws and stops it.
 
 const TEXT =
+  // guard-allow: nav — sample Text html under test, not app navigation
   '© <span id="year"></span> Example Co. <a href="/terms" data-track="terms" aria-label="Terms of use">Terms</a>';
 
 const staticHtml = (text: string) =>
