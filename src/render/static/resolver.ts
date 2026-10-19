@@ -88,5 +88,4 @@ export const defaultResolver: Record<string, ToHTMLFn> = {
   CartItems: containerToHTML,
   CartSubtotal: containerToHTML,
   CheckoutBanner: containerToHTML,
-  ProductDisplay: containerToHTML,
 };
