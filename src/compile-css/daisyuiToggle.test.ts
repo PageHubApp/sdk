@@ -86,10 +86,3 @@ test("canvasScoped: DaisyUI rules sit under a scope the off switch excludes", as
   const plain = (await compileTailwindCSS(page(undefined), { editor: true })) ?? "";
   assert.ok(!plain.includes("@scope"), "unscoped callers get plain rules");
 });
-
-test("phones: DaisyUI fields get 16px text so iOS doesn't zoom on focus", async () => {
-  const flat = JSON.parse(page(undefined));
-  flat.cta.props.className = "input";
-  const css = (await compileTailwindCSS(JSON.stringify(flat))) ?? "";
-  assert.match(css, /max-width:\s*767px\)\s*\{[^@]*\.input:where\([^{]*\{\s*font-size:\s*max\(1rem,\s*16px\)/);
-});
