@@ -2,6 +2,7 @@ import { twMerge } from "tailwind-merge";
 import { actionToHref, actionTarget, findLinkAction, migrateActions } from "../../utils/action";
 import { pickIconSvgClass, serializeIconSvgAttrs } from "../../utils/icons/iconResolver";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
+import { CURRENT_PAGE_ATTRS, isCurrentPageHref } from "../../utils/page/pageManagement";
 import {
   attrsPassthrough,
   actionsAttr,
@@ -60,6 +61,8 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     attrs.href = href;
     if (target) attrs.target = target;
     if (/^https?:\/\//.test(href)) attrs.rel = "noopener noreferrer";
+    // Same marker the React body sets from `router.asPath`.
+    if (isCurrentPageHref(href, ctx?.currentPath)) Object.assign(attrs, CURRENT_PAGE_ATTRS);
   }
   Object.assign(attrs, attrsPassthrough(props, ctx));
   if (icon?.only && !attrs["aria-label"]) attrs["aria-label"] = interpolate(props.text || "Link", ctx);

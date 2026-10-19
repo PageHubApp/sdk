@@ -236,6 +236,22 @@ export function buildPageIndexFromQuery(query: any): PageIndex {
   return out;
 }
 
+export const CURRENT_PAGE_ATTRS = { "aria-current": "page", "data-active": "true" } as const;
+
+/**
+ * True when a resolved link href points at the page being rendered, so the
+ * link gets `aria-current="page"` + `data-active="true"`. Query, hash and a
+ * trailing slash are ignored. Only root-relative hrefs count: `#anchor` and
+ * `?query` links stay on the page but are not a link *to* it. Shared by the
+ * React bodies (`router.asPath`) and the static toHTML (`ctx.currentPath`).
+ */
+export function isCurrentPageHref(href: unknown, currentPath?: string): boolean {
+  if (typeof href !== "string" || !currentPath) return false;
+  if (!href.startsWith("/") || href.startsWith("//")) return false;
+  const norm = (p: string) => p.split(/[?#]/)[0].replace(/\/$/, "") || "/";
+  return norm(currentPath) === norm(href);
+}
+
 /**
  * The site's URL prefix on a preview route — `/view/<id>`,
  * `/static/<siteId>` — or "" when the site is served at its own root.

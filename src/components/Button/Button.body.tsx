@@ -33,7 +33,7 @@ import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
 import { safeHref } from "../../utils/htmlSafety";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
-import { resolvePageRef } from "../../utils/page/pageManagement";
+import { CURRENT_PAGE_ATTRS, isCurrentPageHref, resolvePageRef } from "../../utils/page/pageManagement";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
@@ -139,14 +139,8 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
     if (/^https?:\/\//.test(resolvedUrl)) {
       prop.rel = "noopener noreferrer";
     }
-    // Active link detection: compare current path with resolved href
-    if (!ctx.enabled && router?.asPath) {
-      const current = router.asPath.split(/[?#]/)[0].replace(/\/$/, "") || "/";
-      const href = resolvedUrl.split(/[?#]/)[0].replace(/\/$/, "") || "/";
-      if (current === href) {
-        prop["aria-current"] = "page";
-        prop["data-active"] = "true";
-      }
+    if (!ctx.enabled && isCurrentPageHref(resolvedUrl, router?.asPath)) {
+      Object.assign(prop, CURRENT_PAGE_ATTRS);
     }
   } else if (ele === "button") {
     prop.type = props.type || "button";
