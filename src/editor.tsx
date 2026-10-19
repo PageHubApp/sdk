@@ -19,6 +19,7 @@ import { PageHubProvider, useHasSDKProvider, useSDK } from "./core/context";
 import { EventEmitter } from "./core/events";
 import { getSaveCoordinator } from "./core/saveCoordinator";
 import { getComponentAllowlist } from "./define/componentAllowlist";
+import { applyHostConstraints } from "./define/hostConstraints";
 import { CustomComponentsContext } from "./define/context";
 import { processForEditor } from "./define/processors/forEditor";
 import type { ResolvedComponentDef } from "./define/types";
@@ -217,7 +218,7 @@ function PageHubEditorInner({
   // Process component definitions (built-in migrated + consumer custom) into resolver + toolbox data.
   //
   // Two host-supplied filters apply here before the toolbox is built:
-  //  1. `registerComponentAllowlist(...)` — when set, ONLY listed components survive.
+  //  1. `features.componentAllowlist` — when set, ONLY listed components survive.
   //  2. `features.restrictedComponents` — deny-list applied after the allowlist.
   //
   // The resolver still receives every built-in component (so deserialized nodes from
@@ -226,7 +227,13 @@ function PageHubEditorInner({
     () => new Set(config.features?.restrictedComponents ?? []),
     [config.features?.restrictedComponents]
   );
+  const componentAllowlist = config.features?.componentAllowlist;
+  const catalogFilters = config.features?.catalogFilters;
   const allDefs = React.useMemo(() => {
+    // This editor owns the host constraints while it's mounted: they're set here,
+    // at render and before anything reads them, so the order another editor's
+    // unmount cleanup runs in doesn't matter.
+    applyHostConstraints({ componentAllowlist, catalogFilters });
     const allowlist = getComponentAllowlist();
     const merged = [...BUILTIN_COMPONENT_DEFS, ...components];
     return merged.filter(def => {
@@ -234,7 +241,7 @@ function PageHubEditorInner({
       if (restrictedSet.has(def.name)) return false;
       return true;
     });
-  }, [components, restrictedSet]);
+  }, [components, restrictedSet, componentAllowlist, catalogFilters]);
   const { resolver: customResolver, toolboxCategories } = React.useMemo(
     () => processForEditor(allDefs, Inspector),
     [allDefs]

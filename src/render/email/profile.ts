@@ -8,8 +8,7 @@
  * Editor-side module: no server dependencies. Safe to export from the main entry.
  */
 
-import { registerCatalogFilter } from "../../define/catalogRegistry";
-import { registerComponentAllowlist } from "../../define/componentAllowlist";
+import type { CatalogFilterPredicate } from "../../define/catalogRegistry";
 import type { PageHubFeatures } from "../../types/features";
 import { presetIsEmailSafe } from "./presetSafety";
 
@@ -152,37 +151,43 @@ export function hasUnsafeEmailClass(classes: string): boolean {
 }
 
 /**
- * Boot helper. Call BEFORE mounting the editor (registries are boot-time only —
- * host-constraints.md "Ordering rule"). Returns the `features` to pass.
+ * The `features` for an email editor. Pure: the editor applies the allowlist
+ * and catalog filters itself while it renders (`componentAllowlist`,
+ * `catalogFilters`), so they hold for as long as that editor is mounted.
  *
  * `extraComponents` must list any host email-only components (e.g. `EmailSlot`):
  * the allowlist filters defs before the resolver is built, so an unlisted
- * component can't be deserialized.
+ * component can't be deserialized. `extraFilters` adds catalog filters for
+ * those components; an entry for a built-in email component replaces its
+ * email filter.
  */
-export function emailEditorConfig(extraComponents: string[] = []): Partial<PageHubFeatures> {
+export function emailEditorConfig(
+  extraComponents: string[] = [],
+  extraFilters: Record<string, CatalogFilterPredicate> = {}
+): Partial<PageHubFeatures> {
   const allowed = new Set<string>([...EMAIL_COMPONENTS, ...extraComponents]);
-  registerComponentAllowlist([...allowed]);
-  for (const name of EMAIL_COMPONENTS) {
-    registerCatalogFilter(name, (entry, kind) => {
-      const e = entry as {
-        classes?: string;
-        expands?: string;
-        name?: string;
-        props?: { className?: string };
-        children?: unknown;
-      };
-      // A single-class modifier carries its class as `name` and has no `classes`.
-      const modifierClass = kind === "modifier" && !e.classes ? (e.name ?? "") : "";
-      if (
-        hasUnsafeEmailClass(
-          `${e.classes ?? ""} ${e.expands ?? ""} ${e.props?.className ?? ""} ${modifierClass}`
-        )
-      ) {
-        return false;
-      }
-      return kind !== "preset" || presetIsEmailSafe(e, allowed, hasUnsafeEmailClass);
-    });
-  }
+  const emailFilter: CatalogFilterPredicate = (entry, kind) => {
+    const e = entry as {
+      classes?: string;
+      expands?: string;
+      name?: string;
+      props?: { className?: string };
+      children?: unknown;
+    };
+    // A single-class modifier carries its class as `name` and has no `classes`.
+    const modifierClass = kind === "modifier" && !e.classes ? (e.name ?? "") : "";
+    if (
+      hasUnsafeEmailClass(
+        `${e.classes ?? ""} ${e.expands ?? ""} ${e.props?.className ?? ""} ${modifierClass}`
+      )
+    ) {
+      return false;
+    }
+    return kind !== "preset" || presetIsEmailSafe(e, allowed, hasUnsafeEmailClass);
+  };
+  const emailFilters: Record<string, CatalogFilterPredicate> = Object.fromEntries(
+    EMAIL_COMPONENTS.map(name => [name, emailFilter])
+  );
   return {
     sidebar: true,
     toolbar: true,
@@ -203,5 +208,7 @@ export function emailEditorConfig(extraComponents: string[] = []): Partial<PageH
     inspectorTabs: EMAIL_INSPECTOR_TABS,
     cssAllowlist: { classes: EDITOR_CLASS_ALLOWLIST },
     canvasWidth: EMAIL_WIDTH,
+    componentAllowlist: [...allowed],
+    catalogFilters: { ...emailFilters, ...extraFilters },
   };
 }

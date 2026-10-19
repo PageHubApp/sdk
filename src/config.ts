@@ -23,6 +23,8 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   multiPage: true,
   custom404Page: true,
   restrictedComponents: [],
+  componentAllowlist: [],
+  catalogFilters: {},
   canvasWidth: null,
   topBar: true,
   commandPalette: true,

@@ -1,5 +1,7 @@
 // ─── Feature flags ────────────────────────────────────────────────────────────
 
+import type { CatalogFilterPredicate } from "../define/catalogRegistry";
+
 export interface PageHubFeatures {
   /** Show/hide the sidebar component panel. Default: true */
   sidebar?: boolean;
@@ -48,6 +50,18 @@ export interface PageHubFeatures {
   custom404Page?: boolean;
   /** Components to hide from the toolbox. */
   restrictedComponents?: string[];
+  /**
+   * Only these components are offered (toolbox, AI, MCP). The editor applies it
+   * while rendering, so it holds for as long as this editor is mounted.
+   * Default: [] (no filter). See docs/sdk/host-constraints.md.
+   */
+  componentAllowlist?: string[];
+  /**
+   * Per-component preset/modifier filter, applied at read time. The editor
+   * installs these while rendering and replaces any filters set before.
+   * Default: {} (no filters). See docs/sdk/host-constraints.md.
+   */
+  catalogFilters?: Record<string, CatalogFilterPredicate>;
   /**
    * Lock the canvas to this width in px and hide the breakpoint switcher.
    * Default: null (canvas follows the breakpoint / device controls).

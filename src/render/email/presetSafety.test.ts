@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import "../../components/Container/Container.presets";
 import { getPresets } from "../../define/catalogRegistry";
+import { applyHostConstraints } from "../../define/hostConstraints";
 import { emailEditorConfig } from "./profile";
 
 /**
@@ -12,7 +13,7 @@ import { emailEditorConfig } from "./profile";
 
 test("email toolbox: interactive / nav presets are hidden, plain layout presets stay", () => {
   const before = getPresets("Container").map(p => p.label);
-  emailEditorConfig(["EmailSlot", "Background"]);
+  applyHostConstraints(emailEditorConfig(["EmailSlot", "Background"]));
   const after = new Set(getPresets("Container").map(p => p.label));
   for (const label of ["Modal", "Tabs", "Accordion", "Cookie Consent", "Dropdown", "Navbar", "Mobile Menu", "Social Icons", "Checklist", "Button Group"]) {
     assert.ok(before.includes(label), `${label} exists outside email mode`);
