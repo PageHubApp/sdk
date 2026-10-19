@@ -31,6 +31,7 @@ import { safeHref } from "../../utils/htmlSafety";
 import { useUntrustedRender } from "../../utils/runtimeMode";
 
 const TextEditorMode = React.lazy(() => import("../../chrome/inline-tools/TextEditor"));
+const EDITOR_BLOCK_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6", "p", "blockquote", "li"]);
 
 export interface TextProps extends BaseSelectorProps {
   text?: string;
@@ -195,7 +196,17 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
   }
 
   const final = applyAnimation({ ...prop, key: `${ctx.id}` }, props, null, ctx.enabled);
-  const elementTag = ctx.enabled || tagName === "Textfit" ? "div" : tagName || "div";
+  // The editor keeps a block tag's real element so a site's own `h1` / `p.lede`
+  // CSS (HTML imports) styles the canvas like the live page; inline tags stay a
+  // div there because the editing UI nests block wrappers inside.
+  const elementTag =
+    tagName === "Textfit"
+      ? "div"
+      : ctx.enabled
+        ? EDITOR_BLOCK_TAGS.has(String(tagName))
+          ? tagName
+          : "div"
+        : tagName || "div";
   // Viewer mode emits raw HTML via dangerouslySetInnerHTML; the server already
   // rendered identical markup, so suppress React's hydration-mismatch warning.
   if (final.dangerouslySetInnerHTML) final.suppressHydrationWarning = true;
