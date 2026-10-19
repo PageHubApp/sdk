@@ -102,6 +102,8 @@ export interface RenderToHTMLResult {
   themeCSS: string;
   /** Per-site breakpoint overrides from ROOT.props.theme.breakpoints (undefined = defaults). */
   breakpoints?: Record<string, number>;
+  /** False when ROOT.props.theme turns DaisyUI component styles off — pass to `compileCSS`. */
+  daisyui?: boolean;
   /** SEO metadata extracted from ROOT props */
   seo: {
     title: string;

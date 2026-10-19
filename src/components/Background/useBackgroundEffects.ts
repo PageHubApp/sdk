@@ -2,6 +2,7 @@
  * Hook that manages all side-effects for the Background component:
  *  - Global link styles
  *  - Design-system CSS variable injection
+ *  - The DaisyUI component stylesheet, on or off with `theme.daisyui`
  *
  * Header/footer snippet injection is now emitted via next/head in Background.tsx
  * (`chrome/static/runtime/InjectedHeadTags`) so scripts land in initial SSR HTML.
@@ -9,7 +10,8 @@
  * Extracted from Background.tsx.
  */
 import { ROOT_NODE } from "@craftjs/utils";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
+import { setTailwindBrowserDaisyUI } from "../../core/tailwindBrowser";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { injectDesignSystemVars } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
@@ -90,4 +92,13 @@ export function useBackgroundEffects({
       animations: t.animations,
     });
   }, [props.theme, enabled]);
+
+  // ---- DaisyUI component stylesheet ----
+  // Layout effect: the runtime's link is dropped before the canvas first paints
+  // with it. Toggling the setting in the editor takes effect at once.
+  const daisyui = resolveTheme(props).daisyui !== false;
+  useLayoutEffect(() => {
+    if (!enabled || !isRootBackground) return;
+    setTailwindBrowserDaisyUI(daisyui);
+  }, [daisyui, enabled, isRootBackground]);
 }

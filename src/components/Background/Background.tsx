@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { TbContainer } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
-import { resolveTheme } from "../../utils/design/resolveTheme";
+import { daisyUIRootAttrs, resolveTheme } from "../../utils/design/resolveTheme";
 import { useLazyBackground } from "../../utils/hooks/useLazyBackground";
 import { useMounted } from "../../utils/hooks/useMounted";
 import { useUntrustedRender } from "../../utils/runtimeMode";
@@ -216,6 +216,7 @@ export function Background({
   applyAnimation(prop, props, null, enabled);
 
   prop["data-ph-site"] = "true";
+  if (isRoot) Object.assign(prop, daisyUIRootAttrs(props));
 
   return React.createElement("main", prop);
 }

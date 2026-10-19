@@ -22,6 +22,14 @@ export interface DesignSystemVars {
   styleGuideMeta?: Record<string, any>;
   /** Site-defined animations, referenced by nodes as `root.animation: "site:<key>"`. */
   animations?: SiteAnimation[];
+  /**
+   * Use DaisyUI's component styles (`btn`, `hero`, `card`, …) and the spatial
+   * overrides on them. Unset = on; `false` (HTML imports, whose own class names
+   * collide) ships none of it and puts `data-daisyui="off"` on the site root.
+   * Palette, spacing and font variables work either way. See
+   * `docs/features/daisyui-toggle.md`.
+   */
+  daisyui?: boolean;
 }
 
 /**

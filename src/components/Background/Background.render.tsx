@@ -3,7 +3,7 @@ import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../../utils/background";
 import { PaletteProvider } from "../../utils/design/PaletteContext";
 import { RuntimeVarsProvider } from "../../utils/design/RuntimeVarsContext";
-import { resolveTheme } from "../../utils/design/resolveTheme";
+import { daisyUIRootAttrs, resolveTheme } from "../../utils/design/resolveTheme";
 import { useLazyBackground } from "../../utils/hooks/useLazyBackground";
 import { applyAriaProps } from "../selectors";
 import { InjectedHeadTags, InjectedBodyTags } from "../../chrome/static/runtime/InjectedHeadTags";
@@ -83,5 +83,6 @@ export function BackgroundRender({
 
   applyAnimation(prop, props, null, false);
   prop["data-ph-site"] = "true";
+  if (isRoot) Object.assign(prop, daisyUIRootAttrs(props));
   return React.createElement("main", prop);
 }

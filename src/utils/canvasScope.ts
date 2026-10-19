@@ -93,9 +93,14 @@ function rootSelectorsToScope(css: string): string {
 /**
  * Limit `css` to elements inside `selector` (`@scope`). `@keyframes`,
  * `@font-face`, `@property` and other non-selector at-rules stay global.
+ * `opts.to` is the scope's lower limit: elements inside a match are left out.
  * Idempotent.
  */
-export function scopeCss(css: string, selector: string = CANVAS_SCOPE_SELECTOR): string {
+export function scopeCss(
+  css: string,
+  selector: string = CANVAS_SCOPE_SELECTOR,
+  opts: { to?: string } = {}
+): string {
   if (!css || css.startsWith(SCOPED_MARKER)) return css;
   const global: string[] = [];
   const scoped: string[] = [];
@@ -104,7 +109,7 @@ export function scopeCss(css: string, selector: string = CANVAS_SCOPE_SELECTOR):
     else scoped.push(stmt);
   }
   const body = scoped.length
-    ? `@scope (${selector}){${rootSelectorsToScope(scoped.join("\n"))}}`
+    ? `@scope (${selector})${opts.to ? ` to (${opts.to})` : ""}{${rootSelectorsToScope(scoped.join("\n"))}}`
     : "";
   return SCOPED_MARKER + [...global, body].filter(Boolean).join("\n");
 }

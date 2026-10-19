@@ -18,7 +18,17 @@ export function resolveTheme(props: Record<string, any>): DesignSystemVars {
     typography: t.typography || [],
     breakpoints: t.breakpoints || undefined,
     animations: sanitizeSiteAnimations(t.animations),
+    // Missing = on: every site made before the toggle keeps DaisyUI.
+    daisyui: t.daisyui !== false,
   };
+}
+
+/** The attribute the site root carries when DaisyUI component styles are off. */
+export const DAISYUI_ATTR = "data-daisyui";
+
+/** `{ "data-daisyui": "off" }` for a ROOT whose theme turns DaisyUI off, else `{}`. */
+export function daisyUIRootAttrs(props: Record<string, any>): Record<string, string> {
+  return resolveTheme(props).daisyui ? {} : { [DAISYUI_ATTR]: "off" };
 }
 
 /**

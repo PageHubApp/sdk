@@ -408,6 +408,7 @@ ${scrollObserverScript}
       scrollObserverScript,
       themeCSS,
       breakpoints: rootProps.theme?.breakpoints || undefined,
+      daisyui: resolveTheme(rootProps).daisyui,
       seo,
     };
   }
@@ -419,6 +420,7 @@ ${scrollObserverScript}
     scrollObserverScript,
     themeCSS,
     breakpoints: rootProps.theme?.breakpoints || undefined,
+    daisyui: resolveTheme(rootProps).daisyui,
     seo,
   };
 }

@@ -1,5 +1,5 @@
 import { staticClasses, getInlineStyle, tag, ariaAttrs, handlerAttrs, type ToHTMLFn } from "../../utils/staticHtml";
-import { resolveTheme } from "../../utils/design/resolveTheme";
+import { daisyUIRootAttrs, resolveTheme } from "../../utils/design/resolveTheme";
 
 export const toHTML: ToHTMLFn = (props, children, ctx) => {
   const bgCtx = { ...ctx, palette: resolveTheme(props).palette };
@@ -10,6 +10,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
       style: getInlineStyle(props) || undefined,
       ...ariaAttrs(props),
       ...handlerAttrs(props),
+      ...daisyUIRootAttrs(props),
     },
     children
   );

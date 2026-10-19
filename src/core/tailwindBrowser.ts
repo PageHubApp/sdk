@@ -46,6 +46,34 @@ function stripLayers(css: string): string {
 }
 
 let injected = false;
+/** Whether the open site uses DaisyUI component styles (`theme.daisyui`). */
+let daisyEnabled = true;
+
+/** Add or remove the DaisyUI component stylesheet to match `daisyEnabled`. */
+function syncDaisyLink(): void {
+  const existing = document.getElementById(DAISYUI_ID);
+  if (!daisyEnabled) {
+    existing?.remove();
+    return;
+  }
+  if (existing) return;
+  const daisyLink = document.createElement("link");
+  daisyLink.id = DAISYUI_ID;
+  daisyLink.rel = "stylesheet";
+  daisyLink.href = "/vendor/daisyui-blocks.css";
+  document.head.appendChild(daisyLink);
+}
+
+/**
+ * Load or drop the DaisyUI component stylesheet the runtime brings, for a site
+ * whose theme turns DaisyUI off (`resolveTheme(rootProps).daisyui`). Takes
+ * effect at once; remembered for the next `injectTailwindBrowser`.
+ */
+export function setTailwindBrowserDaisyUI(enabled: boolean): void {
+  if (typeof window === "undefined" || daisyEnabled === enabled) return;
+  daisyEnabled = enabled;
+  if (injected) syncDaisyLink();
+}
 let layerObserver: MutationObserver | null = null;
 /** `@scope` selector for the runtime's output, or null for global output (a full-window editor). */
 let outputScope: string | null = null;
@@ -117,14 +145,9 @@ export function injectTailwindBrowser(options: TailwindBrowserOptions = {}): voi
   configStyle.textContent = THEME_INLINE_CSS;
   document.head.appendChild(configStyle);
 
-  // 2. Inject DaisyUI component CSS (cherry-picked bundle, ~50KB gzipped)
-  if (!document.getElementById(DAISYUI_ID)) {
-    const daisyLink = document.createElement("link");
-    daisyLink.id = DAISYUI_ID;
-    daisyLink.rel = "stylesheet";
-    daisyLink.href = "/vendor/daisyui-blocks.css";
-    document.head.appendChild(daisyLink);
-  }
+  // 2. Inject DaisyUI component CSS (cherry-picked bundle, ~50KB gzipped),
+  //    unless the open site turned DaisyUI off (`setTailwindBrowserDaisyUI`).
+  syncDaisyLink();
 
   // 3. Inject the compiler script
   const script = document.createElement("script");
@@ -171,6 +194,8 @@ export function removeTailwindBrowser(): void {
 
   const daisy = document.getElementById(DAISYUI_ID);
   if (daisy) daisy.remove();
+  // The next page to inject the runtime (another site, a marketing preview) starts with DaisyUI.
+  daisyEnabled = true;
 
   injected = false;
 }

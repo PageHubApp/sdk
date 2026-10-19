@@ -8,6 +8,8 @@ import { renderToHTML } from "../render/static/renderToHTML";
 import { compileSchema, normalizeJsonLd } from "../utils/seo/compileSchema";
 import type { SchemaEntry } from "../utils/seo/schemaTypes";
 import { sdkLog } from "../utils/logger";
+import { DAISYUI_ATTR, resolveTheme } from "../utils/design/resolveTheme";
+import { scopeCss } from "../utils/canvasScope";
 import { applyBreakpointRewrite } from "../utils/breakpointRewrite";
 import { collectDaisyUICSS } from "./daisyui/loader";
 import { purgeDaisyUIRules } from "./daisyui/purgeRules";
@@ -50,13 +52,36 @@ export async function compileCSS(options: {
    * renders need real `@media` to respond to the browser viewport.
    */
   editor?: boolean;
+  /**
+   * Ship DaisyUI component CSS for the page's `btn` / `hero` / … classes.
+   * Default true; false for a site whose theme turns DaisyUI off
+   * (`resolveTheme(rootProps).daisyui`), so its own `.hero` isn't restyled.
+   */
+  daisyui?: boolean;
+  /**
+   * The caller wraps the output in `scopeCss` (the dashboard canvas). DaisyUI
+   * rules then go inside `@scope (:root) to ([data-daisyui="off"])`, so turning
+   * DaisyUI off in the open editor takes effect without a reload. Never set it
+   * for CSS used unscoped: a scoped rule beats an unscoped utility of the same
+   * specificity, so `btn px-space-md` would lose its padding.
+   */
+  canvasScoped?: boolean;
 }): Promise<string> {
-  const { classes, themeCSS, lean = false, keepKeyframesMentionedIn, breakpoints, editor = false } = options;
+  const {
+    classes,
+    themeCSS,
+    lean = false,
+    keepKeyframesMentionedIn,
+    breakpoints,
+    editor = false,
+    daisyui = true,
+    canvasScoped = false,
+  } = options;
 
   if (classes.length === 0) return themeCSS || "";
 
   // Collect DaisyUI component CSS for used classes
-  const daisyuiCSS = collectDaisyUICSS(classes);
+  const daisyuiCSS = daisyui ? collectDaisyUICSS(classes) : "";
 
   // Compile Tailwind utilities
   const compiler = await getCompiler();
@@ -89,6 +114,9 @@ export async function compileCSS(options: {
       bareCandidates.add(cls.replace(/^[a-z-]+:/g, ""));
     }
     daisyStripped = purgeDaisyUIRules(daisyStripped, bareCandidates);
+    if (canvasScoped) {
+      daisyStripped = scopeCss(daisyStripped, ":root", { to: `[${DAISYUI_ATTR}="off"]` });
+    }
     stripped = daisyStripped + " " + stripped;
   }
 
@@ -152,6 +180,7 @@ export async function buildStaticPage(
     classes: renderResult.classes,
     themeCSS: renderResult.themeCSS,
     breakpoints: renderResult.breakpoints,
+    daisyui: renderResult.daisyui,
   });
 
   // 3. Optionally wrap in a complete HTML document
@@ -232,6 +261,7 @@ ${renderResult.scrollObserverScript}
  * @param opts.editor - When true, rewrites `@media` → `@container ph-editor-canvas`
  *   so the editor canvas responds to its own container width. MUST be false
  *   for /view, /static, custom domains.
+ * @param opts.canvasScoped - The output is wrapped in `scopeCss` (see `compileCSS`).
  * @param opts.extraClasses - Classes a renderer emits beyond the node props —
  *   the static walker's `renderToHTML().classes` (e.g. a Link's icon-row
  *   wrapper). Without them those classes ship with no CSS.
@@ -239,7 +269,7 @@ ${renderResult.scrollObserverScript}
  */
 export async function compileTailwindCSS(
   pageData: string,
-  opts?: { editor?: boolean; extraClasses?: string[] }
+  opts?: { editor?: boolean; extraClasses?: string[]; canvasScoped?: boolean }
 ): Promise<string | null> {
   try {
     // pageData may arrive as plain JSON (viewer pipeline) or lz-base64
@@ -264,11 +294,14 @@ export async function compileTailwindCSS(
     const rootProps = nodes?.ROOT?.props ?? {};
     const breakpoints: Record<string, number> | undefined =
       rootProps.theme?.breakpoints || undefined;
+    const { daisyui } = resolveTheme(rootProps);
 
     const css = await compileCSS({
       classes: candidates,
       nodes,
       breakpoints,
+      daisyui,
+      canvasScoped: opts?.canvasScoped === true,
       editor: opts?.editor === true,
       // Public renders ship only the keyframes the page uses; the editor keeps
       // them all so a newly picked animation plays without a recompile.
