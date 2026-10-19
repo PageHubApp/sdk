@@ -3,12 +3,11 @@ import {
   getMediaKind,
   MEDIA_KIND_LABELS,
   sortMedia,
-  type MediaKind,
   type SortDirection,
   type SortField,
 } from "../utils/media-helpers";
 import type { MediaLibrary } from "@/utils/media/libraryStore";
-import type { MediaItem } from "@/utils/media/libraryTypes";
+import type { MediaItem, MediaKind } from "@/utils/media/libraryTypes";
 import { sdkLog } from "../../../../../utils/logger";
 import type { FolderFilter } from "./types";
 

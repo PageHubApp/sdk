@@ -1,7 +1,8 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { TbFilter } from "react-icons/tb";
 import { ToolbarDropdown } from "../../../../ToolbarDropdown";
-import { MEDIA_KIND_LABELS, type MediaKind } from "../../utils/media-helpers";
+import { MEDIA_KIND_LABELS } from "../../utils/media-helpers";
+import type { MediaKind } from "@/utils/media/libraryTypes";
 import type { MediaItem } from "@/utils/media/libraryTypes";
 import { TOOL_CLUSTER_CLASS } from "./styles";
 

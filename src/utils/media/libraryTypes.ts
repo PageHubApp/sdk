@@ -5,6 +5,10 @@
  * importing from `chrome/`.
  */
 
+/** Logical kind of a media item, derived from `type` + `metadata.contentType`
+ *  (`getMediaKind`). Drives badges, filters, pickers and same-kind replace. */
+export type MediaKind = "image" | "video" | "audio" | "pdf" | "archive" | "other";
+
 export interface MediaDimensions {
   width: number;
   height: number;

@@ -7,6 +7,7 @@ import { getCdnUrl } from "@/utils/cdn";
 import { SideBarAtom } from "@/utils/atoms";
 import { isInsideRepeater } from "@/utils/data/dataSourceContext";
 import { getMediaById, getMediaContent } from "@/utils/media/media";
+import { getMediaPicker, type MediaPickerSource } from "@/utils/media/registry";
 import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -23,7 +24,7 @@ import { SiteLogoSource } from "./SiteLogoSource";
 import { previewUrlForSrc, siteLogoVariantOf } from "./utils/siteLogo";
 import { useEditorDesignContext } from "./hooks/useEditorDesignContext";
 import { useMediaManager } from "./hooks/useMediaManager";
-import type { MediaKind } from "./utils/media-helpers";
+import type { MediaKind } from "@/utils/media/libraryTypes";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 const POPOVER_PANEL_WIDTH = 480;
@@ -112,13 +113,23 @@ export const MediaInput = (propa: MediaInputProps) => {
 
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
   const [chipSourceMode, setChipSourceMode] = useState<"library" | "logo" | "dynamic">("library");
+  // A host-registered picker replaces the chip panel's Library tab: the chip
+  // opens it straight away, and its Site logo / Dynamic sources lead back here.
+  const [Picker] = useState(getMediaPicker);
+  const [showPicker, setShowPicker] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [popoverInitialPos, setPopoverInitialPos] = useState<
     { x: number; y: number } | undefined
   >();
   const sidebarLeft = useAtomValue(SideBarAtom);
 
-  const openChipBrowser = () => {
+  const openChipBrowser = (mode?: "library" | "logo" | "dynamic") => {
+    const start = mode ?? (logoVariant ? "logo" : hasDynamicSource ? "dynamic" : "library");
+    if (Picker && (start === "library" || (!mode && srcIsLibraryId))) {
+      setShowMediaBrowser(false);
+      setShowPicker(true);
+      return;
+    }
     const rect = triggerRef.current?.getBoundingClientRect();
     if (rect) {
       const x = sidebarLeft ? rect.right + 8 : rect.left - POPOVER_PANEL_WIDTH - 8;
@@ -126,7 +137,7 @@ export const MediaInput = (propa: MediaInputProps) => {
     } else {
       setPopoverInitialPos(undefined);
     }
-    setChipSourceMode(logoVariant ? "logo" : hasDynamicSource ? "dynamic" : "library");
+    setChipSourceMode(start);
     setShowMediaBrowser(true);
   };
 
@@ -162,6 +173,13 @@ export const MediaInput = (propa: MediaInputProps) => {
   const hasContentUrl = !!contentValue && contentValue.startsWith("http");
   const hasDynamicSource = !!contentValue;
   const logoVariant = siteLogo ? siteLogoVariantOf(contentValue) : null;
+  // A bare CDN id in the content prop (how MCP and imports write images) is a
+  // library file, not a dynamic source: a registered picker opens on it.
+  const srcIsLibraryId =
+    !hasMedia &&
+    !logoVariant &&
+    getPath(nodeProps, typeKey) === "cdn" &&
+    /^[A-Za-z0-9_-]{10,}$/.test(contentValue);
   const { rootProps, pageMedia } = extractRootDataFromQuery(query);
   // `{{item.*}}` only resolves inside a repeater; offering it elsewhere sets an
   // image that can never load.
@@ -209,7 +227,28 @@ export const MediaInput = (propa: MediaInputProps) => {
     });
   };
 
+  const pickerSources: MediaPickerSource[] = [
+    ...(siteLogo ? [{ id: "logo", label: "Site logo", onSelect: () => openChipBrowser("logo") }] : []),
+    { id: "dynamic", label: "Dynamic", onSelect: () => openChipBrowser("dynamic") },
+  ];
+
   const renderBrowser = () => {
+    if (variant === "chip" && showPicker) {
+      return (
+        <MediaManagerModal
+          isOpen
+          onClose={() => setShowPicker(false)}
+          onSelect={id => {
+            setShowPicker(false);
+            handleBrowseSelect(id);
+          }}
+          selectionMode
+          kindFilter={kindFilter}
+          selectedId={mediaId || (srcIsLibraryId ? contentValue : null)}
+          sources={pickerSources}
+        />
+      );
+    }
     if (variant === "chip" && showMediaBrowser) {
       return (
         <Suspense fallback={null}>
@@ -233,7 +272,7 @@ export const MediaInput = (propa: MediaInputProps) => {
                 <button
                   type="button"
                   className={`btn btn-xs ${chipSourceMode === "library" ? "btn-primary" : "btn-ghost"}`}
-                  onClick={() => setChipSourceMode("library")}
+                  onClick={() => (Picker ? openChipBrowser("library") : setChipSourceMode("library"))}
                 >
                   Library
                 </button>
@@ -315,6 +354,7 @@ export const MediaInput = (propa: MediaInputProps) => {
         onSelect={handleBrowseSelect}
         selectionMode
         kindFilter={kindFilter}
+        selectedId={mediaId}
       />
     );
   };
@@ -354,7 +394,7 @@ export const MediaInput = (propa: MediaInputProps) => {
           ref={triggerRef}
           label={label}
           open={showMediaBrowser}
-          onTriggerClick={openChipBrowser}
+          onTriggerClick={() => openChipBrowser()}
           onClear={handleClear}
           triggerAriaLabel={hasPreview || hasDynamicSource ? "Change media" : "Add media"}
           clearAriaLabel="Clear media"

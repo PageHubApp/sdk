@@ -1,11 +1,12 @@
 import { SettingsShell } from "@/chrome/viewport/modals/settings/SettingsShell";
 import { useEditorSidebarDockLeft } from "@/utils/atoms";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TbFolder } from "react-icons/tb";
 import { MediaManagerBody } from "./MediaManagerBody";
 import { useEditorDesignContext } from "./hooks/useEditorDesignContext";
 import { useMediaManager } from "./hooks/useMediaManager";
-import { type MediaKind } from "./utils/media-helpers";
+import type { MediaKind } from "@/utils/media/libraryTypes";
+import { getMediaPicker, type MediaPickerSource } from "@/utils/media/registry";
 import { OVERLAY_Z_MEDIA_MANAGER } from "@/chrome/popovers/overlayZIndex";
 
 interface MediaManagerModalProps {
@@ -16,12 +17,40 @@ interface MediaManagerModalProps {
   /** Restrict the picker to a single media kind (e.g. only videos for a Video
    *  component picker). User can still flip the "All" tab to widen. */
   kindFilter?: MediaKind;
+  /** The file the caller uses now — a registered picker shows it selected. */
+  selectedId?: string | null;
+  /** Other sources a registered picker offers (ignored by the SDK manager). */
+  sources?: MediaPickerSource[];
 }
 
 const MEDIA_MANAGER_DEFAULT_WIDTH = 1080;
 const MEDIA_MANAGER_Z = OVERLAY_Z_MEDIA_MANAGER;
 
-export function MediaManagerModal({
+/**
+ * The library dialog every SDK surface opens. A host-registered picker
+ * (`registerMediaPicker`) replaces the SDK Media Manager below; picking
+ * defaults to images, the kind nearly every caller inserts.
+ */
+export function MediaManagerModal(props: MediaManagerModalProps) {
+  // Read once per mount, like the library store: the branch can't change mid-life.
+  const [Picker] = useState(getMediaPicker);
+  if (!Picker) return <SdkMediaManagerModal {...props} />;
+  const { isOpen, onClose, onSelect, selectionMode = false, kindFilter, selectedId, sources } =
+    props;
+  return (
+    <Picker
+      isOpen={isOpen}
+      onClose={onClose}
+      mode={selectionMode ? "pick" : "browse"}
+      kind={selectionMode ? (kindFilter ?? "image") : "all"}
+      selectedId={selectedId}
+      onPick={item => onSelect?.(item.id)}
+      sources={sources}
+    />
+  );
+}
+
+function SdkMediaManagerModal({
   isOpen,
   onClose,
   onSelect,

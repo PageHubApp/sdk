@@ -9,6 +9,9 @@
  * Mirrors `registerClientDataFetcher` / `registerSubmissionHandler`.
  */
 
+import type { ComponentType } from "react";
+import type { MediaItem, MediaKind } from "./libraryTypes";
+
 export type MediaUploadDestination = "cf-images" | "r2";
 
 export interface MediaUploadHandlerInput {
@@ -75,4 +78,52 @@ export function registerMediaUploadAccept(fn: MediaAcceptProvider | null): void 
 
 export function getUploadAccept(): string {
   return _acceptProvider?.() ?? DEFAULT_IMAGE_ACCEPT;
+}
+
+/**
+ * Media picker registry.
+ *
+ * Every SDK surface that lets someone choose a file from the library (image,
+ * video and background inputs, the inline image tool, the icon dialog, the
+ * standalone picker) and the "Media" command go through `MediaManagerModal`,
+ * which renders the registered picker instead of the SDK's own Media Manager.
+ * Hosts with a file manager of their own register it on boot; with nothing
+ * registered the SDK's Media Manager stays the default.
+ *
+ * Register BEFORE the editor first renders: each surface reads the registry
+ * once, on mount.
+ */
+export interface MediaPickerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** `pick`: choose one file and call `onPick`. `browse`: manage the library. */
+  mode: "pick" | "browse";
+  /** The kind of file the caller can use. `all` (or unset) offers every kind. */
+  kind?: MediaKind | "all";
+  /** The file the caller currently uses, shown selected. */
+  selectedId?: string | null;
+  /** With `mode: "pick"`: the chosen library entry. The picker closes itself after. */
+  onPick?: (item: MediaItem) => void;
+  /** Other places the file can come from, shown as toolbar buttons the host
+   *  styles (an image chip's "Site logo" / "Dynamic"). Choosing one closes the
+   *  picker; the caller takes it from there. */
+  sources?: MediaPickerSource[];
+}
+
+export interface MediaPickerSource {
+  id: string;
+  label: string;
+  onSelect: () => void;
+}
+
+export type MediaPicker = ComponentType<MediaPickerProps>;
+
+let _picker: MediaPicker | null = null;
+
+export function registerMediaPicker(picker: MediaPicker | null): void {
+  _picker = picker;
+}
+
+export function getMediaPicker(): MediaPicker | null {
+  return _picker;
 }

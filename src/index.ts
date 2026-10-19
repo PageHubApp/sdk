@@ -441,6 +441,9 @@ export {
   getMediaLibraryStore,
   useMediaLibrary,
 } from "./utils/media/libraryStore";
+// Host file manager for every "choose a file" surface (see `MediaManagerModal`).
+export { registerMediaPicker, getMediaPicker } from "./utils/media/registry";
+export type { MediaPicker, MediaPickerProps, MediaPickerSource } from "./utils/media/registry";
 export type {
   MediaLibrary,
   MediaLibrarySnapshot,

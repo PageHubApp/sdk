@@ -1,15 +1,12 @@
 // ─── Media Manager utility functions (pure, no React dependencies) ───
 
 import { DEFAULT_IMAGE_ACCEPT } from "@/utils/media/registry";
-import type { MediaItem } from "@/utils/media/libraryTypes";
+import type { MediaItem, MediaKind } from "@/utils/media/libraryTypes";
 
 export type SortField = "name" | "size" | "createdAt" | "order";
 export type SortDirection = "asc" | "desc";
 export type AddMode = "upload" | "url" | "svg";
 
-/** Logical kind of a media item, derived from `type` + `metadata.contentType`.
- *  Drives badges, filter chips, and same-kind replace `accept`. */
-export type MediaKind = "image" | "video" | "audio" | "pdf" | "archive" | "other";
 
 export const MEDIA_KIND_LABELS: Record<MediaKind, string> = {
   image: "Image",

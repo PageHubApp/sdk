@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { getUploadAccept } from "@/utils/media/upload";
-import { getMediaKind, getReplaceAccept, type MediaKind } from "../../utils/media-helpers";
+import { getMediaKind, getReplaceAccept } from "../../utils/media-helpers";
+import type { MediaKind } from "@/utils/media/libraryTypes";
 import { useCanEditMediaLibrary } from "../../hooks/useCanEditMediaLibrary";
 import type { UseMediaManagerReturn } from "../../hooks/useMediaManager";
 import { AddModeCluster } from "./AddModeCluster";

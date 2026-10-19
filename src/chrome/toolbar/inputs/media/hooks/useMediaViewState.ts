@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { phStorage } from "@/utils/phStorage";
-import type { MediaKind, SortDirection, SortField } from "../utils/media-helpers";
+import type { SortDirection, SortField } from "../utils/media-helpers";
+import type { MediaKind } from "@/utils/media/libraryTypes";
 import type { FolderFilter } from "./types";
 
 export function useMediaViewState() {
