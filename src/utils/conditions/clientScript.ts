@@ -74,6 +74,16 @@ export const CONDITION_EVAL_CHUNK = stringifyChunk(function $conditionEval() {
     return false;
   }
 
+  // An unset state key reads as "" (numeric comparisons false). Mirrors
+  // `applyStateOperator` in evaluate.ts.
+  function applyStateOp(actual: any, op: string, rawExpected: any): boolean {
+    if (actual == null) {
+      if (op === "greater-than" || op === "less-than") return false;
+      return applyOp("", op, rawExpected);
+    }
+    return applyOp(actual, op, rawExpected);
+  }
+
   function withItem(s: any, item?: unknown): any {
     if (typeof s !== "string" || !item || typeof item !== "object" || s.indexOf("{{item.") === -1) {
       return s;
@@ -115,7 +125,7 @@ export const CONDITION_EVAL_CHUNK = stringifyChunk(function $conditionEval() {
       const sk = withItem(c.key, item);
       const s = window.__PH_STATE__;
       const sv = s && s[sk] ? s[sk].value : null;
-      return applyOp(sv, c.operator, withItem(c.value, item));
+      return applyStateOp(sv, c.operator, withItem(c.value, item));
     }
     if (c.type === "auth") {
       const auth = window.__PH_AUTH__ || null;

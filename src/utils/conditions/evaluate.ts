@@ -41,6 +41,26 @@ function applyOperator(actual: string | null, op: Operator, rawExpected: unknown
 }
 
 /**
+ * State operator. The registry is always readable (empty on the server), so a
+ * state condition is never indeterminate: an unset key (never written, or
+ * cleared) reads as `""` — `equals 'x'` false, `not-equals 'x'` true, `exists`
+ * false, `not-exists` true — and numeric comparisons on it are false.
+ * Mirrored by `applyStateOp` in clientScript.ts; conditionParity.test.ts runs
+ * one case table against both.
+ */
+function applyStateOperator(
+  actual: string | null | undefined,
+  op: Operator,
+  rawExpected: unknown
+): boolean {
+  if (actual == null) {
+    if (op === "greater-than" || op === "less-than") return false;
+    return applyOperator("", op, rawExpected);
+  }
+  return applyOperator(actual, op, rawExpected);
+}
+
+/**
  * Evaluate a single condition against a context.
  * Returns `true` (met), `false` (not met), or `null` (can't evaluate — e.g. URL params in static).
  */
@@ -124,9 +144,8 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
     case "state": {
       // Module-singleton read — registry is the same across SSR/client. On
       // the server the registry is empty until `seedFromWindow()` runs in
-      // the client. For exists/not-exists the answer is unambiguous even
-      // when unset (matches how the `item` branch handles missing keys).
-      // Resolve `{{anchor.X}}` tokens against the wrapper-supplied anchor
+      // the client, so SSR renders the unset-key answer (see
+      // applyStateOperator). Resolve `{{anchor.X}}` tokens against the wrapper-supplied anchor
       // map so per-instance state lookups work without tree-mutation hacks.
       // Interpolate `{{item.X}}` in the key AND the value against the current
       // repeater item — lets stateModifier conditions written inside a
@@ -145,13 +164,7 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
           : cond.key
       );
       const cmpValue = withItem(cond.value);
-      const val = getStateValue(resolvedKey);
-      if (val === undefined) {
-        if (cond.operator === "not-exists") return true;
-        if (cond.operator === "exists") return false;
-        return null;
-      }
-      return applyOperator(val, cond.operator, cmpValue);
+      return applyStateOperator(getStateValue(resolvedKey), cond.operator, cmpValue);
     }
 
     case "item": {
