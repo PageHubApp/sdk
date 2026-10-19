@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { submitFormProduction } from "./submitFormProduction";
+import { submitWithFormStates } from "./submitFormProduction";
 import { serializeFormFields } from "./serializeFormFields";
 import { useContainerRenderWalker } from "../Container/Container.render";
 import { useWalkerNode } from "../../render/react/contexts";
@@ -34,23 +34,12 @@ export const FormRender = ({ children, ...props }: any) => {
     return () => iframe.removeEventListener("load", fnu);
   }, [loadingKey, loadedKey]);
 
-  const handleFormSubmit = async (formData: any) => {
-    if (fieldsKey) setVisibility(fieldsKey, "hidden", "form-submit");
-    if (loadingKey) setVisibility(loadingKey, "shown", "form-submit");
-    if (props.submissionType === "iframe") return;
-    const { redirectUrl } = await submitFormProduction(formData, props, settings, formId);
-    setTimeout(() => {
-      // A URL from the response wins over the static one — that is the whole
-      // point of successUrlField, and the endpoint knows the session id.
-      const target = redirectUrl || props.successUrl;
-      if (props.successAction === "redirect" && target) {
-        window.location.href = target;
-        return;
-      }
-      if (loadingKey) setVisibility(loadingKey, "hidden", "form-submit");
-      if (loadedKey) setVisibility(loadedKey, "shown", "form-submit");
-    }, 1000);
-  };
+  const handleFormSubmit = (formData: any) =>
+    submitWithFormStates(formData, props, settings, formId, {
+      fields: fieldsKey,
+      loading: loadingKey,
+      loaded: loadedKey,
+    });
 
   const containerProps: any = {
     action: props.action || "",

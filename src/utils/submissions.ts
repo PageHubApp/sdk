@@ -1,6 +1,8 @@
 /**
  * Form submission handler — the host app registers a concrete impl
  * (e.g. POST /api/submissions); the SDK's Form component calls SaveSubmissions.
+ * A handler rejects (throws) when the submission fails — the Form then rolls
+ * back to its fields instead of showing the thank-you state.
  */
 
 type SubmissionHandler = (

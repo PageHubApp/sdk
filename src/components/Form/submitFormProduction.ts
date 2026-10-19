@@ -1,8 +1,11 @@
 /**
  * Shared production-mode form submission used by both Form.tsx (editor
- * runtime when previewing) and Form.render.tsx (walker). Fires the actual
- * fetch / SaveSubmissions call and the analytics events. Returns nothing —
- * caller owns loading/loaded state.
+ * runtime when previewing) and Form.render.tsx (walker).
+ * `submitFormProduction` fires the fetch / SaveSubmissions call and, on
+ * success, the analytics events; it throws when the submission fails.
+ * `submitWithFormStates` wraps it with the fields → loading → loaded
+ * visibility flow, rolling back to the fields on failure (same as the static
+ * runtime's forms chunk).
  *
  * The editor's "simulate submission" branch lives in Form.tsx only; it does
  * not touch this helper.
@@ -12,6 +15,7 @@ import type { ActionConversion } from "../../utils/action";
 import { fireConversion } from "../../utils/actions/conversion";
 import { SaveSubmissions } from "../../utils/submissions";
 import { sdkLog } from "../../utils/logger";
+import { setVisibility } from "../../utils/state/stateRegistry";
 
 export interface FormProductionProps {
   submissionType?: string;
@@ -93,26 +97,24 @@ export async function submitFormProduction(
   }
 
   if (props.submissionType === "custom" && props.action) {
-    try {
-      const res = await fetch(props.action, {
-        method: props.method || "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      if (props.successUrlField) {
-        const body = await res.json().catch(() => null);
-        redirectUrl = safeRedirectUrl(readResponsePath(body, props.successUrlField));
-        if (!redirectUrl) {
-          sdkLog.warn(
-            `Form successUrlField "${props.successUrlField}" resolved to no usable URL in the response.`
-          );
-        }
+    const res = await fetch(props.action, {
+      method: props.method || "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+    if (!res.ok) throw new Error(`Form endpoint answered ${res.status}`);
+    if (props.successUrlField) {
+      const body = await res.json().catch(() => null);
+      redirectUrl = safeRedirectUrl(readResponsePath(body, props.successUrlField));
+      if (!redirectUrl) {
+        sdkLog.warn(
+          `Form successUrlField "${props.successUrlField}" resolved to no usable URL in the response.`
+        );
       }
-    } catch (err) {
-      sdkLog.error("Custom form submission failed:", err);
     }
   } else {
-    SaveSubmissions(formData, settings, {
+    // The registered handler rejects when the submission fails.
+    await SaveSubmissions(formData, settings, {
       mailTo: props.mailto,
       formName: props.formName,
       webhookUrl: props.webhookEnabled ? props.webhookUrl : undefined,
@@ -139,4 +141,53 @@ export async function submitFormProduction(
   if (props.conversion) fireConversion(props.conversion);
 
   return { redirectUrl };
+}
+
+export interface FormStateKeys {
+  fields?: string;
+  loading?: string;
+  loaded?: string;
+}
+
+/**
+ * Submit and drive the form's visibility states: fields hide and loading shows
+ * at once; on success loaded shows (or `successAction: "redirect"` navigates)
+ * after a 1 s beat; on failure the fields come back so the visitor can retry.
+ */
+export async function submitWithFormStates(
+  formData: any,
+  props: FormProductionProps & { successAction?: string; successUrl?: string },
+  settings: any,
+  formNodeId: string | undefined,
+  keys: FormStateKeys
+): Promise<void> {
+  const set = (key: string | undefined, value: "shown" | "hidden") => {
+    if (key) setVisibility(key, value, "form-submit");
+  };
+  set(keys.fields, "hidden");
+  set(keys.loading, "shown");
+  if (props.submissionType === "iframe") return;
+
+  let redirectUrl: string | undefined;
+  try {
+    ({ redirectUrl } = await submitFormProduction(formData, props, settings, formNodeId));
+  } catch (err) {
+    sdkLog.error("Form submission failed:", err);
+    set(keys.loading, "hidden");
+    set(keys.loaded, "hidden");
+    set(keys.fields, "shown");
+    return;
+  }
+
+  setTimeout(() => {
+    // A URL from the response wins over the static one — that is the whole
+    // point of successUrlField, and the endpoint knows the session id.
+    const target = redirectUrl || props.successUrl;
+    if (props.successAction === "redirect" && target) {
+      window.location.href = target;
+      return;
+    }
+    set(keys.loading, "hidden");
+    set(keys.loaded, "shown");
+  }, 1000);
 }

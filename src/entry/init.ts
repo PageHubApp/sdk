@@ -101,26 +101,23 @@ export function init(config: PageHubConfig): PageHubInstance {
 
   // Register the form submission handler so Form components can POST to the API
   registerSubmissionHandler(async (submission, settings, additional = {}) => {
-    try {
-      const res = await fetch(`${resolved.apiBaseUrl}/api/submissions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          submission,
-          name: settings?.name || settings?.draftId,
-          mailTo: additional.mailTo,
-          formName: additional.formName,
-          webhookUrl: additional.webhookUrl,
-          collection: additional.collection,
-          collectionFieldMap: additional.collectionFieldMap,
-          skipEmail: additional.skipEmail,
-          formNodeId: additional.formNodeId,
-        }),
-      });
-      return res.json();
-    } catch (e) {
-      sdkLog.error("Form submission error:", e);
-    }
+    const res = await fetch(`${resolved.apiBaseUrl}/api/submissions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        submission,
+        name: settings?.name || settings?.draftId,
+        mailTo: additional.mailTo,
+        formName: additional.formName,
+        webhookUrl: additional.webhookUrl,
+        collection: additional.collection,
+        collectionFieldMap: additional.collectionFieldMap,
+        skipEmail: additional.skipEmail,
+        formNodeId: additional.formNodeId,
+      }),
+    });
+    if (!res.ok) throw new Error(`Form submission failed (${res.status})`);
+    return res.json();
   });
 
   // Inject spinner animation globally (once)

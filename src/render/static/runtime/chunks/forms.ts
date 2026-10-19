@@ -139,6 +139,13 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
           return cur;
         };
         const done = function (fromResponse?: string | null) {
+          fireAnalytics("form_submit", { formName: formName });
+          // Author-configured conversion (Google Ads / GA4 / Meta).
+          if (meta && meta.conversion) {
+            try {
+              fireConversion(meta.conversion);
+            } catch (e) {}
+          }
           try {
             form.reset();
           } catch (e) {}
@@ -150,7 +157,8 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
           showLoaded();
         };
         const fail = function () {
-          // Roll back to fields-visible on error so the visitor can retry.
+          // Roll back to fields-visible on a network error or a non-2xx answer
+          // so the visitor can retry (same as the React Form).
           toggle("loading", "hidden");
           toggle("loaded", "hidden");
           toggle("fields", "shown");
@@ -170,6 +178,7 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
             body: JSON.stringify(data),
           })
             .then(function (res) {
+              if (!res.ok) return fail();
               if (!field) return done();
               return res
                 .json()
@@ -205,17 +214,11 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
           })
-            .then(function () {
+            .then(function (res) {
+              if (!res.ok) return fail();
               done();
             })
             .catch(fail);
-        }
-        fireAnalytics("form_submit", { formName: formName });
-        // Author-configured conversion (Google Ads / GA4 / Meta).
-        if (meta && meta.conversion) {
-          try {
-            fireConversion(meta.conversion);
-          } catch (e) {}
         }
       };
       form.addEventListener("submit", onSubmit as EventListener);
