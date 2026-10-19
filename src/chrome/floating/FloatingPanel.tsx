@@ -14,6 +14,7 @@ import { useDraggableWindow } from "../hooks/useDraggableWindow";
 import { useResizable } from "../hooks/useResizable";
 import { useFocusTrap } from "../../utils/hooks/useAccessibility";
 import { AutoHideScrollbar } from "../primitives/layout/AutoHideScrollbar";
+import { useChromeStyle } from "../primitives/useChromeStyle";
 import { useOverlay } from "../../registry/hooks/useOverlay";
 import { sdkLog } from "../../utils/logger";
 import { getPortalTarget } from "../popovers/getPortalTarget";
@@ -257,6 +258,7 @@ export function FloatingPanel({
   })();
 
   const focusTrapRef = useFocusTrap(isOpen);
+  const chrome = useChromeStyle();
 
   // Set of descendant portal roots that should NOT count as "outside" for
   // dismiss. Populated via FloatingPanelContext by AnchoredPopover, nested
@@ -443,10 +445,7 @@ export function FloatingPanel({
   if (!isOpen) return null;
 
   const closeButton = (
-    <button
-      onClick={onClose}
-      className="text-accent-content hover:bg-accent-content/10 rounded p-0.5 transition-colors"
-    >
+    <button onClick={onClose} className={chrome.floatingPanelClose}>
       <TbX className="size-3.5" />
     </button>
   );
@@ -454,7 +453,7 @@ export function FloatingPanel({
   const titleNode = (
     <div className="flex items-center gap-1.5">
       {icon}
-      <span className="text-xs font-semibold">{title}</span>
+      <span className={chrome.floatingPanelTitle}>{title}</span>
     </div>
   );
 
@@ -514,7 +513,7 @@ export function FloatingPanel({
                 role="presentation"
                 aria-hidden="true"
                 onPointerDown={handlePointerDown}
-                className={`text-base-content flex touch-none items-center justify-between px-3 py-1.5 ${
+                className={`${chrome.floatingPanelHeader} ${
                   isDragging ? "cursor-grabbing" : "cursor-grab"
                 }`}
               >

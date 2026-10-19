@@ -2,6 +2,7 @@ import { twMerge } from "tailwind-merge";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { AutoHideScrollbar } from "../../../primitives/layout/AutoHideScrollbar";
 import { PH_TOOLBAR_DASHED_BTN_ACTIVE } from "../../phToolbarDashedSelection";
+import { useChromeStyle } from "../../../primitives/useChromeStyle";
 import {
   DISPLAY_VARIANTS,
   GRID_PRESETS,
@@ -42,6 +43,7 @@ function isPresetActive(
 }
 
 export default function LayoutPresetPanel({ initialPosition, onClose, lp }: PanelProps) {
+  const chrome = useChromeStyle();
   const sections: Section[] = [
     { label: "Side by side", presets: getFlexPresets("column"), layoutMode: "flex-row" },
     { label: "Stacked", presets: getFlexPresets("row"), layoutMode: "flex-col" },
@@ -85,7 +87,7 @@ export default function LayoutPresetPanel({ initialPosition, onClose, lp }: Pane
                       aria-label={preset.name}
                       onClick={() => handlePick(preset)}
                       className={twMerge(
-                        "ph-toolbar-dashed-btn items-center justify-center p-2",
+                        `${chrome.dashedButton} items-center justify-center p-2`,
                         active && PH_TOOLBAR_DASHED_BTN_ACTIVE
                       )}
                     >
@@ -113,7 +115,7 @@ export default function LayoutPresetPanel({ initialPosition, onClose, lp }: Pane
                   aria-label={variant.label}
                   onClick={() => lp.handleDisplayVariant(variant.value)}
                   className={twMerge(
-                    "ph-toolbar-dashed-btn items-center justify-center p-2 text-xs",
+                    `${chrome.dashedButton} items-center justify-center p-2 text-xs`,
                     active && PH_TOOLBAR_DASHED_BTN_ACTIVE
                   )}
                 >

@@ -306,7 +306,7 @@ export const NodeBreadcrumb = ({ showPageSelector = true, compact = false }: Nod
 
         {/* Placeholder when no node is selected — orients the user without competing with real crumbs */}
         {!isEditing && !currentItem && (
-          <span className="text-neutral-content/60 ml-2 truncate text-xs italic">
+          <span className={`text-neutral-content/60 ${compact ? "" : "ml-2 "}truncate text-xs italic`}>
             Viewing {pageContext.fullName || pageContext.name || "page"}
           </span>
         )}

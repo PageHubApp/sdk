@@ -1,6 +1,7 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Children, isValidElement, useMemo } from "react";
 import { Chip } from "@/chrome/primitives/Chip";
+import { useChromeStyle } from "@/chrome/primitives/useChromeStyle";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 import { OVERLAY_Z_TOOLBAR_DROPDOWN } from "@/chrome/popovers/overlayZIndex";
 
@@ -93,6 +94,7 @@ export const ToolbarDropdown = ({
       ? null
       : options.find(o => o.kind === "item" && o.value === internalValue)?.label;
 
+  const chrome = useChromeStyle();
   const handleChange = (val: string) => onChange(fromInternal(val));
 
   const handleButtonClick = () => {
@@ -147,7 +149,7 @@ export const ToolbarDropdown = ({
       <ListboxOptions
         anchor="bottom start"
         transition
-        className="pagehub-sdk-root ph-select-content"
+        className={chrome.selectContent}
         modal={false}
         portal
         style={{ zIndex: OVERLAY_Z_TOOLBAR_DROPDOWN }}

@@ -1,6 +1,7 @@
 import { TabAtom } from "../viewport/state/atoms";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { useChromeStyle } from "@/chrome/primitives/useChromeStyle";
 import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useSetAtomState } from "../../utils/atoms";
@@ -24,6 +25,7 @@ export const InspectorTab = ({
   className?: string;
 }) => {
   const [showActiveColor, setShowActiveColor] = useState(isActive);
+  const chrome = useChromeStyle();
 
   useEffect(() => {
     if (isActive) {
@@ -38,9 +40,7 @@ export const InspectorTab = ({
     <div
       className={twMerge(
         "relative flex cursor-pointer items-center justify-center rounded-md p-1.5 text-lg font-medium transition-[color,opacity,transform] active:scale-90",
-        showActiveColor
-          ? "text-primary opacity-100"
-          : "text-secondary-content hover:text-base-content opacity-45 hover:opacity-100",
+        showActiveColor ? chrome.inspectorTabActive : chrome.inspectorTabIdle,
         className
       )}
       role="tab"

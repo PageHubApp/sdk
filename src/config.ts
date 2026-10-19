@@ -27,6 +27,7 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   topBar: true,
   commandPalette: true,
   panelUrlPrefix: "",
+  chrome: "default",
   directSave: false,
   saveButton: true,
   settingsPanelSwitcher: true,

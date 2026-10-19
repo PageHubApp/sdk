@@ -21,6 +21,7 @@ import { useAtomState } from "@zedux/react";
 import { IsolateAtom } from "@/utils/atoms";
 import { isolatePageInTree } from "@/utils/page/pageManagement";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { useChromeStyle } from "@/chrome/primitives/useChromeStyle";
 import { getBuiltinComponentDef } from "@/core/builtinDefsLookup";
 import { resolveToolboxIcon } from "@/chrome/viewport/toolbox/resolveToolboxIcon";
 import { useLayerManager } from "./LayerManager";
@@ -56,6 +57,7 @@ function resolveTypeIcon(
 
 export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHeaderProps) {
   const { toggleExpanded, setDraggedNode, setDropIndicator, state } = useLayerManager();
+  const chrome = useChromeStyle();
   const [isEditingName, setIsEditingName] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
@@ -183,7 +185,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   );
 
   const roleIconColor = isSelected
-    ? "text-white"
+    ? chrome.layerSelectedIcon
     : isPage
       ? "text-orange-500"
       : isHeader
@@ -191,8 +193,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
         : isFooter
           ? "text-emerald-500"
           : isSection
-            ? "text-blue-500"
-            : "text-gray-500 dark:text-gray-400";
+            ? chrome.layerSectionIcon
+            : chrome.layerMutedIcon;
 
   // Extracted hooks for move and drag/drop logic
   const {
@@ -320,12 +322,10 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
     "group relative flex w-full cursor-pointer select-none items-center gap-1 py-1.5 pr-1.5",
     isHeader ? "mb-0.5" : "",
     isFooter ? "mt-0.5" : "",
-    isSelected
-      ? "bg-blue-600 text-white dark:bg-blue-500"
-      : "text-gray-800 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800/70",
-    isHovered && !isSelected ? "bg-gray-100 dark:bg-gray-800/70" : "",
+    isSelected ? chrome.layerRowSelected : chrome.layerRowIdle,
+    isHovered && !isSelected ? chrome.layerRowHovered : "",
     isDragging ? "cursor-grabbing opacity-40" : "",
-    showInsideDrop ? "ring-1 ring-blue-500 ring-inset" : "",
+    showInsideDrop ? chrome.layerDropInside : "",
     dimmed ? "opacity-60" : "",
   ]
     .filter(Boolean)
@@ -336,7 +336,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       {/* Drop indicator - before */}
       {showBeforeDrop && (
         <div
-          className="relative h-0.5 w-full bg-blue-500"
+          className={chrome.layerDropLine}
           style={{ marginLeft: `${depth * 12 + 6}px` }}
         />
       )}
@@ -364,7 +364,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               <TbChevronRight
                 className={`size-3 transition-transform duration-150 ${
                   isExpanded ? "rotate-90" : ""
-                } ${isSelected ? "text-white" : "text-gray-500 dark:text-gray-400"}`}
+                } ${isSelected ? chrome.layerSelectedIcon : chrome.layerMutedIcon}`}
               />
             </button>
           ) : null}
@@ -384,7 +384,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               onChange={handleNameChange}
               onBlur={handleNameBlur}
               onKeyDown={handleNameKeyDown}
-              className="w-full rounded border border-blue-500 bg-white px-0.5 py-0 text-xs leading-none text-gray-900 outline-none dark:bg-gray-800 dark:text-gray-100"
+              className={chrome.layerRenameInput}
               onClick={e => e.stopPropagation()}
             />
           ) : (
@@ -404,7 +404,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
         {isSiteWideSection && (
           <TbWorld
             className={`size-3.5 shrink-0 ${
-              isSelected ? "text-white" : "text-amber-600 dark:text-amber-400"
+              isSelected ? chrome.layerSelectedIcon : "text-amber-600 dark:text-amber-400"
             }`}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
             data-tooltip-content="Sits outside the page, so it shows on every page — like the header and footer. Drag it into a page to limit it to that one."
@@ -521,7 +521,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       {/* Drop indicator - after */}
       {showAfterDrop && (
         <div
-          className="relative h-0.5 w-full bg-blue-500"
+          className={chrome.layerDropLine}
           style={{ marginLeft: `${depth * 12 + 6}px` }}
         />
       )}

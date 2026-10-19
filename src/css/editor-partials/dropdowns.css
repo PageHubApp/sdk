@@ -76,6 +76,19 @@
   @apply data-selected:font-medium data-[state=checked]:font-medium;
 }
 
+/* `features.chrome: "dashboard"` (useChromeStyle().selectContent): the dashboard
+   kit's menu — rounded-lg panel with a base-300 border, rows tinted with a
+   base-content alpha instead of the accent. */
+.pagehub-sdk-root.ph-select-content.ph-select-content--dashboard {
+  @apply border-base-300 rounded-lg shadow-xl;
+}
+.pagehub-sdk-root.ph-select-content.ph-select-content--dashboard .ph-select-item {
+  @apply rounded-md py-1.5 pr-2.5 pl-2.5;
+  @apply hover:bg-base-content/5 hover:text-base-content;
+  @apply focus:bg-base-content/5 focus:text-base-content;
+  @apply data-focus:bg-base-content/5 data-focus:text-base-content;
+}
+
 .pagehub-sdk-root.ph-select-content .ph-select-scroll-indicator {
   @apply sticky z-10 flex w-full cursor-default items-center justify-center;
   height: 0;

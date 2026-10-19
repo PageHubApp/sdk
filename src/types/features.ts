@@ -74,6 +74,15 @@ export interface PageHubFeatures {
    * never clash.
    */
   panelUrlPrefix?: string;
+  /**
+   * Which chrome styling the editor's pieces use. Default `"default"`: the
+   * stock `/build` look. `"dashboard"`: the pieces take the PageHub dashboard
+   * kit's look (neutral tints as `base-content` alphas, a black selection,
+   * `rounded-lg` panels, 32px pill tabs) so they sit in a host panel without
+   * CSS overrides. Read through `useChromeStyle()`; every branch keeps the
+   * default class strings as they are.
+   */
+  chrome?: ChromeStyle;
   /** Save directly without showing the domain/publish picker. Default: false */
   directSave?: boolean;
   /** Show the save/publish button in the top toolbar. Default: true */
@@ -101,6 +110,9 @@ export interface PageHubFeatures {
    */
   cssAllowlist?: CssAllowlistFeature;
 }
+
+/** Chrome styling of the editor's pieces — see `PageHubFeatures.chrome`. */
+export type ChromeStyle = "default" | "dashboard";
 
 /** Inspector tab name — kept as string union here to avoid import cycle with the inspector registry. */
 export type InspectorTabName =

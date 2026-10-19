@@ -1,5 +1,6 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { ToolbarIconButton } from "@/chrome/primitives/ToolbarIconButton";
+import { useChromeStyle } from "@/chrome/primitives/useChromeStyle";
 import { checkIfAncestorLinked } from "@/utils/component/componentUtils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
@@ -36,6 +37,7 @@ export const ToolbarWrapper = ({
     props: node.data?.props,
   }));
   const isLinked = checkIfAncestorLinked(id, query);
+  const chrome = useChromeStyle();
 
   const tablistRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState<{
@@ -175,14 +177,18 @@ export const ToolbarWrapper = ({
             id="toolbarTabs"
             aria-label="Tabs"
             role="tablist"
-            className="border-base-300/60 bg-base-100 text-base-content relative flex h-10 w-full min-w-0 shrink-0 items-center gap-2 border-b px-3 py-0 text-center font-semibold"
+            className={chrome.inspectorTabRow}
           >
-            <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
+            <TabBarCollapseToggle
+              unified={unified}
+              accordionCtx={accordionCtx}
+              className={chrome.inspectorCollapseButton}
+            />
             <button
               type="button"
               onClick={toggleSearch}
-              className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md transition-[color,background-color,transform] active:scale-90 ${
-                searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"
+              className={`${chrome.inspectorSearchButton} ${
+                searchOpen ? chrome.inspectorSearchOpen : chrome.inspectorSearchIdle
               }`}
               aria-label="Search settings"
               aria-pressed={searchOpen}
@@ -193,18 +199,19 @@ export const ToolbarWrapper = ({
             >
               <TbSearch className="size-4" />
             </button>
-            <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
-            <TabBarDarkModeToggle />
+            {chrome.showDarkVariantToggle && (
+              <>
+                <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
+                <TabBarDarkModeToggle />
+              </>
+            )}
 
             <div className="min-h-px min-w-0 flex-1" aria-hidden />
             <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
-            <div
-              className="relative flex min-w-48 shrink-0 flex-row-reverse items-center gap-2 pr-3"
-              ref={tablistRef}
-            >
+            <div className={chrome.inspectorTabList} ref={tablistRef}>
               {indicatorStyle && (
                 <div
-                  className="bg-primary absolute bottom-0 h-0.5 rounded-full"
+                  className={chrome.inspectorTabIndicator}
                   style={{
                     width: indicatorStyle.width,
                     left: 0,

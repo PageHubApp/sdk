@@ -2,6 +2,7 @@ import { Suspense, lazy, useState } from "react";
 import { useEditor, useNode } from "@craftjs/core";
 import { TbCode } from "react-icons/tb";
 import { Chip } from "@/chrome/primitives/Chip";
+import { useChromeStyle } from "@/chrome/primitives/useChromeStyle";
 import { SlotRenderer } from "../../../../registry";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { getEditorVariableOptions } from "../../../../utils/editorVariableOptions";
@@ -84,6 +85,7 @@ function FormatControl() {
 
 export const TextMainTab = () => {
   const [htmlOpen, setHtmlOpen] = useState(false);
+  const chrome = useChromeStyle();
 
   return renderComponentSlots({
     Content: (
@@ -91,7 +93,7 @@ export const TextMainTab = () => {
         <IpsumGenerator propKey="text" propType="component" />
         <FormatControl />
         <div className="flex w-full gap-2 [&>*]:flex-1">
-          <button type="button" className="ph-toolbar-dashed-btn" onClick={() => setHtmlOpen(true)}>
+          <button type="button" className={chrome.dashedButton} onClick={() => setHtmlOpen(true)}>
             <TbCode size={12} aria-hidden />
             Edit HTML
           </button>

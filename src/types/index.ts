@@ -30,6 +30,7 @@ export type { PageHubCallbacks } from "./callbacks";
 export type { PageHubTheme } from "./theme";
 export type {
   PageHubFeatures,
+  ChromeStyle,
   InspectorTabName,
   BlocksPanelFeature,
   CssAllowlistFeature,

@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import { TbSearch, TbX } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";
+import { useChromeStyle } from "./useChromeStyle";
 
 export interface SearchInputProps {
   value: string;
@@ -23,6 +24,7 @@ const SIZE_STYLES = {
     inputPadR: "pr-3",
     inputPadRWithClear: "pr-8",
     icon: "left-2.5 size-3.5",
+    iconColor: "text-neutral-content",
     clear: "right-2 size-5",
     clearIcon: "size-3.5",
   },
@@ -33,6 +35,7 @@ const SIZE_STYLES = {
     inputPadR: "pr-2",
     inputPadRWithClear: "pr-7",
     icon: "left-2 size-3",
+    iconColor: "text-neutral-content",
     clear: "right-1.5 size-4",
     clearIcon: "size-3",
   },
@@ -54,11 +57,13 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     ref
   ) => {
     const hasValue = value.length > 0;
-    const s = SIZE_STYLES[size];
+    const chrome = useChromeStyle();
+    // The dense Add-panel search takes the host's field look under `features.chrome`.
+    const s = size === "slim" && chrome.searchSlim ? chrome.searchSlim : SIZE_STYLES[size];
     return (
       <div className={`relative flex-1 ${className}`}>
         <TbSearch
-          className={`text-neutral-content pointer-events-none absolute top-1/2 -translate-y-1/2 ${s.icon}`}
+          className={`${s.iconColor} pointer-events-none absolute top-1/2 -translate-y-1/2 ${s.icon}`}
           aria-hidden
         />
         <input

@@ -21,6 +21,7 @@ import {
 import { TbCheck, TbSearch } from "react-icons/tb";
 import { AnchoredPopover } from "../popovers/AnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";
+import { useChromeStyle } from "./useChromeStyle";
 
 export type SearchableMenuItem<TData = unknown> = {
   id: string;
@@ -132,6 +133,7 @@ function SearchableMenuPopoverInner<TData>(
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<SearchableMenuItem<TData>[]>([]);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const chrome = useChromeStyle();
 
   useImperativeHandle(
     ref,
@@ -189,7 +191,7 @@ function SearchableMenuPopoverInner<TData>(
         anchor={buttonRef}
         placement={ANCHOR_TO_PLACEMENT[anchor]}
         ignoreOutsideClicks={[buttonRef]}
-        className={`pagehub-sdk-root border-base-300 bg-base-100 ${panelWidthClass} overflow-hidden rounded-xl border p-1 shadow-xl`}
+        className={`pagehub-sdk-root border-base-300 bg-base-100 ${panelWidthClass} ${chrome.menuPanelFrame}`}
       >
         <Combobox<SearchableMenuItem<TData> | null>
           value={null}
@@ -230,9 +232,7 @@ function SearchableMenuPopoverInner<TData>(
                     data-tooltip-content={item.help}
                     data-tooltip-place="right"
                     className={({ focus }) =>
-                      `flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-3 py-1.5 text-left text-xs transition-colors ${
-                        focus ? "bg-base-200 text-base-content" : "text-base-content"
-                      }`
+                      `${chrome.menuItem} ${focus ? chrome.menuItemFocus : chrome.menuItemIdle}`
                     }
                   >
                     {multiSelect && (

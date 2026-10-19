@@ -1,6 +1,7 @@
 import { useRef, type KeyboardEvent, type ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 import { SidebarTabPanel } from "./SidebarTabPanel";
+import { useChromeStyle } from "./useChromeStyle";
 
 export type SidebarTabDensity = "default" | "compact";
 
@@ -23,10 +24,6 @@ export interface SidebarTabsPaneProps {
   bodyClassName?: string;
 }
 
-const inactive =
-  "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground";
-const active = "bg-sidebar-accent text-sidebar-accent-foreground";
-
 function tabPad(density: SidebarTabDensity | undefined, hasIcon: boolean): string {
   if (density === "compact") return "gap-1.5 px-2 py-2";
   return hasIcon ? "gap-2 px-4 py-2" : "px-4 py-2";
@@ -43,6 +40,7 @@ export function SidebarTabsPane({
   bodyClassName,
 }: SidebarTabsPaneProps) {
   const tablistRef = useRef<HTMLDivElement>(null);
+  const chrome = useChromeStyle();
 
   const handleTabKeyDown = (e: KeyboardEvent, tabIndex: number) => {
     let nextIndex = tabIndex;
@@ -55,43 +53,57 @@ export function SidebarTabsPane({
     onValueChange(nextTab.id);
   };
 
+  const tabButtons = tabs.map((tab, i) => {
+    const hasIcon = Boolean(tab.icon);
+    // The dashboard pill carries its own height and padding.
+    const pad = chrome.sidebarTabPills ? "" : tabPad(tabDensity, hasIcon);
+    return (
+      <button
+        key={tab.id}
+        type="button"
+        onClick={() => onValueChange(tab.id)}
+        onKeyDown={e => handleTabKeyDown(e, i)}
+        className={twMerge(
+          chrome.sidebarTabBase,
+          pad,
+          value === tab.id ? chrome.sidebarTabActive : chrome.sidebarTabIdle
+        )}
+        role="tab"
+        aria-selected={value === tab.id}
+        tabIndex={value === tab.id ? 0 : -1}
+      >
+        {tab.icon}
+        {typeof tab.label === "string" ? (
+          hasIcon ? (
+            <span className="truncate">{tab.label}</span>
+          ) : (
+            tab.label
+          )
+        ) : (
+          tab.label
+        )}
+      </button>
+    );
+  });
+
   return (
     <SidebarTabPanel
-      className={className}
+      className={
+        chrome.sidebarTabPanelRoot ? twMerge(chrome.sidebarTabPanelRoot, className) : className
+      }
       bodyClassName={bodyClassName}
       tabList={
-        <div ref={tablistRef} className="flex min-w-0" role="tablist" aria-label={ariaLabel}>
-          {tabs.map((tab, i) => {
-            const hasIcon = Boolean(tab.icon);
-            const pad = tabPad(tabDensity, hasIcon);
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => onValueChange(tab.id)}
-                onKeyDown={e => handleTabKeyDown(e, i)}
-                className={twMerge(
-                  "flex min-w-0 flex-1 cursor-pointer items-center justify-center text-sm font-medium transition-colors",
-                  pad,
-                  value === tab.id ? active : inactive
-                )}
-                role="tab"
-                aria-selected={value === tab.id}
-                tabIndex={value === tab.id ? 0 : -1}
-              >
-                {tab.icon}
-                {typeof tab.label === "string" ? (
-                  hasIcon ? (
-                    <span className="truncate">{tab.label}</span>
-                  ) : (
-                    tab.label
-                  )
-                ) : (
-                  tab.label
-                )}
-              </button>
-            );
-          })}
+        <div
+          ref={tablistRef}
+          className={chrome.sidebarTabStrip}
+          role="tablist"
+          aria-label={ariaLabel}
+        >
+          {chrome.sidebarTabPills ? (
+            <div className={chrome.sidebarTabPills}>{tabButtons}</div>
+          ) : (
+            tabButtons
+          )}
           {trailing ?? null}
         </div>
       }
