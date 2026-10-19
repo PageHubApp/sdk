@@ -22,6 +22,7 @@ import { Extension, type Extensions } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 
 import { OPEN_LINK_PANEL_EVENT } from "@/chrome/inline-tools/openLinkPanelEvent";
+import { EmptyInlineNode, readPassthroughAttrs } from "@/core/tiptapExtensions/EmptyInlineNode";
 import { VariableNode, type SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
 import { resolveVariable } from "@/utils/design/variables";
@@ -52,21 +53,6 @@ function remainderInlineStyle(styleAttr: string | null | undefined): string | nu
     kept.push(trimmed);
   }
   return kept.length ? kept.join("; ") : null;
-}
-
-/**
- * `id` / `role` / `aria-*` / `data-*` on an inline tag. Kept through an edit so a
- * site's own script (`getElementById("year")`) and accessible names still work.
- * Names are matched, never wildcarded, so `on*` handlers and `style` can't ride along.
- */
-const PASSTHROUGH_ATTR = /^(id|role|aria-[a-z0-9-]+|data-[a-z0-9_.:-]+)$/i;
-
-function readPassthroughAttrs(element: HTMLElement): Record<string, string> | null {
-  const out: Record<string, string> = {};
-  for (const { name, value } of Array.from(element.attributes)) {
-    if (PASSTHROUGH_ATTR.test(name)) out[name] = value;
-  }
-  return Object.keys(out).length ? out : null;
 }
 
 const passthroughAttrs = () => ({
@@ -291,6 +277,7 @@ const marksAndShared = (
   linkExtension(),
   ...(opts.image ? [Image.configure({ HTMLAttributes: { class: "max-w-full h-auto" } })] : []),
   variableExtension(onSuggestion, queryRef, nodeIdRef),
+  EmptyInlineNode,
   TextEditorInlineKeymap,
 ];
 
