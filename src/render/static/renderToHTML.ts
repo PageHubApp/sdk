@@ -38,6 +38,7 @@ import { classesInMarkup } from "./classesInMarkup";
 import type { PageIndex } from "../../utils/page/pageManagement";
 import { sdkLog } from "../../utils/logger";
 import { expandRegisteredModifiers } from "../../utils/sanitizeNodeMap";
+import { DEFAULT_SITE_LANG, siteLang } from "../../utils/seo/siteLang";
 
 /** Build a PageIndex from the serialized node tree by scanning ROOT's direct
  *  children for nodes whose `props.type === "page"`. Mirrors
@@ -150,7 +151,7 @@ function renderInvalidTreeResult(
   if (wrapDocument) {
     const themeVars = includeThemeVars ? generateThemeVars({}) : "";
     const doc = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${DEFAULT_SITE_LANG}">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -382,7 +383,7 @@ export function renderToHTML(
     const cartBridge = includeRuntime ? getCartBridgeScript({ pageId }) : "";
 
     const doc = `<!DOCTYPE html>
-<html lang="en">
+<html lang="${siteLang(rootProps)}">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
