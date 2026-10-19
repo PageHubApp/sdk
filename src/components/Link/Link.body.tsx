@@ -21,6 +21,8 @@ import { useResolvedIcon } from "../../utils/icons/iconResolver";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
+import { editorSafeHtml } from "../../utils/editorSafeHtml";
+import { useUntrustedRender } from "../../utils/runtimeMode";
 import { safeHref } from "../../utils/htmlSafety";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { CURRENT_PAGE_ATTRS, isCurrentPageHref, resolvePageRef } from "../../utils/page/pageManagement";
@@ -42,9 +44,22 @@ export const defaultIcon = {
   gap: "gap-1.5",
 };
 
+/**
+ * The link's label as the static walker writes it (`Link.toHTML`): author HTML
+ * (an import's `<span>Brand</span> <span class="b2">Name</span>`) renders as
+ * markup, not as escaped text. Inert in the editor and app-origin previews.
+ */
+function linkLabel(text: string, ctx: RenderCtx, itemContext: any, untrusted: boolean): React.ReactNode {
+  const html = replaceVariables(text, ctx.rootProps, itemContext, null, { html: true });
+  if (!/[<&]/.test(html)) return html;
+  const safe = ctx.enabled || untrusted ? editorSafeHtml(html) : html;
+  return <span style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: safe }} />;
+}
+
 export function renderLinkBody(props: any, ctx: RenderCtx) {
   const router = useRouter();
   const itemContext = useItemContext();
+  const untrusted = useUntrustedRender();
   useRuntimeVarsVersion();
 
   const [, forceUpdate] = useState(0);
@@ -112,7 +127,13 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
     prop.href = safeHref(replaceVariables(prop.href, ctx.rootProps, itemContext));
   }
 
-  if (ctx.enabled) ele = "span";
+  // The editor keeps a real <a> so a site's own `nav a` / `.btn` CSS styles it
+  // like the live page; without an href it can't navigate away from the editor.
+  if (ctx.enabled) {
+    ele = "a";
+    delete prop.href;
+    delete prop.target;
+  }
   // Internal links use client-side SPA nav (next/link). The custom-domain
   // `/` → `/static/<host>` rewrite is client-replayable because its `:host` is
   // captured (see next.config `(?<host>…)`), so even the site root "/" resolves
@@ -196,7 +217,7 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
   ) : (
     <>
       {(props.icon?.position === "left" || props.icon?.position === "top") && iconSpan}
-      {!props.icon?.only && props.text && replaceVariables(props.text, ctx.rootProps, itemContext)}
+      {!props.icon?.only && props.text ? linkLabel(props.text, ctx, itemContext, untrusted) : null}
       {(props.icon?.position === "right" || props.icon?.position === "bottom") && iconSpan}
     </>
   );
