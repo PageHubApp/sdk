@@ -16,10 +16,9 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { mergeAccessibilityProps } from "../../utils/accessibility";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
-import { fireIntervalActions } from "../../utils/actions/interval";
-import { fireLoadAction } from "../../utils/actions/load";
+import { useMountActions } from "../../utils/actions/useMountActions";
 import { getStateValue } from "../../utils/state/stateRegistry";
-import { actionTrigger, migrateActions } from "../../utils/action";
+import { migrateActions } from "../../utils/action";
 import { applyBackgroundImage, applyPattern } from "../../utils/background";
 import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
@@ -113,13 +112,7 @@ export function renderContainerViewerBody(
   const { wrapProp: scrollEffectWrap } = useContainerScrollEffect(props, false);
   const { wrapProp: inViewWrap } = useContainerInViewState(props.inViewState, true);
 
-  useEffect(() => {
-    const actions = migrateActions(props);
-    actions.filter(a => actionTrigger(a) === "load").forEach(fireLoadAction);
-    const cleanup = fireIntervalActions(actions);
-    return cleanup;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useMountActions(migrateActions(props), false);
 
   const bindings = props.computedStateBindings;
   const computedSnapshot = computeBindingsSnapshot(bindings, raw =>

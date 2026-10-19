@@ -13,10 +13,9 @@ import { usePanelUrl } from "../../utils/usePanelUrl";
 import { registerLiveComponent } from "../../utils/component/liveComponentRegistry";
 import { mergeAccessibilityProps } from "../../utils/accessibility";
 import { useCustomHandlers } from "../../utils/actions/customHandlers";
-import { fireIntervalActions } from "../../utils/actions/interval";
-import { fireLoadAction } from "../../utils/actions/load";
+import { useMountActions } from "../../utils/actions/useMountActions";
 import { getStateValue } from "../../utils/state/stateRegistry";
-import { actionTrigger, migrateActions, type NodeAction } from "../../utils/action";
+import { migrateActions, type NodeAction } from "../../utils/action";
 import { applyBackgroundImage, applyPattern } from "../../utils/background";
 import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
@@ -231,14 +230,7 @@ export function renderContainerBody(
   const { wrapProp: scrollEffectWrap } = useContainerScrollEffect(props, ctx.enabled);
   const { wrapProp: inViewWrap } = useContainerInViewState(props.inViewState, !ctx.enabled);
 
-  useEffect(() => {
-    if (ctx.enabled) return;
-    const actions = migrateActions(props);
-    actions.filter(a => actionTrigger(a) === "load").forEach(fireLoadAction);
-    const cleanup = fireIntervalActions(actions);
-    return cleanup;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctx.enabled]);
+  useMountActions(migrateActions(props), ctx.enabled);
 
   // Computed-state bindings — derived registry entries (variant matching,
   // all-truthy gates, etc). Runs in an effect (not the render body) so the

@@ -242,9 +242,8 @@ export interface ClearStateAction extends ActionBase {
  * Powers carousel prev/next, stepper inputs, "show N more" pagination, etc.
  *
  * `trigger: "interval"` + `intervalMs` fires the action on a setInterval —
- * autoscroll carousels, timed slideshows, ticker bands. Pause via the SAME
- * action with a node `data-state-interval-pause` attr (added on hover by
- * authors via CSS `:hover` — no JS needed for the pause itself).
+ * autoscroll carousels, timed slideshows, ticker bands. `action.conditions`
+ * is re-checked on every tick, so a state condition can pause it.
  */
 export interface IncrementStateAction extends ActionBase {
   type: "increment-state";

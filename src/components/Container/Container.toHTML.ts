@@ -87,7 +87,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   // Stamp load-trigger show actions for the static-export bootstrap script
   // (`getLoadActionScript()`). The script reveals `[data-ph-load-show]`
   // elements on first visit (gated by optional `conditions`). React routes
-  // don't need this — Container's mount effect dispatches the same actions
+  // don't need this — `useMountActions` dispatches the same actions
   // via `fireLoadAction`. `migrateActions` reads the canonical action prop
   // shape (single object or array), so the static stamp can never diverge
   // from runtime semantics.

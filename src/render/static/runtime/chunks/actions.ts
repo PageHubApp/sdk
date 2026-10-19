@@ -27,6 +27,17 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
     cartCheckout,
   } = __phRT;
 
+  // Action types `trigger: "load"` / `"interval"` run — state writes and
+  // show-hide only (a load-time link or cart action is never intended).
+  const MOUNT_ACTION_TYPES = [
+    "set-state",
+    "toggle-state",
+    "clear-state",
+    "increment-state",
+    "decrement-state",
+    "show-hide",
+  ];
+
   function fireAction(action: any, ev: any, itemContext: any) {
     if (!action || !action.type) return;
     if (!actionGatePasses(action)) return;
@@ -406,10 +417,31 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
       const itemContext = readItemContext(el);
       const clickActions: any[] = [],
         enterActions: any[] = [],
-        leaveActions: any[] = [];
+        leaveActions: any[] = [],
+        intervalIds: number[] = [];
       for (let k = 0; k < actions.length; k++) {
         const a = actions[k];
-        if (!a || a.trigger === "load" || a.trigger === "interval") continue;
+        if (!a) continue;
+        // Load + interval: the same action types and `intervalMs` contract as
+        // the React walker (utils/actions/load.ts + interval.ts).
+        if (a.trigger === "load" || a.trigger === "interval") {
+          if (MOUNT_ACTION_TYPES.indexOf(a.type) === -1) continue;
+          if (a.trigger === "load") {
+            fireAction(a, null, itemContext);
+          } else if (typeof a.intervalMs === "number" && a.intervalMs >= 50) {
+            intervalIds.push(
+              window.setInterval(
+                (function (ia) {
+                  return function () {
+                    fireAction(ia, null, itemContext);
+                  };
+                })(a),
+                a.intervalMs
+              )
+            );
+          }
+          continue;
+        }
         if (a.trigger === "hover") {
           enterActions.push(a);
           if (
@@ -495,6 +527,7 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
         el.addEventListener("mouseleave", onLeave as EventListener);
       }
       cleanup(function () {
+        for (let i = 0; i < intervalIds.length; i++) window.clearInterval(intervalIds[i]);
         if (onClick) el.removeEventListener("click", onClick as EventListener);
         if (onEnter) {
           el.removeEventListener("mouseenter", onEnter as EventListener);

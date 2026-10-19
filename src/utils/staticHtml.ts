@@ -441,9 +441,11 @@ export function getInlineStyle(props: Record<string, any>): string {
  * fallback for no-JS / right-click semantics, so emitting it here doesn't
  * double-fire (the runtime dedupes against the anchor href on click).
  *
- * Load-trigger actions are filtered out — they're separately stamped as
- * `data-ph-load-show` / `data-ph-load-set-state` and fire on mount, not
- * click. Including them here would re-fire on every click.
+ * Load and interval actions ship too: the runtime's `actions` directive fires
+ * them on init / on a timer, never on click. (Container and Data also stamp
+ * `data-ph-load-show` / `data-ph-load-set-state` so the pre-paint bootstrap
+ * applies their reveal / seed before the runtime boots; re-applying those
+ * is idempotent.)
  */
 /** Read the page index for `ref:<pageId>` resolution. Prefers the value seeded
  *  on `ctx` by the static renderer; falls back to `ROOT.props._pageIndex`. */
@@ -466,8 +468,7 @@ export function actionsAttr(
   props: Record<string, any>,
   ctx?: StaticRenderContext
 ): Record<string, string | undefined> {
-  const all = migrateActions(props);
-  const actions = all.filter((a: any) => a?.trigger !== "load");
+  const actions = migrateActions(props);
   if (!actions.length) return {};
   // Resolve `ref:<pageId>[/path|?query|#hash]` hrefs to real paths so the
   // runtime's window.location.assign(href) doesn't try to launch a "ref:"

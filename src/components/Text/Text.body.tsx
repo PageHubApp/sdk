@@ -5,6 +5,7 @@ import { AutoTextSize } from "auto-text-size";
 import { useRouter } from "next/router";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { useCustomHandlers } from "../../utils/actions/customHandlers";
+import { useMountActions } from "../../utils/actions/useMountActions";
 import { applyAttrs } from "../../utils/applyAttrs";
 import {
   migrateActions,
@@ -141,6 +142,7 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
   const liveHref = safeHref(actionToHref(findLinkAction(actions), ctx.pageIndex, router?.asPath));
   const jsDispatch = needsJsActionDispatch(actions);
   if (jsDispatch) addActionHandlers(prop, actions, ctx.enabled, { resolvedLinkHref: liveHref });
+  useMountActions(actions, ctx.enabled);
   useCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (ctx.enabled) {

@@ -31,9 +31,10 @@ import { applyShowHide } from "./internal";
  * on which condition types are honored and how indeterminate values are
  * handled.
  *
- * In-app SSR routes (`/view`, `/static`, custom domains) hydrate React, so
- * `Container`'s mount effect fires `fireLoadAction` and this script is
- * unnecessary. Kept exclusive to static export to avoid double dispatch.
+ * React routes fire load actions from `useMountActions`, so this script is
+ * static-only. On static pages it is the pre-paint half: the runtime's
+ * `actions` directive later fires every load action (any component), and
+ * re-applying a seed or a "show" is idempotent.
  */
 /**
  * Load-bootstrap body — authored as a real TS function, lifted to a string via
@@ -124,7 +125,7 @@ ${LOAD_BODY_CHUNK}
  * `toggle-state` / `clear-state`. All routes through the registry so React
  * rerenders pick up the change without className clobber.
  *
- * Caller (Container) is responsible for skipping editor mode and only
+ * Caller (`useMountActions`) is responsible for skipping editor mode and only
  * passing `trigger: "load"` actions; this helper trusts its inputs.
  */
 export function fireLoadAction(action: NodeAction): void {

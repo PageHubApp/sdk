@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { TbPointer } from "../_emptyHintIcons";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { useCustomHandlers } from "../../utils/actions/customHandlers";
+import { useMountActions } from "../../utils/actions/useMountActions";
 import { useShowHideVersion } from "../../utils/state/showHideStore";
 import {
   applyStateModifiers,
@@ -184,6 +185,8 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
   if (needsJsActionDispatch(actions)) {
     addActionHandlers(prop, actions, ctx.enabled, actionCtx);
   }
+
+  useMountActions(actions, ctx.enabled);
 
   useCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 

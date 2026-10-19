@@ -1,6 +1,6 @@
 /**
  * Set up `trigger: "interval"` actions on mount. Returns a cleanup function
- * that clears all started intervals — caller (Container's mount effect) MUST
+ * that clears all started intervals — caller (`useMountActions`) MUST
  * call it on unmount.
  *
  * Honors `action.conditions` per-tick (re-evaluates every fire so gating can

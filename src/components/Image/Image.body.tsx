@@ -13,6 +13,7 @@ import {
 } from "../../utils/action";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { useCustomHandlers } from "../../utils/actions/customHandlers";
+import { useMountActions } from "../../utils/actions/useMountActions";
 import { getIntrinsicSizeAttrs, getResponsiveImageAttrs } from "../../utils/media/media";
 import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
@@ -226,6 +227,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       resolvedLinkHref: typeof resolvedHref === "string" ? resolvedHref : null,
     });
   }
+  useMountActions(actions, ctx.enabled);
   useCustomHandlers(wired, props.handlers, ctx.enabled, props.handlerOptions);
   if (actions.length > 0 && !ctx.enabled) {
     wired["data-action"] = actions.map(a => a.type).join(" ");

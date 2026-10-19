@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import NextLink from "next/link";
 import { TbPointer } from "../_emptyHintIcons";
 import { useCustomHandlers } from "../../utils/actions/customHandlers";
+import { useMountActions } from "../../utils/actions/useMountActions";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { useItemContext } from "../../utils/itemContext";
 import { applyAttrs } from "../../utils/applyAttrs";
@@ -152,6 +153,8 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
   if (needsJsActionDispatch(actions)) {
     addActionHandlers(prop, actions, ctx.enabled, actionCtx);
   }
+
+  useMountActions(actions, ctx.enabled);
 
   useCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
