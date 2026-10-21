@@ -49,14 +49,15 @@ test("lifts header/footer into partials, referenced from every page", () => {
   }
 });
 
-test("each page is a full document with the shared head render", () => {
+test("each page is a body fragment (no document shell — host wraps it)", () => {
   const b = convertSite("ROOT", MULTI, ctx);
   const home = b.files["index.liquid"];
-  assert.match(home, /^<!DOCTYPE html>/);
-  assert.match(home, /<html lang="en">/);
-  assert.match(home, /\{% render 'head', page: page, site: site %\}/);
+  assert.doesNotMatch(home, /<!DOCTYPE|<html|<head>|<body>/);
+  assert.match(home, /^\{% render 'header',/); // chrome renders inline, in ROOT order
   assert.match(home, /<h1[^>]*>Plants for slow rooms<\/h1>/);
-  assert.ok(b.files["partials/head.liquid"].includes("{{ page.title"));
+  assert.match(home, /\{% render 'footer',/);
+  assert.equal(b.files["partials/head.liquid"], undefined); // SEO lives on the page record, not a head file
+  assert.equal(b.site.lang, "en");
 });
 
 test("SEO lands on the host record meta, not in the file", () => {

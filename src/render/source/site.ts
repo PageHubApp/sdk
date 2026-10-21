@@ -18,7 +18,6 @@
  */
 import type { SerializedNode, SerializedNodes } from "../static/types";
 import type { StaticRenderContext } from "../static/types";
-import { escapeHTML } from "../../utils/staticHtml";
 import { pageNodeSlug } from "../../utils/page/pageSlug";
 import { componentSlug, renderNodeToSource } from "./toSource";
 
@@ -51,6 +50,8 @@ export interface ConvertedPage {
 
 export interface SiteJson {
   name?: string;
+  /** `<html lang>` for the document shell the host wraps each page fragment in. */
+  lang?: string;
   pages: Array<{ path: string; url: string; title?: string }>;
   routes: Record<string, string>;
 }
@@ -128,40 +129,20 @@ function policyFor(props: Record<string, any>): PagePolicy {
   return policy;
 }
 
-/**
- * The shared `partials/head.liquid`: one `<head>` body for every page, reading the SEO it needs from
- * `page.*` (and `site.*` as fallback). Pages call it with `{% render 'head', page: page, site: site %}`
- * — `render` is scope-isolated, so the objects are passed explicitly.
- */
-function headPartial(): string {
-  return [
-    `<meta charset="UTF-8" />`,
-    `<meta name="viewport" content="width=device-width, initial-scale=1.0" />`,
-    `<title>{{ page.title | default: site.name }}</title>`,
-    `{% if page.description %}<meta name="description" content="{{ page.description }}" />{% endif %}`,
-    `{% if page.canonical %}<link rel="canonical" href="{{ page.canonical }}" />{% endif %}`,
-    `{% if page.image %}<meta property="og:image" content="{{ page.image }}" />{% endif %}`,
-    `{% if page.jsonLd %}<script type="application/ld+json">{{ page.jsonLd }}</script>{% endif %}`,
-  ].join("\n");
-}
-
 /** The page slot inside the ordered chrome `sequence`; replaced per page with that page's own body. */
 const PAGE_SLOT = "\u0000PAGE\u0000";
 
 /** The globals forwarded into every chrome partial (render is scope-isolated). */
 const PARTIAL_GLOBALS = "company: company, site: site, page: page, pages: pages, request: request, routes: routes, year: year";
 
-/** Wrap the ordered body parts (chrome `{% render %}` calls + the page's own body) in the document shell. */
-function pageDocument(bodyParts: string[], lang: string): string {
-  return `<!DOCTYPE html>
-<html lang="${escapeHTML(lang)}">
-<head>
-{% render 'head', page: page, site: site %}
-</head>
-<body>
-${bodyParts.filter(Boolean).join("\n")}
-</body>
-</html>`;
+/**
+ * A page file is a BODY FRAGMENT, not a full document — the ordered chrome `{% render %}` calls with
+ * the page's own body in the page slot. The `<head>` and the `<html>`/`<body>` shell are the host's
+ * (the editor wraps the fragment for the canvas; publish wraps it with a `<head>` built from the page
+ * record's SEO meta). This is the shape the editor and the engine's `renderPage` both expect.
+ */
+function pageDocument(bodyParts: string[]): string {
+  return bodyParts.filter(Boolean).join("\n");
 }
 
 /** The source that goes inside a lifted partial (a `type:"component"` wrapper contributes its children). */
@@ -206,8 +187,6 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     };
   }
   (ctx as any).pageIndex = pageIndex;
-
-  files["partials/head.liquid"] = headPartial();
 
   const hasPages = childIds.some((id) => nodes[id]?.props?.type === "page");
   const usedSlugs = new Set<string>();
@@ -254,7 +233,7 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     const body = bodyIds.map((id) => renderNodeToSource(id, nodes, ctx)).join("\n");
     const { url, path } = routeFor(node, nodeId);
     const { title, meta } = metaFor(node);
-    const source = pageDocument(sequence.map((s) => (s === PAGE_SLOT ? body : s)), lang);
+    const source = pageDocument(sequence.map((s) => (s === PAGE_SLOT ? body : s)));
     files[path] = source;
     pages.push({ path, url, title, source, meta, policy: policyFor(node.props || {}) });
   };
@@ -282,6 +261,7 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
 
   const site: SiteJson = {
     name: String(siteProps?.company?.name || siteProps?.name || siteProps?.title || ""),
+    lang,
     pages: pages.map((p) => ({ path: p.path, url: p.url, title: p.title })),
     routes: Object.fromEntries(pages.map((p) => [p.path.replace(/\.liquid$/, ""), p.url])),
   };
