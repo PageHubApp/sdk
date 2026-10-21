@@ -33,6 +33,10 @@ interface DataSource {
   collection?: string;
   scope?: string;
   splitBy?: string;
+  /** Field → value the collection is filtered by (detail pages: `{ slug: "{{params.slug}}" }`). */
+  filter?: Record<string, unknown>;
+  /** Max rows (detail pages carry `limit: 1` for the single matched item). */
+  limit?: number;
 }
 
 // ── Element helpers (mirrors toSource.ts; replicated so this file stays additive) ──
@@ -69,6 +73,29 @@ function containerTag(type: unknown): string {
 /** A Liquid single-quoted string literal. */
 function liquidStr(s: string): string {
   return `'${s.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
+}
+
+/**
+ * A dataSource filter VALUE → a Liquid expression for `where`. A route-param binding
+ * (`{{params.slug}}`) becomes `request.params.slug`; any other `{{ expr }}` passes its inner
+ * expression through; a plain value is a string literal.
+ */
+function filterValueExpr(raw: unknown): string {
+  const v = String(raw ?? "");
+  const param = v.match(/^\s*\{\{-?\s*params\.([A-Za-z0-9_]+)\s*-?\}\}\s*$/);
+  if (param) return `request.params.${param[1]}`;
+  const binding = v.match(/^\s*\{\{-?\s*([\s\S]+?)\s*-?\}\}\s*$/);
+  if (binding) return binding[1]!.trim();
+  return liquidStr(v);
+}
+
+/** Append `| where: 'field', <value>` for each filter entry onto a collection expression. */
+function withFilters(expr: string, filter?: Record<string, unknown>): string {
+  let out = expr;
+  for (const [field, val] of Object.entries(filter || {})) {
+    out += ` | where: ${liquidStr(field)}, ${filterValueExpr(val)}`;
+  }
+  return out;
 }
 
 /**
@@ -150,8 +177,21 @@ export const dataSource: ToSourceFn = (props, childrenSource, ctx) => {
   if (!expr) return el(tagName, attrs, childrenSource);
 
   const { templateSource, emptySource } = splitChildren(ctx, childrenSource);
+
+  // A filter (detail pages: `where slug == params.slug`) can't be applied inline in a `{% for %}`
+  // collection expression — liquid needs it assigned first. Assign the filtered array to a per-node
+  // variable, then loop that. `limit` (e.g. the single detail item) is a `{% for %}` parameter.
+  const filter = ds!.filter && Object.keys(ds!.filter).length ? ds!.filter : null;
+  let source = expr;
+  let prefix = "";
+  if (filter) {
+    const varName = `rows_${String(ctx.renderingNodeId || "x").replace(/[^A-Za-z0-9]/g, "_")}`;
+    prefix = `{% assign ${varName} = ${withFilters(expr, filter)} %}`;
+    source = varName;
+  }
+  const forOpen = `{% for item in ${source}${typeof ds!.limit === "number" ? ` limit: ${ds!.limit}` : ""} %}`;
   const body = emptySource
-    ? `{% for item in ${expr} %}${templateSource}{% else %}${emptySource}{% endfor %}`
-    : `{% for item in ${expr} %}${templateSource}{% endfor %}`;
+    ? `${prefix}${forOpen}${templateSource}{% else %}${emptySource}{% endfor %}`
+    : `${prefix}${forOpen}${templateSource}{% endfor %}`;
   return el(tagName, attrs, body);
 };
