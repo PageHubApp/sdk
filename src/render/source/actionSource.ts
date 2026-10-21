@@ -26,7 +26,7 @@
  */
 import type { StaticRenderContext } from "../static/types";
 import type { ToSourceFn } from "./toSource";
-import { actionsAttr, getInlineStyle, getPageIndex } from "../../utils/staticHtml";
+import { actionsAttr, getInlineStyle, getPageIndex, handlerAttrs } from "../../utils/staticHtml";
 import {
   actionToHref,
   actionTrigger,
@@ -172,6 +172,28 @@ function hrefAttrs(actions: NodeAction[], ctx?: StaticRenderContext): Record<str
   const dl = actions.find((a): a is Extract<NodeAction, { type: "download-file" }> => a.type === "download-file");
   if (dl?.url) return { href: dl.url, download: dl.filename ?? "" };
   return {};
+}
+
+/**
+ * The interactive attributes a Container / Text / Image carries from its `props.action`: the resolved
+ * link href (+ target/rel), the native invoker/state attrs for every action, the full ordered chain as
+ * `data-ph-actions` when there's more than one, and `props.attrs` passthrough. `linkHref` is returned
+ * separately so a plain-`div` caller can swap to `<a>` (mirrors `Container.toHTML`'s anchor swap).
+ */
+export function interactiveAttrs(
+  props: Record<string, any>,
+  ctx?: StaticRenderContext
+): { attrs: Record<string, string | null | undefined>; linkHref: string | null } {
+  const actions = migrateActions(props);
+  if (!actions.length) return { attrs: { ...handlerAttrs(props), ...passthroughAttrs(props) }, linkHref: null };
+  const href = hrefAttrs(actions, ctx);
+  const native: Record<string, string> = {};
+  for (const a of actions) Object.assign(native, actionToAttrs(a));
+  const chain = actions.length > 1 ? (actionsAttr(props, ctx) as Record<string, string | undefined>) : {};
+  return {
+    attrs: { ...href, ...native, ...handlerAttrs(props), ...passthroughAttrs(props), ...chain },
+    linkHref: href.href ?? null,
+  };
 }
 
 /** `aria-label` for an icon-only control (same fallback as `toHTML`). */

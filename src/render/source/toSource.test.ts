@@ -26,7 +26,7 @@ test("Image: inline SVG kept as a labelled span; media id → image_url filter",
   assert.equal(renderToSource("ROOT", svg, ctx), `<span aria-label="Leaf"><svg><path/></svg></span>`);
 
   const media = { ROOT: { type: "Image", props: { content: "abc123", alt: "Fern" }, nodes: [] } } as any;
-  assert.equal(renderToSource("ROOT", media, ctx), `<img src="{{ &quot;abc123&quot; | image_url }}" alt="Fern">`);
+  assert.equal(renderToSource("ROOT", media, ctx), `<img src="{{ 'abc123' | image_url }}" alt="Fern">`);
 
   const url = { ROOT: { type: "Image", props: { content: "https://x/y.png", alt: "" }, nodes: [] } } as any;
   assert.equal(renderToSource("ROOT", url, ctx), `<img src="https://x/y.png">`);
