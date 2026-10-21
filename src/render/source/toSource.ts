@@ -13,8 +13,10 @@
  * emitters (Data, Form, actions) land on top of it, harness-gated, one at a time.
  */
 import type { SerializedNodes } from "../static/types";
-import type { StaticRenderContext } from "../static/types";
-import { getInlineStyle } from "../../utils/staticHtml";
+import { getInlineStyle, type StaticRenderContext } from "../../utils/staticHtml";
+import { dataSource } from "./dataSource";
+import { formSource, formElementSource } from "./formSource";
+import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
 
 /** A node → its Liquid+HTML source. `childrenSource` is the already-emitted source of its children. */
 export type ToSourceFn = (props: Record<string, any>, childrenSource: string, ctx: StaticRenderContext) => string;
@@ -86,6 +88,18 @@ export const sourceResolver: Record<string, ToSourceFn> = {
     const src = /^(https?:|data:|\/)/.test(String(content)) ? String(content) : `{{ ${JSON.stringify(String(content))} | image_url }}`;
     return el("img", { class: cls, src, alt });
   },
+
+  // Lazy ref: dataSource imports the walker from this module, so a direct ref would hit the cyclic
+  // import's temporal-dead-zone; calling it at render time is past initialization.
+  Data: (props, children, ctx) => dataSource(props, children, ctx),
+  Form: formSource,
+  FormElement: formElementSource,
+  Video: videoSource,
+  Audio: audioSource,
+  Embed: embedSource,
+  Map: mapSource,
+  MapPoint: mapPointSource,
+  MapPath: mapPathSource,
 };
 
 /** A reusable-component slug for a `type:"component"` node (its saved-component ref or node id). */
@@ -102,6 +116,10 @@ export function renderNodeToSource(nodeId: string, nodes: SerializedNodes, ctx: 
   if (!node || (node as any).hidden) return "";
   const props = node.props || {};
   const children = (node.nodes || []).map((id: string) => renderNodeToSource(id, nodes, ctx)).join("");
+  // Expose the current node + the whole map so an emitter that needs its own children (e.g. Data,
+  // which partitions template rows from the empty slot) can re-walk them instead of using the string.
+  (ctx as any).nodes = nodes;
+  (ctx as any).renderingNodeId = nodeId;
   const emit = sourceResolver[resolveType(node)];
   const body = emit ? emit(props, children, ctx) : el("div", {}, children);
 
