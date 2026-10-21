@@ -19,6 +19,7 @@
 import type { SerializedNode, SerializedNodes } from "../static/types";
 import type { StaticRenderContext } from "../static/types";
 import { pageNodeSlug } from "../../utils/page/pageSlug";
+import { migrateActions } from "../../utils/action";
 import { generateDesignSystemCSSVariables } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { googleFontFamilyParam } from "../../utils/fonts/familyParam";
@@ -212,6 +213,21 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     };
   }
   (ctx as any).pageIndex = pageIndex;
+
+  // Collect invoker TARGET ids tree-wide so a `show-hide` target becomes a `popover` and an
+  // `open-modal` target becomes a `<dialog>` — otherwise the cart / menu / modal triggers that emit
+  // `commandfor` have nothing to open. Scanned here (not per-node) because a trigger and its target
+  // are different nodes.
+  const popoverTargets = new Set<string>();
+  const dialogTargets = new Set<string>();
+  for (const node of Object.values(nodes)) {
+    for (const a of migrateActions((node as any)?.props || {})) {
+      if (a.type === "open-modal" && (a as any).anchor) dialogTargets.add(String((a as any).anchor));
+      else if (a.type === "show-hide" && (a as any).target && (a as any).direction !== "tab") popoverTargets.add(String((a as any).target));
+    }
+  }
+  (ctx as any).popoverTargets = popoverTargets;
+  (ctx as any).dialogTargets = dialogTargets;
 
   const hasPages = childIds.some((id) => nodes[id]?.props?.type === "page");
   const usedSlugs = new Set<string>();

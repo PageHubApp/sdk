@@ -217,6 +217,26 @@ function styleWithAnim(props: Record<string, any>, styleVars: string): string | 
   return [getInlineStyle(props), styleVars].filter(Boolean).join("; ") || undefined;
 }
 
+/** The DOM id an invoker's `commandfor` points at: the passthrough `attrs.id`, else `id`/`anchor`. */
+function domId(props: Record<string, any>): string | undefined {
+  const a = props.attrs && typeof props.attrs === "object" ? (props.attrs as any).id : undefined;
+  return (typeof a === "string" && a) || props.id || props.anchor || undefined;
+}
+
+/**
+ * Make an element a valid invoker TARGET when another node's action points at its id: a `show-hide`
+ * target gets the `popover` attribute (`command="show/hide/toggle-popover"` acts on it) and an
+ * `open-modal` target becomes a `<dialog>` (`command="show-modal"`). Without this the trigger has
+ * nothing to open. The target id set is collected tree-wide by `convertSite` onto `ctx`.
+ */
+function invokerTarget(props: Record<string, any>, ctx: StaticRenderContext): { tag: "dialog" | null; attrs: Record<string, string | undefined> } {
+  const id = domId(props);
+  if (!id) return { tag: null, attrs: {} };
+  if ((ctx as any).dialogTargets?.has?.(id)) return { tag: "dialog", attrs: {} };
+  if ((ctx as any).popoverTargets?.has?.(id)) return { tag: null, attrs: { popover: "auto" } };
+  return { tag: null, attrs: {} };
+}
+
 /** Container → its HTML tag, carrying class/style/id + any action (link → `<a>`, native invoker attrs). */
 export function containerSource(props: Record<string, any>, children: string, ctx: StaticRenderContext): string {
   if (props.type === "component" || props.type === "componentCanvas") return "";
@@ -225,6 +245,9 @@ export function containerSource(props: Record<string, any>, children: string, ct
   // Container.toHTML), so the same node is a real, crawlable, focusable link as on React routes.
   const { attrs: act, linkHref } = interactiveAttrs(props, ctx);
   if (t === "div" && linkHref) t = "a";
+  // When another node's invoker targets this element's id, make it a real popover / <dialog> target.
+  const target = invokerTarget(props, ctx);
+  if (target.tag && t === "div") t = target.tag;
   const anim = animationAttrs(props);
   return el(
     t,
@@ -237,6 +260,7 @@ export function containerSource(props: Record<string, any>, children: string, ct
       ...visibilityShowAttr(props),
       ...inViewStateAttr(props),
       ...stateClassAttr(props, ctx),
+      ...target.attrs,
     },
     children
   );
