@@ -18,6 +18,7 @@ import { dataSource } from "./dataSource";
 import { formSource, formElementSource } from "./formSource";
 import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
 import { buttonSource, linkSource } from "./actionSource";
+import { conditionExpr } from "./conditions";
 
 /** A node → its Liquid+HTML source. `childrenSource` is the already-emitted source of its children. */
 export type ToSourceFn = (props: Record<string, any>, childrenSource: string, ctx: StaticRenderContext) => string;
@@ -128,8 +129,12 @@ export function renderNodeToSource(nodeId: string, nodes: SerializedNodes, ctx: 
 
   const groups = props.conditionGroups;
   if (Array.isArray(groups) && groups.length > 0) {
-    const expr = conditionExpr(groups);
+    // Client-only / non-flattenable conditions can't be decided at render time: the node is emitted
+    // ungated with the reported note so the migration surfaces them per site.
+    const notes: string[] = [];
+    const expr = conditionExpr(groups, (n) => notes.push(n));
     if (expr) return `{% if ${expr} %}${body}{% endif %}`;
+    return `${notes.join("")}${body}`;
   }
   return body;
 }
@@ -138,22 +143,6 @@ export function renderNodeToSource(nodeId: string, nodes: SerializedNodes, ctx: 
 function resolveType(node: SerializedNodes[string]): string {
   const t: any = (node as any).type;
   return (typeof t === "string" ? t : t?.resolvedName) || (node as any).displayName || "Container";
-}
-
-/**
- * A `conditionGroups` structure → a Liquid boolean expression. Only the shapes that map cleanly to
- * a single `{% if %}` are emitted here; richer groups (nested any/all, non-mappable types) are
- * handled by the dedicated conditions pass and reported per site.
- */
-function conditionExpr(groups: any[]): string | null {
-  const terms: string[] = [];
-  for (const g of groups) {
-    for (const c of g?.conditions ?? []) {
-      if (c?.type === "auth") terms.push(c.operator === "logged-out" ? "customer == blank" : "customer");
-      // other condition types (url-param, device, state…) are added as their Liquid forms land
-    }
-  }
-  return terms.length ? terms.join(" and ") : null;
 }
 
 /** The page's `.liquid` source: the root node's subtree. (Partial lifting + `{% render %}` next.) */
