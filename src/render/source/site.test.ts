@@ -44,8 +44,8 @@ test("lifts header/footer into partials, referenced from every page", () => {
   assert.ok(b.files["partials/header.liquid"].includes("MF"));
   assert.equal(b.files["partials/footer.liquid"] !== undefined, true);
   for (const path of ["index.liquid", "shop/[handle].liquid"]) {
-    assert.match(b.files[path], /\{% render 'header',/);
-    assert.match(b.files[path], /\{% render 'footer',/);
+    assert.match(b.files[path], /{% render 'header' %}/);
+    assert.match(b.files[path], /{% render 'footer' %}/);
   }
 });
 
@@ -53,9 +53,9 @@ test("each page is a body fragment (no document shell — host wraps it)", () =>
   const b = convertSite("ROOT", MULTI, ctx);
   const home = b.files["index.liquid"];
   assert.doesNotMatch(home, /<!DOCTYPE|<html|<head>|<body>/);
-  assert.match(home, /^\{% render 'header',/); // chrome renders inline, in ROOT order
+  assert.match(home, /^{% render 'header' %}/); // chrome renders inline, in ROOT order
   assert.match(home, /<h1[^>]*>Plants for slow rooms<\/h1>/);
-  assert.match(home, /\{% render 'footer',/);
+  assert.match(home, /{% render 'footer' %}/);
   assert.equal(b.files["partials/head.liquid"], undefined); // SEO lives on the page record, not a head file
   assert.equal(b.site.lang, "en");
 });

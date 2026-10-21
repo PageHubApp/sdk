@@ -158,9 +158,6 @@ function policyFor(props: Record<string, any>): PagePolicy {
 /** The page slot inside the ordered chrome `sequence`; replaced per page with that page's own body. */
 const PAGE_SLOT = "\u0000PAGE\u0000";
 
-/** The globals forwarded into every chrome partial (render is scope-isolated). */
-const PARTIAL_GLOBALS = "company: company, site: site, page: page, pages: pages, request: request, routes: routes, year: year";
-
 /**
  * A page file is a BODY FRAGMENT, not a full document — the ordered chrome `{% render %}` calls with
  * the page's own body in the page slot. The `<head>` and the `<html>`/`<body>` shell are the host's
@@ -240,9 +237,9 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     for (let i = 2; usedSlugs.has(slug); i++) slug = `${slugify(base)}-${i}`;
     usedSlugs.add(slug);
     files[`partials/${slug}.liquid`] = partialBody(node, id, nodes, ctx);
-    // `{% render %}` is scope-isolated, so forward the globals a chrome partial's bindings read
-    // (`{{ company.name }}`, `{{ site.* }}`, the current page/request/routes). Undefined ones pass nil.
-    return `{% render '${slug}', ${PARTIAL_GLOBALS} %}`;
+    // Bare render: the engine exposes site/page/company/… as globals, which `{% render %}` partials
+    // inherit, so a chrome partial's `{{ company.name }}` resolves without forwarding args here.
+    return `{% render '${slug}' %}`;
   };
 
   // One ordered pass: build the shared chrome `sequence` (with ONE page slot) and collect page ids.
