@@ -21,7 +21,9 @@ import { dataSource } from "./dataSource";
 import { formSource, formElementSource } from "./formSource";
 import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
 import { buttonSource, linkSource, interactiveAttrs } from "./actionSource";
-import { conditionExpr } from "./conditions";
+import { conditionExpr, stateClassAttr, isRuntimeStateKey } from "./conditions";
+import { normalizeInViewState } from "../../utils/state/inViewTracker";
+import { cssAnimationPresets, toTimingFunction } from "../../utils/animations/animations";
 
 /** A node → its Liquid+HTML source. `childrenSource` is the already-emitted source of its children. */
 export type ToSourceFn = (props: Record<string, any>, childrenSource: string, ctx: StaticRenderContext) => string;
@@ -151,6 +153,70 @@ export function liquidizeBindings(s: string): string {
   });
 }
 
+// ─── interactive state + animation attributes (html-first runtime) ───────────
+
+/** `root.animationLoop` → `--anim-iteration` (`loop` → infinite, `once` → 1, a count). */
+function toIterationCount(loop: string): string | null {
+  if (loop === "loop") return "infinite";
+  if (loop === "once") return "1";
+  return /^\d+(\.\d+)?$/.test(loop) ? loop : null;
+}
+
+/**
+ * `props.root.animation` (a `cssAnimationPresets` key) → the html-first runtime's
+ * entrance-animation contract: `data-animate="<suffix>"` (the keyframe name after
+ * `animate-css-`, read by `chunks/animate.ts`), an optional `data-animate-trigger`,
+ * and the `--anim-*` override vars `animate.css` reads. Only ENTRANCE presets map —
+ * the runtime's animate chunk is entrance-only, so hover / continuous presets and
+ * `site:<slug>` animations have no mechanism and emit nothing.
+ */
+function animationAttrs(props: Record<string, any>): { attrs: Record<string, string>; styleVars: string } {
+  const root = props.root || {};
+  const key = root.animation;
+  const preset = typeof key === "string" ? cssAnimationPresets[key] : undefined;
+  if (!preset || preset.group !== "Entrance" || !preset.animateClass) return { attrs: {}, styleVars: "" };
+  const attrs: Record<string, string> = { "data-animate": preset.animateClass.replace(/^animate-css-/, "") };
+  // Scroll is the runtime default (reveal on into-view); load/continuous reveal at once.
+  const trigger = (typeof root.animationTrigger === "string" && root.animationTrigger) || preset.trigger;
+  if (trigger !== "scroll") attrs["data-animate-trigger"] = "load";
+  const vars: string[] = [];
+  const dur = root.animationDuration != null && root.animationDuration !== "" ? parseFloat(root.animationDuration) : NaN;
+  if (!Number.isNaN(dur)) vars.push(`--anim-duration: ${dur}s`);
+  const del = root.animationDelay != null && root.animationDelay !== "" ? parseFloat(root.animationDelay) : NaN;
+  if (!Number.isNaN(del)) vars.push(`--anim-delay: ${del}s`);
+  if (typeof root.animationEasing === "string" && root.animationEasing) {
+    vars.push(`--anim-easing: ${toTimingFunction(root.animationEasing)}`);
+  }
+  if (typeof root.animationLoop === "string" && root.animationLoop) {
+    const it = toIterationCount(root.animationLoop);
+    if (it) vars.push(`--anim-iteration: ${it}`);
+  }
+  return { attrs, styleVars: vars.join("; ") };
+}
+
+/**
+ * Container shown/hidden by a state key → the runtime's `data-state-show` (the
+ * `state` chunk sets `hidden = !test(key)`). Colon-namespaced keys the runtime
+ * can't parse (`cart:open`, `form:x:fields`) are dropped — cart visibility is
+ * the cart chunk's own domain, and form lifecycle is `[data-form-state]`.
+ */
+function visibilityShowAttr(props: Record<string, any>): Record<string, string> {
+  const k = props.visibilityStateKey;
+  if (typeof k !== "string" || !k || !isRuntimeStateKey(k)) return {};
+  return { "data-state-show": k };
+}
+
+/** Container `inViewState` → `data-state-in-view="key=value"` (the `state-view` chunk's scroll-rail group writer). */
+function inViewStateAttr(props: Record<string, any>): Record<string, string> {
+  const iv = normalizeInViewState(props.inViewState);
+  return iv ? { "data-state-in-view": `${iv.key}=${iv.value}` } : {};
+}
+
+/** The style attr for a node, merging `getInlineStyle` with any animation override vars. */
+function styleWithAnim(props: Record<string, any>, styleVars: string): string | undefined {
+  return [getInlineStyle(props), styleVars].filter(Boolean).join("; ") || undefined;
+}
+
 /** Container → its HTML tag, carrying class/style/id + any action (link → `<a>`, native invoker attrs). */
 export function containerSource(props: Record<string, any>, children: string, ctx: StaticRenderContext): string {
   if (props.type === "component" || props.type === "componentCanvas") return "";
@@ -159,9 +225,19 @@ export function containerSource(props: Record<string, any>, children: string, ct
   // Container.toHTML), so the same node is a real, crawlable, focusable link as on React routes.
   const { attrs: act, linkHref } = interactiveAttrs(props, ctx);
   if (t === "div" && linkHref) t = "a";
+  const anim = animationAttrs(props);
   return el(
     t,
-    { class: classString(props), style: getInlineStyle(props) || undefined, id: props.id || props.anchor || undefined, ...act },
+    {
+      class: classString(props),
+      style: styleWithAnim(props, anim.styleVars),
+      id: props.id || props.anchor || undefined,
+      ...act,
+      ...anim.attrs,
+      ...visibilityShowAttr(props),
+      ...inViewStateAttr(props),
+      ...stateClassAttr(props, ctx),
+    },
     children
   );
 }
@@ -191,7 +267,8 @@ export const sourceResolver: Record<string, ToSourceFn> = {
     const { attrs, linkHref } = interactiveAttrs(props, ctx);
     const { href, target, rel, ...outer } = attrs as Record<string, string | null | undefined>;
     if (linkHref) inner = el("a", { href: linkHref, target, rel }, unwrapP(inner));
-    return el(t, { class: classString(props), style: getInlineStyle(props) || undefined, id: props.id || undefined, ...outer }, inner);
+    const anim = animationAttrs(props);
+    return el(t, { class: classString(props), style: styleWithAnim(props, anim.styleVars), id: props.id || undefined, ...outer, ...anim.attrs }, inner);
   },
 
   Image(props, _children, ctx) {
@@ -204,7 +281,8 @@ export const sourceResolver: Record<string, ToSourceFn> = {
       return el("span", { class: cls, role: alt ? undefined : "presentation", "aria-label": alt || undefined }, String(content));
     }
     const src = imageSrc(String(content));
-    return el("img", { class: cls, src, alt });
+    const anim = animationAttrs(props);
+    return el("img", { class: cls, src, alt, style: anim.styleVars || undefined, ...anim.attrs });
   },
 
   // Lazy ref: dataSource imports the walker from this module, so a direct ref would hit the cyclic

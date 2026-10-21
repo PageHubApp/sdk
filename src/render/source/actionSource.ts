@@ -34,6 +34,7 @@ import {
   migrateActions,
   type NodeAction,
 } from "../../utils/action";
+import { stateClassAttr } from "./conditions";
 
 // ─── Shared element helpers (mirror toSource.ts `el` / `classString`; those are
 //     module-private there and this file must not edit toSource.ts) ───────────
@@ -107,9 +108,14 @@ export function actionToAttrs(a: NodeAction): Record<string, string> {
       // Native invoker: a modal is a <dialog>, opened modally.
       return { commandfor: a.anchor, command: "show-modal" };
     case "show-hide": {
-      // The target is a `[popover]` element; direction picks the invoker command.
-      // `tab` (gallery swap) has no native popover command — toggle is the safe
-      // default; the conditions/state pass refines tab groups.
+      // The target is a `[popover]` element (or a `<dialog>` for a modal); the
+      // direction picks the native invoker command the runtime's `invokers`
+      // chunk honors. `tab` (gallery swap) has NO native popover/runtime
+      // mechanism — the new runtime switches tabs through state (a `set-state`
+      // on the thumb + `data-state-show` / `data-state-class` on the panels),
+      // not a per-action command. Emit nothing for it rather than a misleading
+      // popover command.
+      if (a.direction === "tab") return {};
       const command =
         a.direction === "show" ? "show-popover" : a.direction === "hide" ? "hide-popover" : "toggle-popover";
       return { commandfor: a.target, command };
@@ -254,6 +260,8 @@ function buildActionSource(
     ...native,
     ...iconOnlyLabel(props, icon, opts.labelFallback),
     ...passthroughAttrs(props),
+    // State-driven class modifiers (e.g. a tab/pagination Button's `tab-active`).
+    ...stateClassAttr(props, ctx),
   };
   if (tag === "button") attrs.type = typeof props.type === "string" ? props.type : "button";
   // A multi-action chain also ships the full ordered chain (resolved hrefs),

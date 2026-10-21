@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { conditionExpr } from "./conditions";
+import { conditionExpr, stateClassAttr, isRuntimeStateKey } from "./conditions";
 
 test("single `all` group → conditions joined with `and`", () => {
   const groups = [
@@ -96,4 +96,92 @@ test("mixed and/or (can't flatten) → null + mixed-and-or report", () => {
 test("no groups → null", () => {
   assert.equal(conditionExpr([]), null);
   assert.equal(conditionExpr(undefined), null);
+});
+
+// ─── stateClassAttr (stateModifiers → data-state-class) ──────────────────────
+
+test("isRuntimeStateKey: single-segment + url:/local: ok, colon-namespaced not", () => {
+  assert.ok(isRuntimeStateKey("tabs-group"));
+  assert.ok(isRuntimeStateKey("url:page"));
+  assert.ok(isRuntimeStateKey("local:x"));
+  assert.ok(!isRuntimeStateKey("cart:open"));
+  assert.ok(!isRuntimeStateKey("form:customer-account:fields"));
+});
+
+test("stateModifiers: builtin tab-active resolved to classes, single state equals", () => {
+  const ctx = { renderingNodeId: "b1", nodes: { b1: { type: "Button" }, ROOT: { props: {} } } } as any;
+  const props = {
+    stateModifiers: [
+      {
+        conditions: [{ logic: "all", conditions: [{ type: "state", key: "tabs-group", operator: "equals", value: "tab-panel-0" }] }],
+        modifiers: ["tab-active"],
+      },
+    ],
+  };
+  assert.deepEqual(stateClassAttr(props, ctx), {
+    "data-state-class": "tabs-group=tab-panel-0:border-primary text-primary",
+  });
+});
+
+test("stateModifiers: `any` group of state terms → OR entries (same classes)", () => {
+  const ctx = { renderingNodeId: "c1", nodes: { c1: { type: "Container" }, ROOT: { props: {} } } } as any;
+  const props = {
+    stateModifiers: [
+      {
+        conditions: [
+          {
+            logic: "any",
+            conditions: [
+              { type: "state", key: "mode", operator: "equals", value: "a" },
+              { type: "state", key: "mode", operator: "equals", value: "b" },
+            ],
+          },
+        ],
+        modifiers: ["shown-flex"],
+      },
+    ],
+  };
+  assert.deepEqual(stateClassAttr(props, ctx), { "data-state-class": "mode=a:flex;mode=b:flex" });
+});
+
+test("stateModifiers: colon key / AND group / contains → dropped (no data-state-class)", () => {
+  const ctx = { renderingNodeId: "c1", nodes: { c1: { type: "Container" }, ROOT: { props: {} } } } as any;
+  // colon-namespaced key (cart:*) — not test()-parseable
+  assert.deepEqual(
+    stateClassAttr(
+      { stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "cart:count", operator: "greater-than", value: "0" }] }], modifiers: ["shown-block"] }] },
+      ctx,
+    ),
+    {},
+  );
+  // AND group (2 conditions in one `all` group) — can't be one entry
+  assert.deepEqual(
+    stateClassAttr(
+      { stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "x", operator: "exists", value: "" }, { type: "state", key: "y", operator: "not-exists", value: "" }] }], modifiers: ["shown-flex"] }] },
+      ctx,
+    ),
+    {},
+  );
+  // contains has no test() operator
+  assert.deepEqual(
+    stateClassAttr(
+      { stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "x", operator: "contains", value: "a" }] }], modifiers: ["shown-flex"] }] },
+      ctx,
+    ),
+    {},
+  );
+});
+
+test("stateModifiers: ROOT override modifier class resolves", () => {
+  const ctx = {
+    renderingNodeId: "c1",
+    nodes: { c1: { type: "Container" }, ROOT: { props: { modifiers: { Container: [{ name: "my-mod", classes: "ring-2 ring-primary" }] } } } },
+  } as any;
+  assert.deepEqual(
+    stateClassAttr(
+      { stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "sel", operator: "exists", value: "" }] }], modifiers: ["my-mod"] }] },
+      ctx,
+    ),
+    { "data-state-class": "sel:ring-2 ring-primary" },
+  );
 });

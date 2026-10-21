@@ -95,6 +95,35 @@ test("multi-action chain → stacked native attrs + full data-ph-actions chain",
   assert.ok(src.endsWith(">Copy & go</a>"));
 });
 
+test("show-hide direction:tab → NO native command (no runtime tab mechanism)", () => {
+  const src = buttonSource(
+    { text: "Slide 1", action: [{ type: "show-hide", target: "slide-1", direction: "tab", group: "gallery" }] },
+    "",
+    ctx,
+  );
+  assert.equal(src, '<button class="cursor-pointer" type="button">Slide 1</button>');
+  assert.ok(!src.includes("commandfor"));
+  assert.ok(!src.includes("popover"));
+});
+
+test("Button stateModifiers (tab-active) → data-state-class resolved from Button registry", () => {
+  const bctx = { renderingNodeId: "b1", nodes: { b1: { type: "Button" }, ROOT: { props: {} } } } as any;
+  const src = buttonSource(
+    {
+      text: "Pricing",
+      className: "btn",
+      action: [{ type: "set-state", key: "tabs-group", value: "tab-panel-1" }],
+      stateModifiers: [
+        { conditions: [{ logic: "all", conditions: [{ type: "state", key: "tabs-group", operator: "equals", value: "tab-panel-1" }] }], modifiers: ["tab-active"] },
+      ],
+    },
+    "",
+    bctx,
+  );
+  assert.ok(src.includes('data-state-set="tabs-group:tab-panel-1"'));
+  assert.ok(src.includes('data-state-class="tabs-group=tab-panel-1:border-primary text-primary"'));
+});
+
 test("actionToAttrs: state actions use ':' separator (splitKey), trigger + bounds", () => {
   assert.deepEqual(actionToAttrs({ type: "set-state", key: "tab", value: "pricing" }), { "data-state-set": "tab:pricing" });
   assert.deepEqual(actionToAttrs({ type: "toggle-state", key: "menu" }), { "data-state-toggle": "menu" });

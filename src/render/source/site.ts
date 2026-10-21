@@ -19,7 +19,28 @@
 import type { SerializedNode, SerializedNodes } from "../static/types";
 import type { StaticRenderContext } from "../static/types";
 import { pageNodeSlug } from "../../utils/page/pageSlug";
+import { generateDesignSystemCSSVariables } from "../../utils/design/designSystemVars";
+import { resolveTheme } from "../../utils/design/resolveTheme";
+import { googleFontFamilyParam } from "../../utils/fonts/familyParam";
 import { componentSlug, renderNodeToSource } from "./toSource";
+
+/** The Google Fonts stylesheet href for a site's typography, or "" when it uses system fonts. */
+function fontsHref(theme: { typography?: any[]; styleGuide?: Record<string, any> }): string {
+  const families = new Map<string, Set<string>>();
+  const add = (family?: unknown, weight?: unknown) => {
+    const f = typeof family === "string" ? family.trim() : "";
+    if (!f || /system-ui|sans-serif|serif|monospace/i.test(f)) return;
+    const w = families.get(f) ?? new Set<string>();
+    if (typeof weight === "string" && weight) w.add(weight);
+    else if (typeof weight === "number") w.add(String(weight));
+    families.set(f, w);
+  };
+  for (const t of theme.typography ?? []) add(t?.fontFamily, t?.fontWeight);
+  for (const [k, v] of Object.entries(theme.styleGuide ?? {})) if (/FontFamily$/.test(k)) add(v);
+  if (!families.size) return "";
+  const params = [...families].map(([f, w]) => googleFontFamilyParam(f, w.size ? [...w] : ["400", "700"])).join("&");
+  return `https://fonts.googleapis.com/css2?${params}&display=swap`;
+}
 
 /** SEO / arbitrary values exposed to a page as `page.<key>` (the engine's `PageRecord.meta`). */
 export type PageMeta = Record<string, string>;
@@ -60,6 +81,10 @@ export interface SiteBundle {
   files: Record<string, string>;
   site: SiteJson;
   pages: ConvertedPage[];
+  /** The site's design-system CSS (palette / fonts / typography / animations), scoped to `:root`. */
+  css: string;
+  /** Google Fonts stylesheet href for the site's typography, or "" for system fonts. */
+  fonts: string;
   /** `/* report: … *‍/` notes bubbled up from condition conversion, deduped. */
   notes: string[];
 }
@@ -166,7 +191,7 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
   const pages: ConvertedPage[] = [];
   const notes = new Set<string>();
   const root = nodes[rootId];
-  if (!root) return { files, site: { pages: [], routes: {} }, pages, notes: [] };
+  if (!root) return { files, site: { pages: [], routes: {} }, pages, css: "", fonts: "", notes: [] };
 
   const siteProps = root.props || {};
   const lang = String(siteProps?.seo?.lang || siteProps.lang || "en");
@@ -266,5 +291,9 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     routes: Object.fromEntries(pages.map((p) => [p.path.replace(/\.liquid$/, ""), p.url])),
   };
 
-  return { files, site, pages, notes: [...notes] };
+  const theme = resolveTheme(siteProps);
+  const css = generateDesignSystemCSSVariables(theme, ":root");
+  const fonts = fontsHref(theme);
+
+  return { files, site, pages, css, fonts, notes: [...notes] };
 }
