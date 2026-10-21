@@ -32,12 +32,19 @@ test("show-hide button → commandfor + command invoker on <button>", () => {
     "",
     ctx,
   );
-  assert.equal(src, '<button commandfor="mobile-nav" command="toggle-popover" type="button">Open menu</button>');
+  // A bare <button> (no btn/cursor-* class) gets cursor-pointer, same as Button.toHTML.
+  assert.equal(
+    src,
+    '<button class="cursor-pointer" commandfor="mobile-nav" command="toggle-popover" type="button">Open menu</button>',
+  );
 });
 
 test("open-modal button → show-modal invoker", () => {
   const src = buttonSource({ text: "Book now", action: [{ type: "open-modal", anchor: "contact-modal" }] }, "", ctx);
-  assert.equal(src, '<button commandfor="contact-modal" command="show-modal" type="button">Book now</button>');
+  assert.equal(
+    src,
+    '<button class="cursor-pointer" commandfor="contact-modal" command="show-modal" type="button">Book now</button>',
+  );
 });
 
 test("add-to-cart button → data-cart native attrs", () => {

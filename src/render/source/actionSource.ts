@@ -180,7 +180,7 @@ function iconOnlyLabel(props: Record<string, any>, icon: IconProp, fallback: str
   return {};
 }
 
-/** Pass-through `props.attrs` (data-*/role/aria-*), verbatim — matches the format's "attrs carry over" rule. */
+/** Pass-through `props.attrs` (data-attrs, role, aria-attrs), verbatim — matches the format's "attrs carry over" rule. */
 function passthroughAttrs(props: Record<string, any>): Record<string, string> {
   const raw = props.attrs;
   if (!raw || typeof raw !== "object") return {};

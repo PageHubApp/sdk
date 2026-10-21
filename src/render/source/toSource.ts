@@ -17,6 +17,7 @@ import { getInlineStyle, type StaticRenderContext } from "../../utils/staticHtml
 import { dataSource } from "./dataSource";
 import { formSource, formElementSource } from "./formSource";
 import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
+import { buttonSource, linkSource } from "./actionSource";
 
 /** A node → its Liquid+HTML source. `childrenSource` is the already-emitted source of its children. */
 export type ToSourceFn = (props: Record<string, any>, childrenSource: string, ctx: StaticRenderContext) => string;
@@ -100,6 +101,8 @@ export const sourceResolver: Record<string, ToSourceFn> = {
   Map: mapSource,
   MapPoint: mapPointSource,
   MapPath: mapPathSource,
+  Button: (props, children, ctx) => buttonSource(props, children, ctx),
+  Link: (props, children, ctx) => linkSource(props, children, ctx),
 };
 
 /** A reusable-component slug for a `type:"component"` node (its saved-component ref or node id). */
