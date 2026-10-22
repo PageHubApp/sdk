@@ -247,3 +247,33 @@ test("a Container's row-gated modifier lands in its class through a captured var
     `{% capture ph_mod_1 %}{% if item.label == 'Sage' %} flex{% endif %}{% endcapture %}<div class="a{{ ph_mod_1 }}" data-state-class="store:f=x=>block"></div>`
   );
 });
+
+// Text whose HTML holds block content under a `p` tag (a list, a div, a heading, a table, a quote). The converter keeps
+// the old renderer's markup (`Text.toHTML`: the TipTap `<p>` wrapper dropped by `unwrapP`, nothing else touched), so
+// parity holds. The strict parser accepts the result (a browser closes the `p` itself) and the pipeline repairs what it
+// can't (the engine's `repairNesting`), so no tag change here.
+const BLOCKS: Array<[string, string, string]> = [
+  ["a list", "<p>Intro</p><ul><li>one</li><li>two</li></ul>", "<p>Intro</p><ul><li>one</li><li>two</li></ul>"],
+  ["a list inside a paragraph", "<p>Steps<ol><li>one</li></ol></p>", "Steps<ol><li>one</li></ol>"],
+  ["a div", "<div>boxed</div>", "<div>boxed</div>"],
+  ["a heading", "<p>lead</p><h2>Sub</h2>", "<p>lead</p><h2>Sub</h2>"],
+  ["a table", "<table><tbody><tr><td>a</td></tr></tbody></table>", "<table><tbody><tr><td>a</td></tr></tbody></table>"],
+  ["a blockquote", "<blockquote>quoted</blockquote>", "<blockquote>quoted</blockquote>"],
+];
+
+for (const [label, html, inner] of BLOCKS) {
+  test(`Text (tagName p) holding ${label}: the markup is the old walker's, tag and class untouched`, () => {
+    const nodes = { ROOT: { type: "Text", props: { tagName: "p", className: "text-base", text: html }, nodes: [] } } as any;
+    assert.equal(renderToSource("ROOT", nodes, ctx), `<p class="text-base">${inner}</p>`);
+  });
+}
+
+test("Text with a `<li>` tag whose HTML is a paragraph keeps one element and no stray close tag", () => {
+  const nodes = { ROOT: { type: "Text", props: { tagName: "li", text: "<p>Understanding Web3</p>" }, nodes: [] } } as any;
+  assert.equal(renderToSource("ROOT", nodes, ctx), `<li>Understanding Web3</li>`);
+});
+
+test("Text whose stored HTML has a stray `</p>` keeps it, as the old walker did (the write repairs it)", () => {
+  const nodes = { ROOT: { type: "Text", props: { tagName: "li", text: "<p>jargon</p></p>" }, nodes: [] } } as any;
+  assert.equal(renderToSource("ROOT", nodes, ctx), `<li>jargon</p></li>`);
+});
