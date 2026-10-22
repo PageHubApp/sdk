@@ -26,6 +26,22 @@ test("collection form → {% form '<slug>', map, notify %}", () => {
   );
 });
 
+test("collection form → fixed: carries collectionFieldValues as JSON", () => {
+  const out = formSource(
+    { submissionType: "collection", collectionSlug: "leads", collectionFieldValues: { public: false, source: "it's \"web\"\\x" } },
+    "<C>",
+    ctx
+  );
+  const m = /fixed: '([^']*)'/.exec(out);
+  assert.ok(m, out);
+  assert.doesNotMatch(m![1]!, /\\["\\']/);
+  assert.deepEqual(JSON.parse(m![1]!), { public: false, source: "it's \"web\"\\x" });
+});
+
+test("collection form without fixed values emits no fixed:", () => {
+  assert.doesNotMatch(formSource({ submissionType: "collection", collectionSlug: "leads", collectionFieldValues: {} }, "", ctx), /fixed/);
+});
+
 test("webhook form → to / webhook / redirect args, inbox name slugified", () => {
   const out = formSource(
     {

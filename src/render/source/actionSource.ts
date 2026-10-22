@@ -337,9 +337,9 @@ function buildActionSource(
   // exactly as Button.toHTML stamps it.
   if (actions.length > 1) Object.assign(attrs, actionsAttr(props, ctx));
 
-  // Label is persisted HTML (TipTap / variable spans) and stays verbatim — its
-  // `{{ item.* }}` tokens are already the format's binding form.
-  const textHTML = !icon.only && typeof props.text === "string" ? props.text : "";
+  // Label is persisted HTML (TipTap / variable spans) and stays verbatim, apart from the one-level
+  // `{{ a || fallback }}` rewrite (a raw `||` is a Liquid parse error that blanks the whole page).
+  const textHTML = !icon.only && typeof props.text === "string" ? liquidizeBindings(props.text) : "";
   const iconHTML = icon.only || icon.value ? iconSource(icon) : "";
   const before = icon.position === "left" || icon.position === "top";
   const inner = before ? iconHTML + textHTML : textHTML + iconHTML;

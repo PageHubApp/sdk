@@ -83,7 +83,20 @@ function fieldMapArg(map: unknown): string | null {
 }
 
 /**
- * Form → `{% form '<slug>' [, map:…, notify: false, to:…, webhook:…, redirect:…, class:…, id:…] %}`
+ * `collectionFieldValues` ({ fieldKey: constant }) → the `fixed:` arg string, JSON. The tag parser unescapes
+ * `\\`, `\"` and `\'` inside a quoted literal, so those three are written as `\uXXXX` (still valid JSON) and
+ * survive both that and Liquid's own string reader.
+ */
+function fixedArg(values: unknown): string | null {
+  if (!values || typeof values !== "object" || Array.isArray(values)) return null;
+  const entries = Object.entries(values as Record<string, unknown>).filter(([k, v]) => k && v !== undefined);
+  if (!entries.length) return null;
+  const json = JSON.stringify(Object.fromEntries(entries));
+  return json.replace(/\\(["\\])|'/g, (m, c) => (m === "'" ? "\\u0027" : c === '"' ? "\\u0022" : "\\u005c"));
+}
+
+/**
+ * Form → `{% form '<slug>' [, map:…, fixed:…, notify: false, to:…, webhook:…, redirect:…, class:…, id:…] %}`
  * … children … `{% endform %}`. A `custom`/`iframe` submission stays a plain `<form action method>`.
  */
 export const formSource: ToSourceFn = (props, children) => {
@@ -110,6 +123,8 @@ export const formSource: ToSourceFn = (props, children) => {
   if (type === "collection") {
     const map = fieldMapArg(props.collectionFieldMap);
     if (map) args.push(`map: ${q(map)}`);
+    const fixed = fixedArg(props.collectionFieldValues);
+    if (fixed) args.push(`fixed: ${q(fixed)}`);
     if (props.collectionSkipEmail) args.push("notify: false");
   }
   if (props.mailto) args.push(`to: ${q(String(props.mailto))}`);
