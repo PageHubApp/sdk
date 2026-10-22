@@ -171,23 +171,48 @@
    twMerge treats `hidden` and `flex` as one display group and keeps only the
    last, so an overlay cannot carry both its initial and its shown-state layout
    in className. These pair with `hidden` to supply the shown state. */
-.ph-overlay:not(.hidden) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* A popover / dialog target starts with the authored `hidden` class; the site runtime drops it while the target is open (as the
+   class toggle does), so a responsive `lg:hidden` still wins. The layout rules sit in `components` for the same reason:
+   unlayered CSS would beat every Tailwind utility. */
+@layer components {
+  .ph-overlay:not(.hidden):not([popover]),
+  .ph-overlay:popover-open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ph-drawer:not(.hidden):not([popover]),
+  .ph-drawer:popover-open {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
-.ph-drawer:not(.hidden) {
-  display: flex;
-  flex-direction: column;
+/* HTML-first source: a show-hide / open-modal target is a native [popover], opened by
+   `command="show-popover"`. Strip the UA popover box (fit-content, centred, bordered, canvas
+   background) so utilities decide the layout; a closed popover keeps the UA `display:none`. */
+@layer base {
+  [popover] {
+    inset: auto;
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    color: inherit;
+    background: transparent;
+  }
 }
 
 /* An open overlay owns the scroll: the page behind it stops scrolling, so a
    tall modal shows one scrollbar (its own) instead of two. Drawers (nav,
-   cookie bars) stay out of it — a bottom banner must not freeze the page.
-   The editor rewrites `body` to its canvas root (canvasScope.ts), which
-   carries data-ph-canvas, so there the rule is inert and the canvas keeps
+   which also unlock on a link click) are left alone. The editor rewrites `body` to its canvas root
+   (canvasScope.ts), which carries data-ph-canvas, so there the rule is inert and the canvas keeps
    scrolling while an author works inside an open modal. */
-body:not([data-ph-canvas]):has(.ph-overlay:not(.hidden)) {
+body:not([data-ph-canvas]):has(.ph-overlay:not(.hidden):not([popover]), .ph-overlay:popover-open) {
   overflow: hidden;
 }

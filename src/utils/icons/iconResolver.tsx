@@ -71,6 +71,22 @@ export function pickIconSvgClass(wrapperClassName: string | undefined): string {
 }
 
 /**
+ * The HTML-first (Liquid) source converter inlines ONE `{{ 'set/Name' | icon }}`
+ * svg per icon name (from `icons.json`), so — unlike `toHTML`/`pickIconSvgClass`,
+ * which stamp the computed class onto each `<svg>` — it cannot vary the svg class
+ * per wrapper. The baked svg therefore carries only the universal `ph-icon-svg`
+ * (1em) base, and a SIZED wrapper (explicit `w-`/`h-`/`size-` box) instead stretches
+ * that child svg to fill via these child-combinator utilities — the wrapper-side
+ * equivalent of `toHTML` adding `ph-icon-fill` to the svg. Returns "" for an unsized
+ * wrapper, which keeps the 1em base (matching `pickIconSvgClass` dropping the fill).
+ */
+export function iconFillWrapperClass(wrapperClassName: string | undefined): string {
+  return pickIconSvgClass(wrapperClassName).includes("ph-icon-fill")
+    ? "[&>svg]:w-full [&>svg]:h-full"
+    : "";
+}
+
+/**
  * Serialize an IconSvgEntry's preserved presentation attrs (stroke,
  * fill, stroke-width, stroke-linecap, stroke-linejoin, …) into an HTML
  * attribute string for the static-export `<svg>` tag. Returns
