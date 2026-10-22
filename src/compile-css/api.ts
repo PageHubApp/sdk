@@ -14,6 +14,7 @@ import { applyBreakpointRewrite } from "../utils/breakpointRewrite";
 import { collectDaisyUICSS } from "./daisyui/loader";
 import { purgeDaisyUIRules } from "./daisyui/purgeRules";
 import { unwrapLayerBlocks } from "./transforms/unwrapLayers";
+import { stripSelfReferencingVars } from "./transforms/stripSelfReferencingVars";
 import { stripUnusedKeyframes } from "./transforms/stripKeyframes";
 import { minifyCSS } from "./transforms/minify";
 import { getCompiler } from "./compiler";
@@ -97,6 +98,7 @@ export async function compileCSS(options: {
   // the source of the link-color, heading-size, and list-bullet regressions.
   let stripped = css.replace(/@layer\s+[^{]+;/g, "");
   stripped = unwrapLayerBlocks(stripped);
+  stripped = stripSelfReferencingVars(stripped);
 
   // Prepend DaisyUI CSS (unwrapped, with --color-* remapped, pruned to used selectors)
   if (daisyuiCSS) {
