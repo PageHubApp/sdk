@@ -45,6 +45,76 @@ interface DataSource {
   limit?: number;
   /** A `<collection>.facets` feed: the comma-separated facet keys (narrowing the collection's facetable fields). */
   facetKeys?: string;
+  sort?: string;
+  /** `{ <fetchOption>: <stateKey> }`: the state the old client refetch read (`url:<param>` keys are the visitor's URL). */
+  stateInputs?: Record<string, string>;
+  /** Where the old client refetch published the listing's totals (`{{state.<key>}}` pagination text). */
+  publishStateKeys?: { totalPages?: string; totalCount?: string; page?: string; count?: string };
+}
+
+// ── URL-driven listings (`stateInputs`) ─────────────────────────────────────
+//
+// A storefront grid whose filters, search, sort and pagination live in the URL (`stateInputs: { category:
+// "url:category", page: "url:page" }`) becomes `query['<slug>?<options>&in=<params>']`, the global the host fills
+// from the request's query string (pagehub.dev utils/htmlFirst/queryListing.ts). The element gets
+// `data-refetch="<params>"`, so the runtime's `refetch` chunk re-renders it in place when those `url:` keys change,
+// and `data-state-seed` for the totals its `publishStateKeys` named.
+
+/** The collections a URL-driven listing can read: a CMS collection, or the catalog (the site's `products`). */
+function querySlug(ds: DataSource): string | null {
+  if (ds.scope || !ds.collection || ds.collection.endsWith(".facets") || ds.collection.endsWith(".categories")) return null;
+  if (ds.provider === "collection") return ds.collection;
+  if (ds.provider === "stripe" && ds.collection === "products") return "products";
+  return null;
+}
+
+/** The URL params a binding's `stateInputs` read: `opt` (param = opt) or `opt:param`. Non-URL state is not the URL's. */
+function urlInputs(ds: DataSource): string[] {
+  const out: string[] = [];
+  for (const [opt, key] of Object.entries(ds.stateInputs || {})) {
+    if (typeof key !== "string" || !key.startsWith("url:")) continue;
+    const param = key.slice(4);
+    if (!/^[\w.-]+$/.test(opt) || !/^[\w.-]+$/.test(param)) continue;
+    out.push(param === opt ? opt : `${opt}:${param}`);
+  }
+  return out;
+}
+
+/** The `query[...]` key for a URL-driven listing, with the params it refetches on; null for any other binding. */
+export function queryListingKey(ds: DataSource): { key: string; params: string[] } | null {
+  const slug = querySlug(ds);
+  const inputs = slug ? urlInputs(ds) : [];
+  if (!slug || !inputs.length) return null;
+  // The catalog's grid also follows every facet selection (`url:facet.<key>`), as the old client refetch did.
+  if (slug === "products" && !inputs.includes("facet.*")) inputs.push("facet.*");
+  const fixed = new URLSearchParams();
+  if (typeof ds.limit === "number" && ds.limit > 0) fixed.set("limit", String(ds.limit));
+  if (typeof ds.sort === "string" && ds.sort) fixed.set("sort", ds.sort);
+  if (typeof ds.facetKeys === "string" && ds.facetKeys) fixed.set("facetKeys", ds.facetKeys);
+  for (const [k, v] of Object.entries(ds.filter || {})) {
+    // A route-param binding (`{{params.slug}}`) is applied in Liquid after the read; a literal is the binding's own.
+    if (typeof v === "string" && v && !v.includes("{{") && /^[\w.-]+$/.test(k)) fixed.set(`filter.${k}`, v);
+  }
+  fixed.set("in", inputs.join(","));
+  const key = `${slug}?${fixed.toString().replace(/%2C/gi, ",").replace(/%3A/gi, ":").replace(/%2A/gi, "*")}`;
+  if (key.includes("'")) return null;
+  return { key, params: inputs.map((i) => i.split(":").pop()!) };
+}
+
+/**
+ * `data-state-seed` for the totals the old refetch published: `key=value;…`, rendered with the listing. `metaVar` /
+ * `rowsVar` are Liquid variables assigned before the element (an attribute token may not index with `[…]`).
+ */
+function stateSeed(ds: DataSource, metaVar: string, rowsVar: string): string | undefined {
+  const pub = ds.publishStateKeys || {};
+  const meta = metaVar;
+  const rowsExpr = rowsVar;
+  const parts: string[] = [];
+  if (pub.totalPages) parts.push(`${pub.totalPages}={{ ${meta}.totalPages }}`);
+  if (pub.totalCount) parts.push(`${pub.totalCount}={{ ${meta}.totalCount }}`);
+  if (pub.page) parts.push(`${pub.page}={{ ${meta}.page }}`);
+  if (pub.count) parts.push(`${pub.count}={{ ${rowsExpr} | size }}`);
+  return parts.length ? parts.join(";") : undefined;
 }
 
 // ── Element helpers (mirrors toSource.ts; replicated so this file stays additive) ──
@@ -201,6 +271,33 @@ function splitChildren(
 }
 
 /**
+ * A URL-driven listing: rows and meta assigned from `query[…]` / `query_meta[…]` ahead of the element, a route-param
+ * filter applied in Liquid, the loop, and the element marked for the runtime's in-place refetch.
+ */
+function queryListingSource(
+  ds: DataSource,
+  listing: { key: string; params: string[] },
+  tagName: string,
+  attrs: Record<string, string | undefined>,
+  childrenSource: string,
+  ctx: StaticRenderContext
+): string {
+  // The node's own id, read before the children re-walk (it moves `ctx.renderingNodeId`).
+  const id = String(ctx.renderingNodeId || "x").replace(/[^A-Za-z0-9]/g, "_");
+  const { templateSource, emptySource } = splitChildren(ctx, childrenSource);
+  const rowsVar = `rows_${id}`;
+  const metaVar = `meta_${id}`;
+  const bound = Object.fromEntries(Object.entries(ds.filter || {}).filter(([, v]) => typeof v === "string" && v.includes("{{")));
+  // Ahead of the element (and of any visibility gate on it): `renderNodeToSource` puts `ctx.pre` in front of the node.
+  ((ctx as any).pre ??= []).push(
+    `{% assign ${rowsVar} = ${withFilters(`query['${listing.key}']`, bound)} %}{% assign ${metaVar} = query_meta['${listing.key}'] %}`
+  );
+  const loop = `{% for item in ${rowsVar} %}${templateSource}${emptySource ? `{% else %}${emptySource}` : ""}{% endfor %}`;
+  const seed = stateSeed(ds, metaVar, rowsVar);
+  return el(tagName, { ...attrs, id: attrs.id || `ph-list-${id}`, "data-refetch": listing.params.join(","), ...(seed ? { "data-state-seed": seed } : {}) }, loop);
+}
+
+/**
  * `Data` node → Liquid source. A reusable-component slot contributes nothing
  * inline (lifted to a partial), matching Container/Data `toHTML`.
  */
@@ -222,6 +319,8 @@ export const dataSource: ToSourceFn = (props, childrenSource, ctx) => {
   };
 
   const ds: DataSource | undefined = props.dataSource;
+  const listing = ds ? queryListingKey(ds) : null;
+  if (ds && listing) return queryListingSource(ds, listing, tagName, attrs, childrenSource, ctx);
   const expr = ds ? loopExpr(ds) : null;
 
   // No dataSource (or an incomplete one) — plain Container-style pass-through:
