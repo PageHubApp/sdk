@@ -124,6 +124,58 @@ export function conditionExpr(groups: Group[] | undefined, report?: (note: strin
   return perGroup.map((g) => g.terms[0]!).join(" or ");
 }
 
+// ─── device conditions → responsive hide classes ─────────────────────────────
+//
+// A `device` condition is the viewport against the site's `md` breakpoint: "mobile" is narrower than it
+// (`evaluate.ts`: `viewportWidth < breakpoints.md`, default 768). That is exactly what the site's Tailwind `md:`
+// variant tests (the release compile uses the site's breakpoints), so a node shown only on phones carries
+// `md:hidden` and one shown only on wider screens `max-md:hidden`: decided by CSS, rendered once, the same forms the
+// HTML editor's condition builder writes (`conditionModel.ts` `DEVICE_CLASS`).
+
+export const DEVICE_HIDE_CLASS = { mobile: "md:hidden", desktop: "max-md:hidden" } as const;
+
+/** A device condition's answer on a phone (`mobile = true`) or a wider screen. */
+function deviceHolds(c: Cond, mobile: boolean): boolean {
+  const wantMobile = c.value === "mobile";
+  return c.operator === "not-equals" ? mobile !== wantMobile : mobile === wantMobile;
+}
+
+/** Groups with every device condition replaced by its answer: `true` / `false` when that decides the whole gate. */
+function withDevice(groups: Group[], mobile: boolean): boolean | Group[] {
+  const kept: Group[] = [];
+  for (const g of groups) {
+    const conds = g?.conditions ?? [];
+    const any = g?.logic === "any";
+    const rest = conds.filter((c) => c.type !== "device");
+    const answers = conds.filter((c) => c.type === "device").map((c) => deviceHolds(c, mobile));
+    if (any) {
+      if (answers.includes(true)) return true; // this group passes, so the OR of groups does
+      if (rest.length) kept.push({ ...g, conditions: rest });
+    } else {
+      if (answers.includes(false)) continue; // this group fails
+      if (!rest.length) return true;
+      kept.push({ ...g, conditions: rest });
+    }
+  }
+  return kept.length ? kept : false;
+}
+
+/**
+ * Split the device part out of a node's `conditionGroups`: the hide class it needs and the gate that is left for the
+ * other conditions (`true` = none). `"never"` when the node shows on no device. `null` when the groups hold no device
+ * condition, or when phone and wider screens would need different OTHER conditions (one element can't carry both).
+ */
+export function deviceGate(groups: Group[] | undefined): { hide: string | null; rest: true | Group[] } | "never" | null {
+  if (!Array.isArray(groups) || !groups.some((g) => (g?.conditions ?? []).some((c) => c.type === "device"))) return null;
+  const onPhone = withDevice(groups, true);
+  const onWide = withDevice(groups, false);
+  if (onPhone === false && onWide === false) return "never";
+  if (onPhone === false) return { hide: DEVICE_HIDE_CLASS.desktop, rest: onWide as true | Group[] };
+  if (onWide === false) return { hide: DEVICE_HIDE_CLASS.mobile, rest: onPhone as true | Group[] };
+  if (JSON.stringify(onPhone) === JSON.stringify(onWide)) return { hide: null, rest: onPhone as true | Group[] };
+  return null;
+}
+
 // ─── state-driven class modifiers → `data-state-class` ───────────────────────
 //
 // `props.stateModifiers` → the runtime `state` chunk's `data-state-class`

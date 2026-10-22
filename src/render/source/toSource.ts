@@ -25,7 +25,8 @@ import { formSource, formElementSource } from "./formSource";
 import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
 import { buttonSource, linkSource, interactiveAttrs } from "./actionSource";
 import { instanceSource } from "./componentSource";
-import { conditionExpr, stateModifiers, isRuntimeStateKey, stateShowExpr } from "./conditions";
+import { stateModifiers, isRuntimeStateKey } from "./conditions";
+import { gateNode } from "./nodeGate";
 import { normalizeInViewState } from "../../utils/state/inViewTracker";
 import { cssAnimationPresets, toTimingFunction } from "../../utils/animations/animations";
 import { iconFillWrapperClass } from "../../utils/icons/iconResolver";
@@ -527,44 +528,6 @@ export function renderNodeToSource(nodeId: string, nodes: SerializedNodes, ctx: 
   const pre: string = ((ctx as any).pre as string[]).join("");
   (ctx as any).pre = outerPre;
   return pre + gateNode(props, body);
-}
-
-/** A node's emitted `body` behind its `conditionGroups`: a browser gate, a Liquid `{% if %}`, or reported and ungated. */
-function gateNode(props: Record<string, any>, body: string): string {
-  const groups = props.conditionGroups;
-  if (Array.isArray(groups) && groups.length > 0) {
-    // A gate that is ENTIRELY runtime `state` conditions can't be decided server-side, but the runtime
-    // can: stamp the equivalent `test()` expression as `data-state-show` on the element itself. The
-    // `state` chunk then sets `hidden = !test(expr)` and re-tests on every store change, so a filter
-    // chip's `data-state-set` drives it live (what the old path reported as "state" and dropped).
-    const show = stateShowExpr(groups);
-    if (show) {
-      const gated = injectAttr(body, "data-state-show", show);
-      if (gated) return gated;
-      // The body root isn't a single plain element (e.g. a Data `{% for %}`): fall through to report.
-    }
-    // Client-only / non-flattenable conditions can't be decided at render time: the node is emitted
-    // ungated with the reported note so the migration surfaces them per site. The note is wrapped in a
-    // real HTML comment — a bare `/* report: … */` sits in body position and renders as VISIBLE text
-    // (it's a CSS/JS comment, not HTML). `site.ts` still extracts the `/* report: <reason> */` inside.
-    const notes: string[] = [];
-    const expr = conditionExpr(groups, (n) => notes.push(n));
-    if (expr) return `{% if ${expr} %}${body}{% endif %}`;
-    return `${notes.map((n) => `<!--${n}-->`).join("")}${body}`;
-  }
-  return body;
-}
-
-/**
- * Add an attribute to the single plain-element root of an emitted body (`<div …>…</div>` →
- * `<div data-x="…" …>…</div>`), or `null` when the body doesn't start with one (a `{% … %}` wrapper or
- * text). Used to stamp a node-level `data-state-show` gate without threading it through every emitter.
- */
-function injectAttr(body: string, name: string, value: string): string | null {
-  const m = /^(\s*<[a-zA-Z][\w-]*)(?=[\s/>])/.exec(body);
-  if (!m) return null;
-  const esc = value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
-  return `${m[1]} ${name}="${esc}"${body.slice(m[1].length)}`;
 }
 
 /** The registered component name for a node (Craft `displayName`/`type.resolvedName`). */
