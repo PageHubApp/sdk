@@ -23,6 +23,7 @@ import { liquidizeBindings, rawRichBindings } from "./bindings";
 import { formSource, formElementSource } from "./formSource";
 import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
 import { buttonSource, linkSource, interactiveAttrs } from "./actionSource";
+import { instanceSource } from "./componentSource";
 import { conditionExpr, stateModifiers, isRuntimeStateKey, stateShowExpr } from "./conditions";
 import { normalizeInViewState } from "../../utils/state/inViewTracker";
 import { cssAnimationPresets, toTimingFunction } from "../../utils/animations/animations";
@@ -501,6 +502,9 @@ export function componentSlug(props: Record<string, any>, nodeId: string): strin
 export function renderNodeToSource(nodeId: string, nodes: SerializedNodes, ctx: StaticRenderContext): string {
   const node = nodes[nodeId];
   if (!node || (node as any).hidden) return "";
+  // A linked copy of a reusable component is a `{% render %}` of its partial (componentSource.ts).
+  const instance = instanceSource(node, ctx);
+  if (instance !== null) return instance;
   const props = node.props || {};
   // Child ids mirror the static walker: `nodes` first, then Craft `linkedNodes` (a Form's fields / sending /
   // thank-you slots live there, and nothing else renders them).

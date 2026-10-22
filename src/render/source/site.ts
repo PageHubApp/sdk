@@ -24,6 +24,7 @@ import { generateDesignSystemCSSVariables } from "../../utils/design/designSyste
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { googleFontFamilyParam } from "../../utils/fonts/familyParam";
 import { componentSlug, renderNodeToSource } from "./toSource";
+import { collectComponents, componentPartialSource, isComponentMaster, setComponentSource, setComponents } from "./componentSource";
 import { toHTML as rootWrapperHTML } from "../../components/Background/Background.toHTML";
 
 /** The Google Fonts stylesheet href for a site's typography, or "" when it uses system fonts. */
@@ -274,6 +275,17 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
   const hasPages = childIds.some((id) => nodes[id]?.props?.type === "page");
   const usedSlugs = new Set<string>();
 
+  // Reusable components first, before anything renders: each master becomes its own partial, and every linked
+  // instance anywhere (a page, the header, another component) renders as `{% render %}` of it (componentSource.ts).
+  const components = collectComponents(rootId, nodes);
+  setComponents(ctx, components);
+  for (const c of components) {
+    usedSlugs.add(c.slug);
+    const text = componentPartialSource(c, nodes, ctx, renderNodeToSource);
+    files[`partials/${c.slug}.liquid`] = text;
+    setComponentSource(ctx, c.slug, text);
+  }
+
   // Lift a ROOT-level chrome node (header / footer / loose site-wide block) into a uniquely-named
   // partial and return the `{% render %}` call for it. Every page renders these in ROOT child order,
   // so a cart drawer or checkout banner that sits beside the pages appears on all of them.
@@ -309,6 +321,8 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     if (kind === "page") { pageIds.push(id); placeSlot(); continue; }
     if (kind === "header") { sequence.push(liftChrome("header", node, id)); continue; }
     if (kind === "footer") { sequence.push(liftChrome("footer", node, id)); continue; }
+    // A component master is on no page: it is only its partial (written above).
+    if (isComponentMaster(node)) continue;
     if (kind === "component") { sequence.push(liftChrome(componentSlug(node.props || {}, id), node, id)); continue; }
     // A loose ROOT child with pages present is site-wide chrome (cart drawer, promo/checkout banner);
     // on a single-page site it is the page body, rendered inline where it sits.
