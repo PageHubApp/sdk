@@ -234,10 +234,31 @@ const plainValue = (v: string) => v !== "" && !/[|&:;]|=>/.test(v.replace(ROW_TO
  *  runtime's `key.field` path: set while that field is non-empty. */
 const JSON_FIELD = /^"([\w-]+)":"$/;
 
-/** One `state` condition → a `test()` atom for `data-state-show`, or null when the
- *  runtime can't evaluate it (non-state type, unparseable key, a `contains` that isn't a
+/**
+ * A `form-field` condition → a `test()` atom on the runtime's live `field:<name>` key (the form control's current
+ * value, `site-runtime/src/state-store.ts`), or null when its name or value can't sit in the grammar. The old
+ * renderer read the field named by `target` (else `key`) the same way, in the browser.
+ */
+function fieldTerm(c: Cond & { target?: string }): string | null {
+  const name = String(c.target || c.key || "");
+  if (!/^[\w.-]+$/.test(name)) return null;
+  const k = `field:${name}`;
+  const op = c.operator ?? "exists";
+  if (op === "exists") return k;
+  if (op === "not-exists") return "!" + k;
+  const v = String(c.value ?? "");
+  if (!plainValue(v) || /[=<>!*]/.test(v)) return null;
+  if (op === "contains") return `${k}*=${v}`;
+  if (op === "not-contains") return `!${k}*=${v}`;
+  const sym = STATE_OP[op];
+  return sym ? k + sym + v : null;
+}
+
+/** One `state` (or `form-field`) condition → a `test()` atom for `data-state-show`, or null when the
+ *  runtime can't evaluate it (another type, unparseable key, a `contains` that isn't a
  *  JSON field check, or a value carrying a grammar delimiter `|` / `&` / `:` / `;`). */
 function showTerm(c: Cond): string | null {
+  if (c.type === "form-field") return fieldTerm(c);
   if (c.type !== "state") return null;
   const key = String(c.key ?? "");
   if (!key || !SHOW_KEY.test(key)) return null;
@@ -291,7 +312,7 @@ export function stateShowExpr(groups: Group[] | undefined): string | null {
 function gateTerm(c: Cond): string | null {
   const op = c.operator ?? "exists";
   const key = String(c.key ?? "");
-  if (c.type === "state") return showTerm(c);
+  if (c.type === "state" || c.type === "form-field") return showTerm(c);
   if (c.type !== "localStorage" && c.type !== "url-param") return null;
   if (!/^[\w.-]+$/.test(key)) return null;
   const k = (c.type === "localStorage" ? "ls:" : "url:") + key;
@@ -311,8 +332,8 @@ export function actionGateExpr(groups: Group[] | undefined): string | null {
   return dnf(groups, gateTerm);
 }
 
-/** Conditions the browser decides (the state store, localStorage, the URL as state): they ride in `data-state-class`. */
-const isRuntimeCond = (c: Cond) => c.type === "state" || c.type === "localStorage" || c.type === "url-param";
+/** Conditions the browser decides (the state store, localStorage, the URL as state, a form field): they ride in `data-state-class`. */
+const isRuntimeCond = (c: Cond) => c.type === "state" || c.type === "localStorage" || c.type === "url-param" || c.type === "form-field";
 
 /**
  * A modifier binding's condition groups → the two halves of its gate. `runtime` is a `test()` expression for
