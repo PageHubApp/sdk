@@ -8,10 +8,11 @@
  * with their `{{item.*}}` tokens kept verbatim (they already match the format).
  *
  *   - connector-backed (`provider` + `collection`):
- *       `{% for item in <provider>.<collection> %}…{% endfor %}`
+ *       `{% for item in collections.<slug> %}` / `{% for item in products %}…{% endfor %}`
  *   - nested scope (iterate into the parent row):
  *       `{% for item in item.<path> %}…{% endfor %}`
- *     with `splitBy` → `{% for item in item.<path> | split: '<delim>' %}`
+ *     (a string is split by `splitBy`; primitives become `{ value, … }` rows)
+ *       → `{% assign rows = item.<path> | data_items: '<delim>' %}{% for item in rows %}`
  *   - empty slot (a child flagged `custom.dataRole: "empty"`): the Liquid
  *     `{% else %}` branch of the loop — the format's "no rows" form.
  *
@@ -22,10 +23,12 @@
  * per-row `data-item-id`) are NOT source: the engine regenerates them when it
  * expands the `{% for %}`, so the authoring form stays clean and 1:1.
  */
+import { liquidizeBindings } from "./bindings";
 import type { SerializedNodes, StaticRenderContext } from "../static/types";
 import { getInlineStyle } from "../../utils/staticHtml";
 import { partitionDataChildIds } from "../../utils/data/emptySlot";
 import { renderNodeToSource, type ToSourceFn } from "./toSource";
+import { interactiveAttrs } from "./actionSource";
 
 /** The subset of `props.dataSource` the loop form reads. */
 interface DataSource {
@@ -37,6 +40,8 @@ interface DataSource {
   filter?: Record<string, unknown>;
   /** Max rows (detail pages carry `limit: 1` for the single matched item). */
   limit?: number;
+  /** A `<collection>.facets` feed: the comma-separated facet keys (narrowing the collection's facetable fields). */
+  facetKeys?: string;
 }
 
 // ── Element helpers (mirrors toSource.ts; replicated so this file stays additive) ──
@@ -54,7 +59,7 @@ const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input"
 function el(tagName: string, attrs: Record<string, string | null | undefined>, children: string): string {
   const a = Object.entries(attrs)
     .filter(([, v]) => v != null && v !== "")
-    .map(([k, v]) => `${k}="${String(v).replace(/"/g, "&quot;")}"`)
+    .map(([k, v]) => `${k}="${liquidizeBindings(String(v)).replace(/"/g, "&quot;")}"`)
     .join(" ");
   const open = `<${tagName}${a ? " " + a : ""}>`;
   return VOID.has(tagName) ? open : `${open}${children}</${tagName}>`;
@@ -114,10 +119,47 @@ function loopExpr(ds: DataSource): string | null {
     const path = ds.scope.replace(/^item\./, "");
     if (!path) return null;
     const base = `item.${path}`;
-    return ds.splitBy ? `${base} | split: ${liquidStr(ds.splitBy)}` : base;
+    // `data_items` splits a string (when `splitBy`) and wraps primitives as `{ value, title, slug, src,
+    // image }` — what the walker's `resolveNestedItems` did. Filters are IGNORED in a `{% for %}`
+    // collection expression, so the caller assigns this to a variable first.
+    return `${base} | data_items${ds.splitBy ? `: ${liquidStr(ds.splitBy)}` : ""}`;
   }
-  if (ds.provider && ds.collection) return `${ds.provider}.${ds.collection}`;
+  if (ds.provider && ds.collection) return globalExpr(ds.provider, ds.collection);
   return null;
+}
+
+/** The Stripe catalog's globals (html-first.md objects table): `products`, `product`, `product_categories`. */
+const STRIPE_GLOBALS: Record<string, string> = {
+  products: "products",
+  product: "product",
+  "products.categories": "product_categories",
+  "products.facets": "product_facets",
+};
+
+/**
+ * The Liquid global a connector feed is read from. The CMS collections are `collections.<slug>`, the
+ * Stripe catalog is the top-level `products` / `product` / `product_categories`; any other provider
+ * (customer, …) keeps `<provider>.<name>`.
+ */
+function globalExpr(provider: string, collection: string): string {
+  if (provider === "collection") return `collections.${collection}`;
+  if (provider === "stripe") return STRIPE_GLOBALS[collection] ?? collection;
+  return `${provider}.${collection}`;
+}
+
+const FACETS_SUFFIX = ".facets";
+
+/**
+ * A `<collection>.facets` feed with named `facetKeys` → the PRODUCT collection, filtered, then folded into
+ * facet rows by the engine's `facets` filter. The live connector applies `dataSource.filter` to the products
+ * the facets are counted over (not to the facet rows), so a filter on a facets feed must run before the
+ * fold. Returns `null` for any other source (or a facets feed with no keys, which stays the precomputed feed).
+ */
+function facetsExpr(ds: DataSource): { base: string; keys: string } | null {
+  if (ds.scope || !ds.provider || !ds.collection?.endsWith(FACETS_SUFFIX)) return null;
+  const keys = String(ds.facetKeys || "").split(",").map((k) => k.trim()).filter(Boolean);
+  if (!keys.length) return null;
+  return { base: globalExpr(ds.provider, ds.collection.slice(0, -FACETS_SUFFIX.length)), keys: keys.join(",") };
 }
 
 /**
@@ -167,6 +209,11 @@ export const dataSource: ToSourceFn = (props, childrenSource, ctx) => {
     class: classString(props),
     style: getInlineStyle(props) || undefined,
     id: props.id || props.anchor || undefined,
+    // Pass-through `props.attrs` (id, data-*, role, aria-*) + handlers, same as `containerSource`.
+    // Without this a `Data` wrapper drops its `attrs.id`, breaking scripts / CSS that target it
+    // (e.g. a carousel's arrows + scrollbar-hide CSS keyed on `#reel-track`). Tag stays the loop
+    // wrapper — a link action never turns the repeater into an `<a>`.
+    ...interactiveAttrs(props, ctx).attrs,
   };
 
   const ds: DataSource | undefined = props.dataSource;
@@ -182,11 +229,15 @@ export const dataSource: ToSourceFn = (props, childrenSource, ctx) => {
   // collection expression — liquid needs it assigned first. Assign the filtered array to a per-node
   // variable, then loop that. `limit` (e.g. the single detail item) is a `{% for %}` parameter.
   const filter = ds!.filter && Object.keys(ds!.filter).length ? ds!.filter : null;
+  const facets = facetsExpr(ds!);
   let source = expr;
   let prefix = "";
-  if (filter) {
+  if (facets || filter || expr.includes(" | ")) {
     const varName = `rows_${String(ctx.renderingNodeId || "x").replace(/[^A-Za-z0-9]/g, "_")}`;
-    prefix = `{% assign ${varName} = ${withFilters(expr, filter)} %}`;
+    const assigned = facets
+      ? `${withFilters(facets.base, filter ?? undefined)} | facets: ${liquidStr(facets.keys)}`
+      : withFilters(expr, filter ?? undefined);
+    prefix = `{% assign ${varName} = ${assigned} %}`;
     source = varName;
   }
   const forOpen = `{% for item in ${source}${typeof ds!.limit === "number" ? ` limit: ${ds!.limit}` : ""} %}`;

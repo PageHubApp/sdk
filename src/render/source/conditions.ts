@@ -47,11 +47,21 @@ function pathOf(c: Cond): string | null {
 
 /** One condition → a Liquid boolean, or null if it can't be evaluated server-side. */
 function termOf(c: Cond): string | null {
+  let path: string | null;
   if (c.type === "auth") {
-    const s = c.value ?? c.operator ?? "";
-    return s === "logged-out" ? "customer == blank" : "customer";
+    // `status` (logged-in / logged-out) is the visitor's session; any other key reads the signed-in customer
+    // (`customer.isMember`, `customer.plans.pro`). A logged-out visitor has no `customer`, so those reads are
+    // blank: `exists` / `equals` fail and `not-exists` / `not-equals` pass — the same outcome the walker gets.
+    const key = String(c.key ?? "");
+    if (!key || key === "status") {
+      const s = key ? String(c.value ?? "") : String(c.value ?? c.operator ?? "");
+      const out = s === "logged-out";
+      return (c.operator === "not-equals" ? !out : out) ? "customer == blank" : "customer";
+    }
+    path = `customer.${key.replace(/^customer\./, "")}`;
+  } else {
+    path = pathOf(c);
   }
-  const path = pathOf(c);
   if (!path) return null;
   const op = c.operator ?? "exists";
   switch (op) {
@@ -143,6 +153,94 @@ const STATE_OP: Record<string, string> = {
   "greater-than": ">",
   "less-than": "<",
 };
+
+// ─── node visibility runtime `state` gate → `data-state-show` ────────────────
+//
+// A node whose `conditionGroups` are ENTIRELY runtime `state` conditions can't
+// be decided server-side, but the runtime's `state` chunk CAN: it sets
+// `el.hidden = !test(data-state-show)` and re-tests on every store change. So
+// instead of emitting the node ungated (the old "report: state" path), the
+// converter stamps the equivalent `test()` expression as `data-state-show` and
+// the chips' `data-state-set` drive it live. Colon-namespaced keys
+// (`store:filter`) are first-class here — `state-store.ts#test` now parses them.
+
+/** A runtime state key `test()` / `data-state-show` can parse: single segment, a
+ *  `local:` / `url:` prefix, or colon-namespaced (`store:filter`, `form:x:fields`). */
+const SHOW_KEY = /^(?:local:|url:)?[\w.-]+(?::[\w.-]+)*$/;
+
+/** One `state` condition → a `test()` atom for `data-state-show`, or null when the
+ *  runtime can't evaluate it (non-state type, unparseable key, `contains`, or a
+ *  value carrying a grammar delimiter `|` / `&` / `:` / `;`). */
+function showTerm(c: Cond): string | null {
+  if (c.type !== "state") return null;
+  const key = String(c.key ?? "");
+  if (!key || !SHOW_KEY.test(key)) return null;
+  // `cart:*` and `form:*` are owned by the cart / form chunks (a `#cart` dialog, `[data-form-state]`
+  // swaps), NOT the state store — nothing ever writes them there, so a `data-state-show` on one would
+  // hide the node forever. Leave those to the report path, as `visibilityShowAttr` already does.
+  // `store:*`, `deck:*` (state-view writes it), `url:` / `local:` and generic keys ARE store-backed.
+  if (/^(?:cart|form):/.test(key)) return null;
+  const op = c.operator ?? "exists";
+  if (op === "exists") return key;
+  if (op === "not-exists") return "!" + key;
+  const sym = STATE_OP[op];
+  if (!sym) return null; // contains / not-contains: `test()` has no such operator
+  const v = String(c.value ?? "");
+  if (v === "" || /[|&:;]/.test(v)) return null;
+  return key + sym + v;
+}
+
+/**
+ * Condition groups → one DNF `test()` expression, or `null` when any condition has no `term` (not a pure
+ * runtime gate). Groups OR together (`||`), an `all` group's terms AND (`&&`), an `any` group's terms each
+ * become their own disjunct — which `state-store.ts#test` evaluates with AND binding tighter.
+ */
+function dnf(groups: Group[] | undefined, term: (c: Cond) => string | null): string | null {
+  if (!Array.isArray(groups) || groups.length === 0) return null;
+  const disjuncts: string[] = [];
+  for (const g of groups) {
+    const conds = g?.conditions ?? [];
+    if (conds.length === 0) return null;
+    const terms: string[] = [];
+    for (const c of conds) {
+      const t = term(c);
+      if (t == null) return null; // an unparseable condition: not a pure runtime gate
+      terms.push(t);
+    }
+    if ((g?.logic ?? "all") === "all") disjuncts.push(terms.join("&&"));
+    else disjuncts.push(...terms);
+  }
+  return disjuncts.length ? disjuncts.join("||") : null;
+}
+
+/** `conditionGroups` → a `data-state-show` expression when EVERY condition is a runtime `state` condition the runtime can evaluate, else `null`. */
+export function stateShowExpr(groups: Group[] | undefined): string | null {
+  return dnf(groups, showTerm);
+}
+
+/** `localStorage` / `url-param` / runtime `state` → a `test()` atom (`ls:key`, `url:key`, `key`); anything else (device, auth…) is null. */
+function gateTerm(c: Cond): string | null {
+  const op = c.operator ?? "exists";
+  const key = String(c.key ?? "");
+  if (c.type === "state") return showTerm(c);
+  if (c.type !== "localStorage" && c.type !== "url-param") return null;
+  if (!/^[\w.-]+$/.test(key)) return null;
+  const k = (c.type === "localStorage" ? "ls:" : "url:") + key;
+  if (op === "exists") return k;
+  if (op === "not-exists") return "!" + k;
+  const sym = STATE_OP[op];
+  const v = String(c.value ?? "");
+  if (!sym || v === "" || /[|&:;]/.test(v)) return null;
+  return k + sym + v;
+}
+
+/**
+ * An ACTION's `conditions` → the `data-show-if` expression the `show` chunk evaluates in the browser, or
+ * `null` when any condition can't be expressed (the action then fires ungated, like the SDK's indeterminate pass).
+ */
+export function actionGateExpr(groups: Group[] | undefined): string | null {
+  return dnf(groups, gateTerm);
+}
 
 /** One `state` condition → a runtime `test()` expression, or null when the
  *  runtime can't evaluate it (non-state type, colon key, `contains`, or a value

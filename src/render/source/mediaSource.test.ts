@@ -68,11 +68,11 @@ test("Embed: a service URL → the generated iframe, kept inline", () => {
   );
 });
 
-test("Map with a MapPoint child → container data-attrs + a hidden point carrier", () => {
+test("Map with a MapPoint child → container data-attrs + an <address> point", () => {
   const point = mapPointSource({ lat: "40.1", lng: "-74.2", title: "Shop" }, "", ctx);
   assert.equal(
     point,
-    `<div data-ph-map-point data-lat="40.1" data-lng="-74.2" data-title="Shop" hidden></div>`
+    `<address data-lat="40.1" data-lng="-74.2"><strong>Shop</strong></address>`
   );
 
   const out = mapSource(
@@ -82,14 +82,14 @@ test("Map with a MapPoint child → container data-attrs + a hidden point carrie
   );
   assert.equal(
     out,
-    `<div class="overflow-hidden h-96 w-full" role="region" aria-label="Map" data-ph-map ` +
-      `data-lat="40.1" data-lng="-74.2" data-zoom="15" data-type="interactive" data-tile-style="osm" data-grayscale="true">` +
-      `<div data-ph-map-point data-lat="40.1" data-lng="-74.2" data-title="Shop" hidden></div>` +
+    `<div class="overflow-hidden h-96 w-full" role="region" aria-label="Map" ` +
+      `data-map="{&quot;lat&quot;:40.1,&quot;lng&quot;:-74.2,&quot;zoom&quot;:15,&quot;grayscale&quot;:true}">` +
+      `<address data-lat="40.1" data-lng="-74.2"><strong>Shop</strong></address>` +
       `</div>`
   );
 });
 
-test("MapPath: a route line → a hidden data-* carrier (path kept verbatim)", () => {
+test("MapPath: a route line → a data-path span (path kept verbatim)", () => {
   const out = mapPathSource(
     { path: "40.1,-74.2\n40.3,-74.4", color: "#f00", weight: 5, label: "Route" },
     "",
@@ -97,11 +97,17 @@ test("MapPath: a route line → a hidden data-* carrier (path kept verbatim)", (
   );
   assert.equal(
     out,
-    `<div data-ph-map-path data-path="40.1,-74.2\n40.3,-74.4" data-color="#f00" data-weight="5" data-dashed="true" data-label="Route" hidden></div>`
+    `<span data-path="40.1,-74.2\n40.3,-74.4" data-color="#f00" data-weight="5" data-dashed="true">Route</span>`
   );
 });
 
 test("Map centers on {{ item.* }} bindings verbatim on a detail page", () => {
   const out = mapSource({ lat: "{{ item.lat }}", lng: "{{ item.lng }}" }, "", ctx);
-  assert.match(out, /data-lat="\{\{ item\.lat \}\}" data-lng="\{\{ item\.lng \}\}"/);
+  assert.match(out, /data-map="\{&quot;lat&quot;:\{\{ item\.lat \}\},&quot;lng&quot;:\{\{ item\.lng \}\}\}"/);
+});
+
+test("Map keeps the author's sizing/positioning classes verbatim and adds no default aspect", () => {
+  const out = mapSource({ className: "absolute inset-0 w-full h-full z-0", lat: "1", lng: "2" }, "", ctx);
+  assert.match(out, /class="overflow-hidden absolute inset-0 w-full h-full z-0"/);
+  assert.doesNotMatch(out, /aspect/);
 });

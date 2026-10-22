@@ -24,6 +24,7 @@
  * JSON attribute (reusing `actionsAttr`, exactly as `Button.toHTML` does), so a
  * runtime that dispatches the chain stays in lockstep with the static walker.
  */
+import { liquidizeBindings } from "./bindings";
 import type { StaticRenderContext } from "../static/types";
 import type { ToSourceFn } from "./toSource";
 import { actionsAttr, getInlineStyle, getPageIndex, handlerAttrs } from "../../utils/staticHtml";
@@ -34,7 +35,8 @@ import {
   migrateActions,
   type NodeAction,
 } from "../../utils/action";
-import { stateClassAttr } from "./conditions";
+import { actionGateExpr, stateClassAttr } from "./conditions";
+import { iconFillWrapperClass } from "../../utils/icons/iconResolver";
 
 // ─── Shared element helpers (mirror toSource.ts `el` / `classString`; those are
 //     module-private there and this file must not edit toSource.ts) ───────────
@@ -50,7 +52,7 @@ function classString(props: Record<string, any>): string | undefined {
 function el(tagName: string, attrs: Record<string, string | null | undefined>, children: string): string {
   const a = Object.entries(attrs)
     .filter(([, v]) => v != null && v !== "")
-    .map(([k, v]) => `${k}="${String(v).replace(/"/g, "&quot;")}"`)
+    .map(([k, v]) => `${k}="${liquidizeBindings(String(v)).replace(/"/g, "&quot;")}"`)
     .join(" ");
   return `<${tagName}${a ? " " + a : ""}>${children}</${tagName}>`;
 }
@@ -74,9 +76,12 @@ function normalizeIcon(raw: any, size: string, gap: string): IconProp {
 function iconSource(icon: IconProp): string {
   if (!icon.value || !icon.value.startsWith("ref-icon:")) return "";
   const name = icon.value.slice("ref-icon:".length);
-  const cls = [icon.size, icon.color || "fill-current", "flex items-center justify-center"]
+  const baseCls = [icon.size, icon.color || "fill-current", "flex items-center justify-center"]
     .filter(Boolean)
     .join(" ");
+  // The `{{ … | icon }}` svg carries only the 1em `ph-icon-svg` base; a sized wrapper stretches it to fill
+  // (mirrors toHTML stamping `ph-icon-fill` on the svg). See iconFillWrapperClass.
+  const cls = [baseCls, iconFillWrapperClass(baseCls)].filter(Boolean).join(" ");
   return el("span", { class: cls, "aria-hidden": "true" }, `{{ ${JSON.stringify(name)} | icon }}`);
 }
 
@@ -93,6 +98,44 @@ function stateTrigger(a: NodeAction): Record<string, string> {
 }
 
 /**
+ * The cart fields of the enclosing repeater row, as the JSON the runtime's `toCartLine` reads, with each value
+ * bound through Liquid (`json` writes a valid JS literal whatever the title holds). A standalone "Buy X" button
+ * (no repeater) carries its product fields on the action itself and ships them literally.
+ */
+function cartItemJson(a: Extract<NodeAction, { type: "add-to-cart" }>): string {
+  const x = a as typeof a & { productId?: string; priceId?: string; title?: string; price?: number; currency?: string; sku?: string };
+  if (x.productId || x.priceId) {
+    return JSON.stringify({
+      id: x.productId || x.priceId,
+      title: x.title || "Item",
+      price: { amount: x.price || 0, formatted: "", currency: x.currency || "usd" },
+      metadata: { priceId: x.priceId || x.productId, sku: x.sku },
+    });
+  }
+  const str = (path: string, filter = "") => `{{ item.${path} | default: ''${filter} | json }}`;
+  return (
+    `{"id":${str("id")},"title":${str("title")},"image":{{ item.image | image_url | json }},` +
+    `"price":{"amount":{{ item.price.amount | default: 0 }},"formatted":${str("price.formatted")},"currency":${str("price.currency")}},` +
+    `"metadata":{"priceId":${str("metadata.priceId")}},` +
+    `"hasMultipleVariants":{{ item.hasMultipleVariants | default: false }},` +
+    `"optionNamesCsv":${str("optionNamesCsv")},"variantMapJson":${str("variantMapJson")}}`
+  );
+}
+
+/**
+ * The state-key template (`pdp:current:axis:%axis%`) the option chips write, read from the `variant-match`
+ * computed binding that produces `variantKey`. The binding sits on a sibling container, found through the tree.
+ */
+function variantAxisTemplate(variantKey: string, ctx?: StaticRenderContext): string | null {
+  for (const n of Object.values(ctx?.nodes ?? {}) as any[]) {
+    for (const b of n?.props?.computedStateBindings ?? []) {
+      if (b?.key === variantKey && b.compute?.type === "variant-match" && typeof b.compute.axisKeyTemplate === "string") return b.compute.axisKeyTemplate;
+    }
+  }
+  return null;
+}
+
+/**
  * One action → the native attributes the site-runtime reads for it. `link` and
  * `download-file` carry the href (handled by `hrefAttrs`, not here) so they add
  * nothing. Types with no native attribute (`manage-subscription`, `agent-send`,
@@ -102,39 +145,58 @@ function stateTrigger(a: NodeAction): Record<string, string> {
  * State separators are `:` (what `state-store.ts#splitKey` parses), not the
  * README's `=`.
  */
-export function actionToAttrs(a: NodeAction): Record<string, string> {
+export function actionToAttrs(a: NodeAction, ctx?: StaticRenderContext): Record<string, string> {
   switch (a.type) {
     case "open-modal":
       // Native invoker: a modal is a <dialog>, opened modally.
       return { commandfor: a.anchor, command: "show-modal" };
     case "show-hide": {
-      // The target is a `[popover]` element (or a `<dialog>` for a modal); the
-      // direction picks the native invoker command the runtime's `invokers`
-      // chunk honors. `tab` (gallery swap) has NO native popover/runtime
-      // mechanism — the new runtime switches tabs through state (a `set-state`
-      // on the thumb + `data-state-show` / `data-state-class` on the panels),
-      // not a per-action command. Emit nothing for it rather than a misleading
-      // popover command.
-      if (a.direction === "tab") return {};
+      // `tab` (gallery swap): the trigger names its panel + group; the `show` chunk hides every
+      // `[data-tab-group=<group>]` panel (the panels carry that attr via passthrough) and shows the target.
+      if (a.direction === "tab") return { "data-tab-target": a.target, "data-tab-of": a.group || a.target };
+      // `load` / `hover` have no native invoker: the `show` chunk reads `data-show-*` (target defaults to
+      // the element itself), gating `load` on the action's conditions (`localStorage not-exists` banners).
+      const trigger = actionTrigger(a);
+      if (trigger === "load" || trigger === "hover") {
+        const out: Record<string, string> = { "data-show-on": trigger, "data-show-target": a.target, "data-show-dir": a.direction || "toggle" };
+        const gate = actionGateExpr(a.conditions);
+        if (gate) out["data-show-if"] = gate;
+        return out;
+      }
+      // Click: the target is a `[popover]` (or a `<dialog>`); the direction picks the native invoker command.
       const command =
         a.direction === "show" ? "show-popover" : a.direction === "hide" ? "hide-popover" : "toggle-popover";
       return { commandfor: a.target, command };
     }
+    // Raw localStorage through the state store's `ls:` keys (the gate of a first-visit banner reads the same key).
+    case "set-local-storage":
+      return a.key && !/[:;]/.test(a.value ?? "") ? { "data-state-set": `ls:${a.key}:${a.value ?? ""}` } : {};
+    case "remove-local-storage":
+      return a.key ? { "data-state-clear": `ls:${a.key}` } : {};
     case "toggle-theme":
       return { "data-theme-toggle": "" };
     case "copy-to-clipboard":
       return { "data-copy": a.text ?? "" };
     case "add-to-cart": {
-      // The cart line id comes from the enclosing repeater/form (the Data pass
-      // binds `data-cart-id`); a static quantity ships here when set.
-      const out: Record<string, string> = { "data-cart": "add" };
+      const out: Record<string, string> = { "data-cart": "add", "data-cart-item": cartItemJson(a) };
       if (typeof a.quantity === "number") out["data-cart-qty"] = String(a.quantity);
+      if (a.quantityField) out["data-cart-qty-field"] = a.quantityField;
+      const axes = a.variantMatchStateKey && variantAxisTemplate(a.variantMatchStateKey, ctx);
+      if (axes) out["data-cart-variant-axes"] = axes;
       return out;
     }
     case "toggle-cart":
       return { "data-cart": "open" };
-    case "cart-checkout":
-      return { "data-cart": "checkout" };
+    case "cart-checkout": {
+      // The runtime has no page index, so the return pages ship resolved to site paths.
+      const out: Record<string, string> = { "data-cart": "checkout" };
+      const resolve = (href?: string) => (href ? actionToHref({ type: "link", href }, getPageIndex(ctx), ctx?.currentPath) : null);
+      const success = resolve(a.successHref);
+      const cancel = resolve(a.cancelHref);
+      if (success) out["data-cart-success"] = success;
+      if (cancel) out["data-cart-cancel"] = cancel;
+      return out;
+    }
     case "set-state":
       return { "data-state-set": `${a.key}:${a.value}`, ...stateTrigger(a) };
     case "toggle-state":
@@ -157,6 +219,15 @@ export function actionToAttrs(a: NodeAction): Record<string, string> {
     default:
       return {};
   }
+}
+
+/** Every action's native attrs merged; repeated `data-state-set` / `data-state-clear` (several `set-local-storage`s) join with `;`. */
+function nativeAttrs(actions: NodeAction[], ctx?: StaticRenderContext): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const a of actions)
+    for (const [k, v] of Object.entries(actionToAttrs(a, ctx)))
+      out[k] = (k === "data-state-set" || k === "data-state-clear") && out[k] ? `${out[k]};${v}` : v;
+  return out;
 }
 
 /**
@@ -193,8 +264,7 @@ export function interactiveAttrs(
   const actions = migrateActions(props);
   if (!actions.length) return { attrs: { ...handlerAttrs(props), ...passthroughAttrs(props) }, linkHref: null };
   const href = hrefAttrs(actions, ctx);
-  const native: Record<string, string> = {};
-  for (const a of actions) Object.assign(native, actionToAttrs(a));
+  const native = nativeAttrs(actions, ctx);
   const chain = actions.length > 1 ? (actionsAttr(props, ctx) as Record<string, string | undefined>) : {};
   return {
     attrs: { ...href, ...native, ...handlerAttrs(props), ...passthroughAttrs(props), ...chain },
@@ -250,8 +320,7 @@ function buildActionSource(
   // Native attributes for every action, merged (distinct action types use
   // distinct keys; a same-key collision keeps the last, and the chain below
   // preserves full order).
-  const native: Record<string, string> = {};
-  for (const a of actions) Object.assign(native, actionToAttrs(a));
+  const native = nativeAttrs(actions, ctx);
 
   const attrs: Record<string, string | null | undefined> = {
     class: fullCls,

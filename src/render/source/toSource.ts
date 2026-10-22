@@ -17,13 +17,16 @@ import { getInlineStyle, ariaAttrs, type StaticRenderContext } from "../../utils
 import { headerSlotProps } from "../../components/Header/headerSlot";
 import { unwrapP } from "../../utils/unwrapP";
 import { STATE_KEY } from "../../utils/state/keys";
+import { withCartItemsDefaults } from "../../utils/cart/cartItemsDefaults";
 import { dataSource } from "./dataSource";
+import { liquidizeBindings, rawRichBindings } from "./bindings";
 import { formSource, formElementSource } from "./formSource";
 import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
 import { buttonSource, linkSource, interactiveAttrs } from "./actionSource";
-import { conditionExpr, stateClassAttr, isRuntimeStateKey } from "./conditions";
+import { conditionExpr, stateClassAttr, isRuntimeStateKey, stateShowExpr } from "./conditions";
 import { normalizeInViewState } from "../../utils/state/inViewTracker";
 import { cssAnimationPresets, toTimingFunction } from "../../utils/animations/animations";
+import { iconFillWrapperClass } from "../../utils/icons/iconResolver";
 
 /** A node → its Liquid+HTML source. `childrenSource` is the already-emitted source of its children. */
 export type ToSourceFn = (props: Record<string, any>, childrenSource: string, ctx: StaticRenderContext) => string;
@@ -45,7 +48,7 @@ const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input"
 function el(tagName: string, attrs: Record<string, string | null | undefined>, children: string): string {
   const a = Object.entries(attrs)
     .filter(([, v]) => v != null && v !== "")
-    .map(([k, v]) => `${k}="${String(v).replace(/"/g, "&quot;")}"`)
+    .map(([k, v]) => `${k}="${liquidizeBindings(String(v)).replace(/"/g, "&quot;")}"`)
     .join(" ");
   const open = `<${tagName}${a ? " " + a : ""}>`;
   return VOID.has(tagName) ? open : `${open}${children}</${tagName}>`;
@@ -64,13 +67,14 @@ function cartBadgeSource(props: Record<string, any>, children: string): string {
       : el(
           "span",
           {
-            class: "hidden flex items-center justify-center absolute pointer-events-none",
+            class: "flex items-center justify-center absolute pointer-events-none",
+            hidden: "hidden",
             style:
               "top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9999px; font-size: 10px; font-weight: 700; background-color: var(--color-primary); color: var(--color-primary-content)",
             "aria-label": "0 items in cart",
             "aria-live": "polite",
             "data-state-text": STATE_KEY.cartCount,
-            "data-state-show-when-truthy": STATE_KEY.cartCount,
+            "data-state-show": `${STATE_KEY.cartCount}>0`,
           },
           "0"
         );
@@ -78,17 +82,75 @@ function cartBadgeSource(props: Record<string, any>, children: string): string {
 }
 
 /**
+ * CartSubtotal → hidden while the cart is empty (`data-state-show="cart:count>0"`), holding the
+ * author's children or, when there are none, the built-in "Subtotal  $X" row the app's CartSubtotal
+ * `toHTML` emits (`components/stripe/cartSubtotalDefaults.ts`; the SDK can't import app code, so the
+ * classes are repeated here). `cart:total` is filled by the cart runtime.
+ */
+function cartSubtotalSource(props: Record<string, any>, children: string): string {
+  const cls = classString(props) || "border-base-300 border-t px-6 py-3";
+  const inner =
+    children.trim() ||
+    el(
+      "div",
+      { class: "flex items-center justify-between" },
+      el("span", { class: "text-base-content/70" }, "Subtotal") +
+        el("span", { class: "text-xl font-bold", "data-state-text": STATE_KEY.cartTotal }, "")
+    );
+  return el("div", { class: cls, hidden: "hidden", "data-state-show": `${STATE_KEY.cartCount}>0` }, inner);
+}
+
+/**
+ * CartItems → the empty host the cart chunk fills with the line items. Every setting ships as a `data-*`
+ * attribute with its default filled in (the `toHTML` contract): the chunk builds the rows from them, and the
+ * class values reach the CSS compiler through the attribute text.
+ */
+function cartItemsSource(props: Record<string, any>): string {
+  const s = withCartItemsDefaults(props);
+  return el(
+    "div",
+    {
+      class: classString(props) || "flex-1 overflow-y-auto px-6 py-4",
+      "data-cart-items": "true",
+      "data-empty-class": s.emptyBoxClass,
+      "data-empty-text": s.emptyText,
+      "data-empty-text-class": s.emptyTextClass,
+      "data-list-class": s.listClassName,
+      "data-row-class": s.rowClassName,
+      "data-image-class": s.imageClassName,
+      "data-body-class": s.bodyClassName,
+      "data-title-class": s.titleClassName,
+      "data-variant-class": s.variantClassName,
+      "data-price-class": s.priceClassName,
+      "data-controls-class": s.controlsClassName,
+      "data-quantity-class": s.quantityClassName,
+      "data-control-button-class": s.controlButtonClassName,
+      "data-remove-button-class": s.removeButtonClassName,
+    },
+    ""
+  );
+}
+
+/**
  * Icon → a `<span>` wrapper (color + centering classes) holding the `{{ 'set/Name' | icon }}` filter
  * (the engine resolves the SVG at render). Mirrors Icon.toHTML: `role="img"` with an aria-label, else
- * `aria-hidden`. A non-`ref-icon:` value (e.g. `ref-image:*`) emits an empty span, as the static walker does.
+ * `aria-hidden`. A `ref-image:<id>` value (an uploaded logo mark) resolves to a CDN `<img>` through the
+ * same `image_url` filter the Image emitter uses, mirroring the React resolver. Any other value is empty.
  */
 function iconNodeSource(props: Record<string, any>): string {
   const color = props.color || "fill-current";
-  const wrapCls = [color, "inline-flex", "items-center", "justify-center", classString(props)].filter(Boolean).join(" ");
+  const baseCls = [color, "inline-flex", "items-center", "justify-center", classString(props)].filter(Boolean).join(" ");
+  // The `{{ … | icon }}` svg carries only the 1em `ph-icon-svg` base; a sized wrapper stretches it to fill
+  // (mirrors toHTML stamping `ph-icon-fill` on the svg). See iconFillWrapperClass.
+  const wrapCls = [baseCls, iconFillWrapperClass(baseCls)].filter(Boolean).join(" ");
   const aria = ariaAttrs(props);
   const hasLabel = typeof aria["aria-label"] === "string" && aria["aria-label"].length > 0;
   const value = typeof props.value === "string" ? props.value : "";
-  const inner = value.startsWith("ref-icon:") ? `{{ ${JSON.stringify(value.slice("ref-icon:".length))} | icon }}` : "";
+  const inner = value.startsWith("ref-icon:")
+    ? `{{ ${JSON.stringify(value.slice("ref-icon:".length))} | icon }}`
+    : value.startsWith("ref-image:")
+      ? `<img class="size-full object-contain" src="${imageSrc(value.slice("ref-image:".length))}" alt="">`
+      : "";
   return el(
     "span",
     { class: wrapCls || undefined, ...aria, role: hasLabel ? "img" : undefined, "aria-hidden": hasLabel ? undefined : "true" },
@@ -132,25 +194,15 @@ function sanitizeTagName(raw: unknown): string {
   return /^[a-z][a-z0-9]*$/.test(clean) ? clean : "div";
 }
 
+export { liquidizeBindings } from "./bindings";
+
 /**
- * Rewrite Craft's one-level `{{ a || fallback }}` binding fallback into Liquid `{{ a | default: '…' }}`
- * (the fallback is a literal string, per the resolver's `walkPath` rule). Anything without `||` passes
- * through untouched, so existing `| filter` pipes and plain `{{ item.x }}` tokens are unaffected. This
- * is the ONE place the stored rich-text binding syntax is translated for the engine.
+ * A `<span data-variable="state.<key>">` whose token liquidizeBindings blanked (nothing server-side can fill a
+ * client state value) gets `data-state-text="<key>"`, which the runtime's state chunk fills and keeps current.
+ * `<key>` may walk into a JSON value (`pdp:current:matching-variant.formatted`).
  */
-export function liquidizeBindings(s: string): string {
-  return s.replace(/\{\{-?\s*([\s\S]*?)\s*-?\}\}/g, (full, expr: string) => {
-    const head = expr.split("|")[0]!.trim();
-    // A client-only state binding (`state.cart:open`, `state.pdp:current:…`) has colons that aren't a
-    // valid Liquid path and resolves to nothing server-side (the walker bakes it empty); blank the
-    // token so the page parses. The surrounding `data-variable` span lets the runtime fill it.
-    if (/[:[]/.test(head)) return "";
-    if (!expr.includes("||")) return full;
-    const i = expr.indexOf("||");
-    const fallback = expr.slice(i + 2).trim();
-    const lit = /^(['"]).*\1$/.test(fallback) ? fallback : "'" + fallback.split("'").join("\\'") + "'";
-    return `{{ ${expr.slice(0, i).trim()} | default: ${lit} }}`;
-  });
+function bindStateText(html: string): string {
+  return html.replace(/<span data-variable="state\.([^"{}\s]+)"([^>]*)><\/span>/g, '<span data-variable="state.$1"$2 data-state-text="$1"></span>');
 }
 
 // ─── interactive state + animation attributes (html-first runtime) ───────────
@@ -197,19 +249,52 @@ function animationAttrs(props: Record<string, any>): { attrs: Record<string, str
 /**
  * Container shown/hidden by a state key → the runtime's `data-state-show` (the
  * `state` chunk sets `hidden = !test(key)`). Colon-namespaced keys the runtime
- * can't parse (`cart:open`, `form:x:fields`) are dropped — cart visibility is
- * the cart chunk's own domain, and form lifecycle is `[data-form-state]`.
+ * can't parse (`form:x:fields`) are dropped — form lifecycle is `[data-form-state]`.
+ * The cart drawer's `cart:open` is kept: the cart chunk writes it.
  */
 function visibilityShowAttr(props: Record<string, any>): Record<string, string> {
   const k = props.visibilityStateKey;
-  if (typeof k !== "string" || !k || !isRuntimeStateKey(k)) return {};
+  // `cart:open` is the one namespaced key the runtime owns: the cart chunk toggles it and the state chunk shows the panel.
+  if (typeof k !== "string" || !k || (k !== STATE_KEY.cartOpen && !isRuntimeStateKey(k))) return {};
   return { "data-state-show": k };
+}
+
+/**
+ * A Container that is a form's `fields` / `loading` / `loaded` slot (`visibilityStateKey: form:<id>:<slot>`)
+ * → the site-runtime form chunk's `data-form-state="idle|sending|sent"`, which swaps those children in place
+ * on submit. The authored `hidden` class becomes the `hidden` ATTRIBUTE: the chunk toggles `el.hidden`, and a
+ * lingering `.hidden` class would keep the sending / thank-you block display:none after it is "shown".
+ */
+const FORM_SLOT_STATE: Record<string, string> = { fields: "idle", loading: "sending", loaded: "sent" };
+function formSlotState(props: Record<string, any>): string | null {
+  const m = /^form:.+:(fields|loading|loaded)$/.exec(typeof props.visibilityStateKey === "string" ? props.visibilityStateKey : "");
+  return m ? FORM_SLOT_STATE[m[1]!]! : null;
 }
 
 /** Container `inViewState` → `data-state-in-view="key=value"` (the `state-view` chunk's scroll-rail group writer). */
 function inViewStateAttr(props: Record<string, any>): Record<string, string> {
   const iv = normalizeInViewState(props.inViewState);
   return iv ? { "data-state-in-view": `${iv.key}=${iv.value}` } : {};
+}
+
+/**
+ * Container `computedStateBindings` with a `variant-match` → the runtime's `data-state-compute`. The variant map and
+ * axes stay `{{ item.* }}` bindings (the engine fills them per repeater row); `data-axis-key` is the chips' key
+ * template (`pdp:current:axis:%axis%`). The state-compute chunk writes the matched variant, as JSON, to `data-compute-key`.
+ * Other compute types have no runtime counterpart and emit nothing.
+ */
+function computeAttrs(props: Record<string, any>): Record<string, string> {
+  const b = (Array.isArray(props.computedStateBindings) ? props.computedStateBindings : []).find((x: any) => x?.compute?.type === "variant-match");
+  if (!b || typeof b.key !== "string") return {};
+  const c = b.compute;
+  const axes = Array.isArray(c.axes) ? c.axes.join(",") : String(c.axes ?? "");
+  return {
+    "data-state-compute": "variant-match",
+    "data-compute-key": b.key,
+    "data-variants": String(c.variantMap ?? ""),
+    "data-axes": axes,
+    "data-axis-key": String(c.axisKeyTemplate ?? ""),
+  };
 }
 
 /** The style attr for a node, merging `getInlineStyle` with any animation override vars. */
@@ -233,7 +318,7 @@ function invokerTarget(props: Record<string, any>, ctx: StaticRenderContext): { 
   const id = domId(props);
   if (!id) return { tag: null, attrs: {} };
   if ((ctx as any).dialogTargets?.has?.(id)) return { tag: "dialog", attrs: {} };
-  if ((ctx as any).popoverTargets?.has?.(id)) return { tag: null, attrs: { popover: "auto" } };
+  if ((ctx as any).popoverTargets?.has?.(id)) return { tag: null, attrs: { popover: "manual" } };
   return { tag: null, attrs: {} };
 }
 
@@ -248,17 +333,44 @@ export function containerSource(props: Record<string, any>, children: string, ct
   // When another node's invoker targets this element's id, make it a real popover / <dialog> target.
   const target = invokerTarget(props, ctx);
   if (target.tag && t === "div") t = target.tag;
+  const isTarget = !!target.tag || "popover" in target.attrs;
+  let cls = classString(props);
+  if (isTarget) {
+    // Authored classes stay verbatim (site CSS keys off `.hidden`); an OPEN popover/dialog beats `.hidden`
+    // through the `:popover-open` / `[open]` rules in theme.css. A handler's `classList.add/remove('hidden')`
+    // becomes the native close/open so it still drives the target.
+    const [shut, open] = target.tag ? ["close()", "showModal()"] : ["hidePopover()", "showPopover()"];
+    for (const k of Object.keys(act)) {
+      if (/^on/.test(k) && typeof act[k] === "string")
+        act[k] = (act[k] as string)
+          .replace(/([\w.$]+)\.classList\.add\((['"])hidden\2\)/g, `$1.${shut}`)
+          .replace(/([\w.$]+)\.classList\.remove\((['"])hidden\2\)/g, `$1.${open}`);
+    }
+  }
+  const slot = formSlotState(props);
+  let startsHidden = false;
+  // A form slot and the cart drawer panel are shown by toggling the `hidden` ATTRIBUTE; a lingering `.hidden` class would stay display:none.
+  if ((slot || props.visibilityStateKey === STATE_KEY.cartOpen) && cls && /(^|\s)hidden(\s|$)/.test(cls)) {
+    const kept = cls.split(/\s+/).filter((c) => c !== "hidden");
+    // The authored `flex hidden` pair collapsed to `hidden` at save time (twMerge); a shown panel stacks its column again.
+    if (props.visibilityStateKey === STATE_KEY.cartOpen && kept.includes("flex-col") && !kept.includes("flex")) kept.push("flex");
+    cls = kept.join(" ") || undefined;
+    startsHidden = true;
+  }
   const anim = animationAttrs(props);
   return el(
     t,
     {
-      class: classString(props),
+      class: cls,
+      ...(slot ? { "data-form-state": slot } : {}),
+      ...(startsHidden ? { hidden: "hidden" } : {}),
       style: styleWithAnim(props, anim.styleVars),
       id: props.id || props.anchor || undefined,
       ...act,
       ...anim.attrs,
       ...visibilityShowAttr(props),
       ...inViewStateAttr(props),
+      ...computeAttrs(props),
       ...stateClassAttr(props, ctx),
       ...target.attrs,
     },
@@ -275,8 +387,8 @@ export const sourceResolver: Record<string, ToSourceFn> = {
   Header: (props, children, ctx) => containerSource(headerSlotProps(props), children, ctx),
   Footer: containerSource,
   CartDrawer: containerSource,
-  CartItems: containerSource,
-  CartSubtotal: containerSource,
+  CartItems: (props) => cartItemsSource(props),
+  CartSubtotal: (props, children) => cartSubtotalSource(props, children),
   CheckoutBanner: containerSource,
   CartBadge: cartBadgeSource,
   Icon: (props) => iconNodeSource(props),
@@ -285,7 +397,11 @@ export const sourceResolver: Record<string, ToSourceFn> = {
     const t = sanitizeTagName(props.tagName);
     // Rich text is kept as-is apart from the one-level `||` fallback → Liquid `default` rewrite; its
     // `{{ item.* }}` / `<span data-variable>` tokens are already the format's binding form.
-    let inner = liquidizeBindings(typeof props.text === "string" ? props.text : "");
+    // The TipTap `<p>` wrapper is dropped (unwrapP) so the text sits directly in the node's own element,
+    // as Text.toHTML does; a `<span><p>…</p></span>` would otherwise render block-level with p margins.
+    const rawText = typeof props.text === "string" ? props.text : "";
+    const wrapped = /^<p>[\s\S]*<\/p>$/.test(rawText.trim());
+    let inner = bindStateText(rawRichBindings(liquidizeBindings(unwrapP(rawText)), (ctx as any).richFields, wrapped));
     // A Text with a link action wraps its inner text in `<a href>` INSIDE the original tag (mirrors
     // Text.toHTML) — the tag keeps its semantics/classes; native/handler attrs ride the outer tag.
     const { attrs, linkHref } = interactiveAttrs(props, ctx);
@@ -298,15 +414,28 @@ export const sourceResolver: Record<string, ToSourceFn> = {
   Image(props, _children, ctx) {
     const cls = classString(props);
     const content = props.src ?? props.content ?? "";
-    const alt = typeof props.alt === "string" ? props.alt : typeof props.title === "string" ? props.title : "";
+    // `alt` can hold a Craft binding (`{{item.title || Product}}`, common on repeater images). Run it
+    // through the same `||`→`default:` rewrite the Text path uses — a raw `||` is a LiquidJS parse error
+    // ("expected filter name") that blanks the WHOLE page, not just the image.
+    const alt = liquidizeBindings(typeof props.alt === "string" ? props.alt : typeof props.title === "string" ? props.title : "");
     // Inline SVG (icon) keeps its markup; a media id becomes the `image_url` filter so the renderer
     // resolves the same CDN URL the static walker baked in.
     if (props.type === "svg" && content) {
       return el("span", { class: cls, role: alt ? undefined : "presentation", "aria-label": alt || undefined }, String(content));
     }
-    const src = imageSrc(String(content));
+    // `videoId` is the media-library id the editor's picker writes (hero backgrounds, logos, gallery).
+    // It wins over `src`/`content` and is always a stored id, so it resolves through the same
+    // `image_url` filter — mirroring Image.toHTML's `if (videoId) cdnId = videoId` branch. Without this,
+    // a library-picked image ships as an `<img>` with no src and renders blank.
+    const src = props.videoId ? imageSrc(String(props.videoId)) : imageSrc(String(content));
     const anim = animationAttrs(props);
-    return el("img", { class: cls, src, alt, style: anim.styleVars || undefined, ...anim.attrs });
+    // A `{{state.*}}` src (the matched variant's image) can't resolve server-side; mirror Image.toHTML and
+    // ship it in `data-state-src` for the runtime's `state-src` directive. Added after `el()` (which blanks
+    // colon-keyed state tokens) and wrapped in `{% raw %}` so Liquid leaves the token for the runtime.
+    const rawSrc = String(content);
+    const img = el("img", { class: cls, src, alt, style: anim.styleVars || undefined, ...anim.attrs });
+    if (props.videoId || !rawSrc.includes("{{state.")) return img;
+    return img.replace(/^<img/, `<img data-state-src="{% raw %}${rawSrc.replace(/"/g, "&quot;")}{% endraw %}"`);
   },
 
   // Lazy ref: dataSource imports the walker from this module, so a direct ref would hit the cyclic
@@ -337,7 +466,10 @@ export function renderNodeToSource(nodeId: string, nodes: SerializedNodes, ctx: 
   const node = nodes[nodeId];
   if (!node || (node as any).hidden) return "";
   const props = node.props || {};
-  const children = (node.nodes || []).map((id: string) => renderNodeToSource(id, nodes, ctx)).join("");
+  // Child ids mirror the static walker: `nodes` first, then Craft `linkedNodes` (a Form's fields / sending /
+  // thank-you slots live there, and nothing else renders them).
+  const childIds = [...(node.nodes || []), ...Object.values((node as any).linkedNodes || {})] as string[];
+  const children = childIds.map((id) => renderNodeToSource(id, nodes, ctx)).join("");
   // Expose the current node + the whole map so an emitter that needs its own children (e.g. Data,
   // which partitions template rows from the empty slot) can re-walk them instead of using the string.
   (ctx as any).nodes = nodes;
@@ -347,14 +479,38 @@ export function renderNodeToSource(nodeId: string, nodes: SerializedNodes, ctx: 
 
   const groups = props.conditionGroups;
   if (Array.isArray(groups) && groups.length > 0) {
+    // A gate that is ENTIRELY runtime `state` conditions can't be decided server-side, but the runtime
+    // can: stamp the equivalent `test()` expression as `data-state-show` on the element itself. The
+    // `state` chunk then sets `hidden = !test(expr)` and re-tests on every store change, so a filter
+    // chip's `data-state-set` drives it live (what the old path reported as "state" and dropped).
+    const show = stateShowExpr(groups);
+    if (show) {
+      const gated = injectAttr(body, "data-state-show", show);
+      if (gated) return gated;
+      // The body root isn't a single plain element (e.g. a Data `{% for %}`): fall through to report.
+    }
     // Client-only / non-flattenable conditions can't be decided at render time: the node is emitted
-    // ungated with the reported note so the migration surfaces them per site.
+    // ungated with the reported note so the migration surfaces them per site. The note is wrapped in a
+    // real HTML comment — a bare `/* report: … */` sits in body position and renders as VISIBLE text
+    // (it's a CSS/JS comment, not HTML). `site.ts` still extracts the `/* report: <reason> */` inside.
     const notes: string[] = [];
     const expr = conditionExpr(groups, (n) => notes.push(n));
     if (expr) return `{% if ${expr} %}${body}{% endif %}`;
-    return `${notes.join("")}${body}`;
+    return `${notes.map((n) => `<!--${n}-->`).join("")}${body}`;
   }
   return body;
+}
+
+/**
+ * Add an attribute to the single plain-element root of an emitted body (`<div …>…</div>` →
+ * `<div data-x="…" …>…</div>`), or `null` when the body doesn't start with one (a `{% … %}` wrapper or
+ * text). Used to stamp a node-level `data-state-show` gate without threading it through every emitter.
+ */
+function injectAttr(body: string, name: string, value: string): string | null {
+  const m = /^(\s*<[a-zA-Z][\w-]*)(?=[\s/>])/.exec(body);
+  if (!m) return null;
+  const esc = value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+  return `${m[1]} ${name}="${esc}"${body.slice(m[1].length)}`;
 }
 
 /** The registered component name for a node (Craft `displayName`/`type.resolvedName`). */

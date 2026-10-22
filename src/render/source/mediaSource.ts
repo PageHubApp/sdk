@@ -10,20 +10,21 @@
  *    filter — `{{ "<id>" | file_url }}` — the twin of `Image`'s `image_url`,
  *    so the engine resolves the same delivery URL the static walker baked in.
  *    An already-resolved URL (`http(s):` / `data:` / leading `/`) passes verbatim.
- *  - **Maps** carry their hydration inputs as individual `data-*` attributes
- *    (`data-lat` / `data-lng` / `data-zoom` / `data-tile-style` / `data-grayscale`)
- *    and the `MapPoint` / `MapPath` children emit their own hidden `data-*`
- *    carriers, instead of `Map.toHTML`'s single `data-ph-map` JSON blob. In
- *    source mode the children are emitted as source (not folded into a parent
- *    JSON config), so the runtime chunk hydrates by reading the container's
- *    attrs plus its `[data-ph-map-point]` / `[data-ph-map-path]` descendants.
- *  - `lat` / `lng` / `zoom` / `path` pass through verbatim, so a detail-page
- *    `{{ item.lat }}` binding survives into the source.
+ *  - **Maps** emit the runtime's lazy-hydration contract (`chunks/map.ts`): the
+ *    container carries a `data-map` JSON config (`{lat,lng,zoom?,grayscale?}`)
+ *    the chunk reads via `JSON.parse`, and the `MapPoint` / `MapPath` children
+ *    are the pins (`[data-lat]`/`[data-lng]`) and routes (`[data-path]`) it
+ *    queries. The children stay visible as a no-JS fallback; the chunk hides
+ *    them itself once Leaflet mounts. Pin title/description and route label are
+ *    TEXT content (the chunk reads `textContent`), not `data-*`.
+ *  - `lat` / `lng` / `zoom` pass through verbatim INSIDE the JSON, and `path`
+ *    verbatim, so a detail-page `{{ item.lat }}` binding survives into the source.
  *
  * Not handled here (per spec "Not in this converter"): Embed `headCode` /
  * `footCode` are layout-global settings the host provides, so they are dropped
  * — the inline embed body is all that maps to a page node.
  */
+import { liquidizeBindings } from "./bindings";
 import type { StaticRenderContext } from "../static/types";
 import type { ToSourceFn } from "./toSource";
 import { isDirectVideoFileUrl, nativeVideoPlaybackFields } from "../../utils/nativeVideo";
@@ -47,7 +48,7 @@ const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input"
 function el(tagName: string, attrs: Record<string, string | boolean | null | undefined>, children = ""): string {
   const a = Object.entries(attrs)
     .filter(([, v]) => v != null && v !== false && v !== "")
-    .map(([k, v]) => (v === true ? k : `${k}="${String(v).replace(/"/g, "&quot;")}"`))
+    .map(([k, v]) => (v === true ? k : `${k}="${liquidizeBindings(String(v)).replace(/"/g, "&quot;")}"`))
     .join(" ");
   const open = `<${tagName}${a ? " " + a : ""}>`;
   return VOID.has(tagName) ? open : `${open}${children}</${tagName}>`;
@@ -163,51 +164,65 @@ export const embedSource: ToSourceFn = (props, _children, _ctx) => {
 
 // ─── Map / MapPoint / MapPath ─────────────────────────────────────────────
 
-/** The Leaflet container + hydration `data-*`; children (points / paths) emitted
- *  as source carriers the runtime chunk reads. Mirrors `Map.toHTML`'s container. */
+/** Minimal text escape for element content — keeps `{{ item.x }}` bindings intact. */
+function escText(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+}
+
+/** The Leaflet container + its `data-map` JSON config; children (pins / routes) are the
+ *  elements the runtime `map` chunk queries. Mirrors `chunks/map.ts`'s contract. OSM is the
+ *  chunk's default tile style (the only one that renders unwatermarked), so no tiles are emitted. */
 export const mapSource: ToSourceFn = (props, children, _ctx) => {
-  const { type = "interactive", tileStyle = "osm", grayscale = false, title = "" } = props;
+  const { grayscale = false, title = "" } = props;
   const cls = `overflow-hidden ${classString(props) || ""}`.trim();
+  // Build the JSON by hand so a detail-page `{{ item.lat }}` binding passes through verbatim
+  // (a JSON.stringify would quote it as a string). Zoom is omitted when unset so the chunk
+  // fits the bounds of the pins instead; grayscale only when on.
+  const parts = [`"lat":${coord(props.lat, "51.505")}`, `"lng":${coord(props.lng, "-0.09")}`];
+  const zoom = coord(props.zoom, "");
+  if (zoom) parts.push(`"zoom":${zoom}`);
+  if (grayscale) parts.push(`"grayscale":true`);
   return el(
     "div",
     {
       class: cls || undefined,
       role: "region",
       "aria-label": title || "Map",
-      "data-ph-map": true,
-      "data-lat": coord(props.lat, "51.505"),
-      "data-lng": coord(props.lng, "-0.09"),
-      "data-zoom": coord(props.zoom, "13"),
-      "data-type": type,
-      "data-tile-style": tileStyle,
-      "data-grayscale": grayscale ? "true" : undefined,
+      "data-map": `{${parts.join(",")}}`,
     },
     children
   );
 };
 
-/** A map pin → a hidden `data-*` carrier (`lat` / `lng` / popup `title` / `description`). */
+/** A map pin → an `<address>` the runtime reads for position (`data-lat`/`data-lng`) and
+ *  popup text (`<strong>` title + description); doubles as a no-JS fallback. */
 export const mapPointSource: ToSourceFn = (props, _children, _ctx) => {
-  return el("div", {
-    "data-ph-map-point": true,
-    "data-lat": coord(props.lat, "0"),
-    "data-lng": coord(props.lng, "0"),
-    "data-title": props.title || undefined,
-    "data-description": props.description || undefined,
-    hidden: true,
-  });
+  const title = typeof props.title === "string" ? props.title.trim() : "";
+  const description = typeof props.description === "string" ? props.description.trim() : "";
+  const inner = [title ? el("strong", {}, escText(title)) : "", escText(description)].filter(Boolean).join(" ");
+  return el(
+    "address",
+    {
+      "data-lat": coord(props.lat, "0"),
+      "data-lng": coord(props.lng, "0"),
+    },
+    inner
+  );
 };
 
-/** A route line → a hidden `data-*` carrier (`path` = `lat,lng` per line, plus style). */
+/** A route line → a `<span>` the runtime reads for its path (`data-path` = `lat,lng` per line,
+ *  plus style `data-*`); the label is visible text (and the chunk's permanent tooltip). */
 export const mapPathSource: ToSourceFn = (props, _children, _ctx) => {
-  return el("div", {
-    "data-ph-map-path": true,
-    "data-path": typeof props.path === "string" ? props.path : undefined,
-    "data-color": props.color || undefined,
-    "data-weight": props.weight != null ? String(props.weight) : undefined,
-    "data-opacity": props.opacity != null ? String(props.opacity) : undefined,
-    "data-dashed": props.dashed === false ? "false" : "true",
-    "data-label": props.label || undefined,
-    hidden: true,
-  });
+  const label = typeof props.label === "string" ? props.label.trim() : "";
+  return el(
+    "span",
+    {
+      "data-path": typeof props.path === "string" ? props.path : undefined,
+      "data-color": props.color || undefined,
+      "data-weight": props.weight != null ? String(props.weight) : undefined,
+      "data-opacity": props.opacity != null ? String(props.opacity) : undefined,
+      "data-dashed": props.dashed === false ? "false" : "true",
+    },
+    escText(label)
+  );
 };

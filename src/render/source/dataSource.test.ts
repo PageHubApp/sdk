@@ -14,7 +14,7 @@ function ctxFor(nodes: Record<string, any>, childIds: string[]): StaticRenderCon
   return { view: "desktop", nodes, repeaterChildIds: childIds } as unknown as StaticRenderContext;
 }
 
-test("connector-backed repeater → {% for item in <provider>.<collection> %}", () => {
+test("connector-backed repeater → {% for item in products %}", () => {
   const nodes = {
     t1: { type: "Text", props: { tagName: "h3", className: "title", text: "{{item.title}}" }, nodes: [] },
   };
@@ -25,8 +25,18 @@ test("connector-backed repeater → {% for item in <provider>.<collection> %}", 
   );
   assert.equal(
     out,
-    `<div class="grid gap-4">{% for item in stripe.products %}<h3 class="title">{{item.title}}</h3>{% endfor %}</div>`
+    `<div class="grid gap-4">{% for item in products %}<h3 class="title">{{item.title}}</h3>{% endfor %}</div>`
   );
+});
+
+test("global names: CMS collections → collections.<slug>, Stripe catalog → products / product_categories", () => {
+  const nodes = { t1: { type: "Text", props: { tagName: "h3", text: "{{item.title}}" }, nodes: [] } };
+  const loop = (provider: string, collection: string) =>
+    dataSource({ dataSource: { provider, collection } }, "", ctxFor(nodes, ["t1"]));
+  assert.match(loop("collection", "services"), /\{% for item in collections\.services %\}/);
+  assert.match(loop("stripe", "products.categories"), /\{% for item in product_categories %\}/);
+  assert.match(loop("stripe", "product"), /\{% for item in product %\}/);
+  assert.match(loop("customer", "orders"), /\{% for item in customer\.orders %\}/);
 });
 
 test("scope repeater iterates into the parent item → {% for item in item.<path> %}", () => {
@@ -40,11 +50,11 @@ test("scope repeater iterates into the parent item → {% for item in item.<path
   );
   assert.equal(
     out,
-    `<ul class="flex">{% for item in item.images %}<span class="chip">{{item.value}}</span>{% endfor %}</ul>`
+    `<ul class="flex">{% assign rows_img = item.images | data_items %}{% for item in rows_img %}<span class="chip">{{item.value}}</span>{% endfor %}</ul>`
   );
 });
 
-test("scope + splitBy comma-string → split filter in the for expression", () => {
+test("scope + splitBy comma-string → data_items assigned before the loop", () => {
   const nodes = {
     sz: { type: "Text", props: { tagName: "span", className: "size", text: "{{item.value}}" }, nodes: [] },
   };
@@ -55,7 +65,7 @@ test("scope + splitBy comma-string → split filter in the for expression", () =
   );
   assert.equal(
     out,
-    `<div>{% for item in item.metadata.sizes | split: ',' %}<span class="size">{{item.value}}</span>{% endfor %}</div>`
+    `<div>{% assign rows_sz = item.metadata.sizes | data_items: ',' %}{% for item in rows_sz %}<span class="size">{{item.value}}</span>{% endfor %}</div>`
   );
 });
 
@@ -76,7 +86,7 @@ test("empty slot (custom.dataRole:'empty') becomes the {% else %} branch", () =>
   );
   assert.equal(
     out,
-    `<div>{% for item in stripe.products %}<h3 class="t">{{item.title}}</h3>{% else %}<p class="empty">No products yet</p>{% endfor %}</div>`
+    `<div>{% for item in products %}<h3 class="t">{{item.title}}</h3>{% else %}<p class="empty">No products yet</p>{% endfor %}</div>`
   );
 });
 
@@ -87,4 +97,14 @@ test("no dataSource → plain Container-style pass-through (no loop)", () => {
     { view: "desktop" } as unknown as StaticRenderContext
   );
   assert.equal(out, `<section class="wrap"><p>static child</p></section>`);
+});
+
+test("a facets feed with facetKeys filters the PRODUCTS, then folds them with the facets filter", () => {
+  const nodes = { t: { type: "Text", props: { tagName: "span", text: "{{item.title}}" }, nodes: [] } };
+  const out = dataSource(
+    { dataSource: { provider: "stripe", collection: "products.facets", facetKeys: "colors,fit", filter: { categories: "apparel" } } },
+    "",
+    ctxFor(nodes, ["t"])
+  );
+  assert.match(out, /\{% assign rows_t = products \| where: 'categories', 'apparel' \| facets: 'colors,fit' %\}\{% for item in rows_t %\}/);
 });

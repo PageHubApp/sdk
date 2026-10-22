@@ -24,9 +24,34 @@ import { generateDesignSystemCSSVariables } from "../../utils/design/designSyste
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { googleFontFamilyParam } from "../../utils/fonts/familyParam";
 import { componentSlug, renderNodeToSource } from "./toSource";
+import { toHTML as rootWrapperHTML } from "../../components/Background/Background.toHTML";
 
 /** The Google Fonts stylesheet href for a site's typography, or "" when it uses system fonts. */
-function fontsHref(theme: { typography?: any[]; styleGuide?: Record<string, any> }): string {
+const UTILITY_WEIGHTS: Record<string, string> = { "font-light": "300", "font-normal": "400", "font-medium": "500", "font-semibold": "600", "font-bold": "700" };
+
+/**
+ * The `font-*` weight utilities the tree uses, split by the family they render in: `font-heading` nodes use the
+ * Heading token's family, everything else the Body token's. The theme's typography tokens only name ONE weight
+ * per family, so without these a `font-semibold` paragraph has no 600 face and the browser fakes it.
+ */
+function utilityWeights(nodes: SerializedNodes | undefined): { heading: Set<string>; body: Set<string> } {
+  const out = { heading: new Set<string>(), body: new Set<string>() };
+  for (const n of Object.values(nodes ?? {}) as SerializedNode[]) {
+    const cls = (n as any)?.props?.className;
+    if (typeof cls !== "string") continue;
+    const toks = cls.split(/\s+/).map((t) => t.replace(/^.*:/, ""));
+    const target = toks.includes("font-heading") ? out.heading : out.body;
+    for (const t of toks) if (UTILITY_WEIGHTS[t]) target.add(UTILITY_WEIGHTS[t]);
+  }
+  return out;
+}
+
+/**
+ * `supported` maps a family to the weights Google serves for it. Utility weights are only requested when the family
+ * is listed and has them: Google answers 400 for the WHOLE css2 request if any one weight is missing, which would
+ * break every font on the site. Without metadata no utility weight is added (token weights are always kept).
+ */
+function fontsHref(theme: { typography?: any[]; styleGuide?: Record<string, any> }, nodes?: SerializedNodes, supported?: Record<string, readonly string[]>): string {
   const families = new Map<string, Set<string>>();
   const add = (family?: unknown, weight?: unknown) => {
     const f = typeof family === "string" ? family.trim() : "";
@@ -39,6 +64,16 @@ function fontsHref(theme: { typography?: any[]; styleGuide?: Record<string, any>
   for (const t of theme.typography ?? []) add(t?.fontFamily, t?.fontWeight);
   for (const [k, v] of Object.entries(theme.styleGuide ?? {})) if (/FontFamily$/.test(k)) add(v);
   if (!families.size) return "";
+  const used = utilityWeights(nodes);
+  const famOf = (token: string, key: string) => {
+    const t = (theme.typography ?? []).find((x) => x?.name === token)?.fontFamily ?? theme.styleGuide?.[key];
+    return typeof t === "string" ? t.trim() : "";
+  };
+  for (const [token, key, ws] of [["Heading", "headingFontFamily", used.heading], ["Body", "bodyFontFamily", used.body]] as const) {
+    const set = families.get(famOf(token, key));
+    const fam = famOf(token, key);
+    if (set) for (const w of ws) if (supported?.[fam]?.includes(w)) set.add(w);
+  }
   const params = [...families].map(([f, w]) => googleFontFamilyParam(f, w.size ? [...w] : ["400", "700"])).join("&");
   return `https://fonts.googleapis.com/css2?${params}&display=swap`;
 }
@@ -138,7 +173,7 @@ function metaFor(node: SerializedNode): { title: string; meta: PageMeta } {
   if (seo.description || props.description) meta.description = String(seo.description || props.description);
   if (seo.canonical) meta.canonical = String(seo.canonical);
   if (seo.ogImage || seo.image) meta.image = String(seo.ogImage || seo.image);
-  if (seo.jsonLd) meta.jsonLd = String(seo.jsonLd);
+  if (seo.jsonLd) meta.jsonLd = typeof seo.jsonLd === "string" ? seo.jsonLd : JSON.stringify(seo.jsonLd);
   else if (Array.isArray(seo.schema) && seo.schema.length) meta.jsonLd = JSON.stringify(seo.schema.length === 1 ? seo.schema[0] : seo.schema);
   return { title, meta };
 }
@@ -164,8 +199,13 @@ const PAGE_SLOT = "\u0000PAGE\u0000";
  * (the editor wraps the fragment for the canvas; publish wraps it with a `<head>` built from the page
  * record's SEO meta). This is the shape the editor and the engine's `renderPage` both expect.
  */
-function pageDocument(bodyParts: string[]): string {
-  return bodyParts.filter(Boolean).join("\n");
+function pageDocument(bodyParts: string[], rootProps: Record<string, any>, ctx: StaticRenderContext): string {
+  // Live renders every page inside ROOT's `<main class=… style=…>` (Background.toHTML) — chrome, page
+  // body and inject all sit within it. That wrapper carries the site's body font / bg / text colour,
+  // so the bundle emits the same element, from the same function, around the whole sequence.
+  const MARK = "\u0000MAIN\u0000";
+  const [open = "<main>", close = "</main>"] = rootWrapperHTML(rootProps, MARK, { ...ctx, classes: ctx.classes ?? new Set() }).split(MARK);
+  return [open, ...bodyParts.filter(Boolean), close].join("\n");
 }
 
 /** The source that goes inside a lifted partial (a `type:"component"` wrapper contributes its children). */
@@ -220,7 +260,7 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
   for (const node of Object.values(nodes)) {
     for (const a of migrateActions((node as any)?.props || {})) {
       if (a.type === "open-modal" && (a as any).anchor) dialogTargets.add(String((a as any).anchor));
-      else if (a.type === "show-hide" && (a as any).target && (a as any).direction !== "tab") popoverTargets.add(String((a as any).target));
+      else if (a.type === "show-hide" && (a as any).target && (a as any).direction !== "tab" && (a as any).trigger !== "hover") popoverTargets.add(String((a as any).target));
     }
   }
   (ctx as any).popoverTargets = popoverTargets;
@@ -232,6 +272,9 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
   // Lift a ROOT-level chrome node (header / footer / loose site-wide block) into a uniquely-named
   // partial and return the `{% render %}` call for it. Every page renders these in ROOT child order,
   // so a cart drawer or checkout banner that sits beside the pages appears on all of them.
+  // Which ROOT chrome each sequence entry is, so a page's `hideHeader` / `hideFooter` / `hideChrome` can drop
+  // it (the walker's `filterChromeChildren`). Inject partials are document-level and never suppressed.
+  const chromeKind = new Map<string, "header" | "footer" | "chrome">();
   const liftChrome = (base: string, node: SerializedNode, id: string): string => {
     let slug = slugify(base);
     for (let i = 2; usedSlugs.has(slug); i++) slug = `${slugify(base)}-${i}`;
@@ -239,7 +282,9 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     files[`partials/${slug}.liquid`] = partialBody(node, id, nodes, ctx);
     // Bare render: the engine exposes site/page/company/… as globals, which `{% render %}` partials
     // inherit, so a chrome partial's `{{ company.name }}` resolves without forwarding args here.
-    return `{% render '${slug}' %}`;
+    const call = `{% render '${slug}' %}`;
+    chromeKind.set(call, classify(node) === "header" ? "header" : classify(node) === "footer" ? "footer" : "chrome");
+    return call;
   };
 
   // One ordered pass: build the shared chrome `sequence` (with ONE page slot) and collect page ids.
@@ -267,11 +312,49 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     placeSlot();
   }
 
+  // Author code is verbatim: `{% raw %}` keeps Liquid (and the editor's parser) off its `{{` / `}}` / `{%`.
+  const rawLiquid = (code: string) => `{% raw %}${code}{% endraw %}`;
+  // Site-wide head/footer code (`ROOT.props.inject`) — author CSS/JS that site features depend on
+  // (facade styling + its tap-to-load script, scrollbar hiding, mobile-nav toggle, etc.). Lifted into
+  // partials and rendered on EVERY page: head styles first, footer scripts last. Without this the
+  // custom-section markup survives but its styling and interactivity are silently dropped, so the
+  // feature looks broken (an unstyled, inert placeholder) in both the canvas and the real render.
+  const inject = siteProps.inject && typeof siteProps.inject === "object" ? siteProps.inject : {};
+  const injectHead = typeof inject.head === "string" ? inject.head.trim() : "";
+  const injectFooter = typeof inject.footer === "string" ? inject.footer.trim() : "";
+  if (injectHead) {
+    let slug = "inject-head";
+    for (let i = 2; usedSlugs.has(slug); i++) slug = `inject-head-${i}`;
+    usedSlugs.add(slug);
+    files[`partials/${slug}.liquid`] = rawLiquid(injectHead);
+    sequence.unshift(`{% render '${slug}' %}`);
+  }
+  if (injectFooter) {
+    let slug = "inject-footer";
+    for (let i = 2; usedSlugs.has(slug); i++) slug = `inject-footer-${i}`;
+    usedSlugs.add(slug);
+    files[`partials/${slug}.liquid`] = rawLiquid(injectFooter);
+    sequence.push(`{% render '${slug}' %}`);
+  }
+
   const emitPage = (bodyIds: string[], node: SerializedNode, nodeId: string) => {
-    const body = bodyIds.map((id) => renderNodeToSource(id, nodes, ctx)).join("\n");
+    const rendered = bodyIds.map((id) => renderNodeToSource(id, nodes, ctx)).join("\n");
+    // Per-page `headCode` / `footerCode` (raw author HTML scoped to this one page — e.g. the `<style>`
+    // that paints a `.hero-bg` background-image) ride with the page body, verbatim. A page file is a
+    // body fragment, so the head code lands at the top of it; without this the page's own CSS is lost.
+    const pp = (node.props || {}) as any;
+    const pageHead = typeof pp.headCode === "string" ? pp.headCode.trim() : "";
+    const pageFoot = typeof pp.footerCode === "string" ? pp.footerCode.trim() : "";
+    const body = [pageHead && rawLiquid(pageHead), rendered, pageFoot && rawLiquid(pageFoot)].filter(Boolean).join("\n");
     const { url, path } = routeFor(node, nodeId);
     const { title, meta } = metaFor(node);
-    const source = pageDocument(sequence.map((s) => (s === PAGE_SLOT ? body : s)));
+    const visible = sequence.filter((s) => {
+      const kind = chromeKind.get(s);
+      if (!kind) return true;
+      if (pp.hideChrome === true) return false;
+      return !((kind === "header" && pp.hideHeader === true) || (kind === "footer" && pp.hideFooter === true));
+    });
+    const source = pageDocument(visible.map((s) => (s === PAGE_SLOT ? body : s)), siteProps, ctx);
     files[path] = source;
     pages.push({ path, url, title, source, meta, policy: policyFor(node.props || {}) });
   };
@@ -306,7 +389,7 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
 
   const theme = resolveTheme(siteProps);
   const css = generateDesignSystemCSSVariables(theme, ":root");
-  const fonts = fontsHref(theme);
+  const fonts = fontsHref(theme, nodes, (ctx as any).fontWeights);
 
   return { files, site, pages, css, fonts, notes: [...notes] };
 }

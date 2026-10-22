@@ -53,7 +53,25 @@ test("add-to-cart button → data-cart native attrs", () => {
     "",
     ctx,
   );
-  assert.equal(src, '<button class="btn" data-cart="add" data-cart-qty="2" type="button">Add to cart</button>');
+  assert.match(src, /^<button class="btn" data-cart="add" data-cart-item="/);
+  assert.match(src, /data-cart-qty="2" type="button">Add to cart<\/button>$/);
+  // The row's cart fields ride as Liquid-bound JSON (`json` writes valid literals for any title).
+  assert.ok(src.includes("&quot;title&quot;:{{ item.title | default: '' | json }}"));
+  assert.ok(src.includes("&quot;priceId&quot;:{{ item.metadata.priceId | default: '' | json }}"));
+  assert.ok(src.includes("&quot;amount&quot;:{{ item.price.amount | default: 0 }}"));
+});
+
+test("add-to-cart: quantity field + the variant axis template from the computed binding", () => {
+  const nodes = { A: { props: { computedStateBindings: [{ key: "pdp:v", compute: { type: "variant-match", axisKeyTemplate: "pdp:axis:%axis%" } }] } } };
+  const attrs = actionToAttrs({ type: "add-to-cart", quantityField: "quantity", variantMatchStateKey: "pdp:v" } as any, { ...ctx, nodes } as any);
+  assert.equal(attrs["data-cart-qty-field"], "quantity");
+  assert.equal(attrs["data-cart-variant-axes"], "pdp:axis:%axis%");
+  assert.equal(actionToAttrs({ type: "add-to-cart", variantMatchStateKey: "pdp:v" } as any)["data-cart-variant-axes"], undefined);
+});
+
+test("add-to-cart: a standalone product ships its fields literally", () => {
+  const attrs = actionToAttrs({ type: "add-to-cart", priceId: "price_1", title: "Mug", price: 900 } as any);
+  assert.deepEqual(JSON.parse(attrs["data-cart-item"]!), { id: "price_1", title: "Mug", price: { amount: 900, formatted: "", currency: "usd" }, metadata: { priceId: "price_1" } });
 });
 
 test("link with trailing icon → Liquid icon filter, text before span", () => {
@@ -69,7 +87,7 @@ test("link with trailing icon → Liquid icon filter, text before span", () => {
   assert.equal(
     src,
     '<a class="inline-flex flex-row items-center gap-1.5" href="/about">Learn more' +
-      '<span class="w-4 h-4 fill-current flex items-center justify-center" aria-hidden="true">' +
+      '<span class="w-4 h-4 fill-current flex items-center justify-center [&>svg]:w-full [&>svg]:h-full" aria-hidden="true">' +
       '{{ "tb/TbArrowRight" | icon }}</span></a>',
   );
 });
@@ -95,15 +113,34 @@ test("multi-action chain → stacked native attrs + full data-ph-actions chain",
   assert.ok(src.endsWith(">Copy & go</a>"));
 });
 
-test("show-hide direction:tab → NO native command (no runtime tab mechanism)", () => {
+test("show-hide direction:tab → data-tab-target + data-tab-of (no native command)", () => {
   const src = buttonSource(
     { text: "Slide 1", action: [{ type: "show-hide", target: "slide-1", direction: "tab", group: "gallery" }] },
     "",
     ctx,
   );
-  assert.equal(src, '<button class="cursor-pointer" type="button">Slide 1</button>');
+  assert.equal(src, '<button class="cursor-pointer" data-tab-target="slide-1" data-tab-of="gallery" type="button">Slide 1</button>');
   assert.ok(!src.includes("commandfor"));
-  assert.ok(!src.includes("popover"));
+});
+
+test("show-hide trigger:load → data-show-* with the localStorage gate as a test() expression", () => {
+  const a = {
+    type: "show-hide", target: "cookie", direction: "show", trigger: "load",
+    conditions: [{ logic: "all", conditions: [{ type: "localStorage", key: "ph-cookie", operator: "not-exists", value: "" }] }],
+  } as any;
+  assert.deepEqual(actionToAttrs(a), { "data-show-on": "load", "data-show-target": "cookie", "data-show-dir": "show", "data-show-if": "!ls:ph-cookie" });
+});
+
+test("show-hide trigger:hover → data-show-on=hover, no commandfor", () => {
+  const out = actionToAttrs({ type: "show-hide", target: "menu", direction: "show", trigger: "hover" } as any);
+  assert.deepEqual(out, { "data-show-on": "hover", "data-show-target": "menu", "data-show-dir": "show" });
+});
+
+test("set/remove-local-storage → raw ls: state keys; several sets join with ;", () => {
+  assert.deepEqual(actionToAttrs({ type: "set-local-storage", key: "k", value: "1" } as any), { "data-state-set": "ls:k:1" });
+  assert.deepEqual(actionToAttrs({ type: "remove-local-storage", key: "k" } as any), { "data-state-clear": "ls:k" });
+  const src = buttonSource({ text: "x", action: [{ type: "set-local-storage", key: "a", value: "1" }, { type: "set-local-storage", key: "b", value: "2" }] }, "", ctx);
+  assert.ok(src.includes('data-state-set="ls:a:1;ls:b:2"'));
 });
 
 test("Button stateModifiers (tab-active) → data-state-class resolved from Button registry", () => {
@@ -139,4 +176,9 @@ test("actionToAttrs: state actions use ':' separator (splitKey), trigger + bound
   assert.deepEqual(actionToAttrs({ type: "toggle-theme" }), { "data-theme-toggle": "" });
   assert.deepEqual(actionToAttrs({ type: "toggle-cart" }), { "data-cart": "open" });
   assert.deepEqual(actionToAttrs({ type: "cart-checkout" }), { "data-cart": "checkout" });
+  assert.deepEqual(actionToAttrs({ type: "cart-checkout", successHref: "/thanks", cancelHref: "/shop" }, ctx as any), {
+    "data-cart": "checkout",
+    "data-cart-success": "/thanks",
+    "data-cart-cancel": "/shop",
+  });
 });

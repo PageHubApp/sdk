@@ -53,7 +53,10 @@ test("each page is a body fragment (no document shell — host wraps it)", () =>
   const b = convertSite("ROOT", MULTI, ctx);
   const home = b.files["index.liquid"];
   assert.doesNotMatch(home, /<!DOCTYPE|<html|<head>|<body>/);
-  assert.match(home, /^{% render 'header' %}/); // chrome renders inline, in ROOT order
+  assert.match(home, /^<main\b[^>]*>/); // page sequence is wrapped in the live root wrapper
+  assert.match(home, /<\/main>$/);
+  // chrome renders inline inside <main>, in ROOT order: header, page, footer
+  assert.match(home, /^<main\b[^>]*>\s*{% render 'header' %}[\s\S]*<h1[^>]*>[\s\S]*{% render 'footer' %}\s*<\/main>$/);
   assert.match(home, /<h1[^>]*>Plants for slow rooms<\/h1>/);
   assert.match(home, /{% render 'footer' %}/);
   assert.equal(b.files["partials/head.liquid"], undefined); // SEO lives on the page record, not a head file
@@ -87,4 +90,30 @@ test("single-page site (no page nodes) becomes index.liquid from ROOT body", () 
   assert.equal(b.pages[0].url, "/");
   assert.equal(b.pages[0].path, "index.liquid");
   assert.match(b.files["index.liquid"], /<section><h1>Hi<\/h1><\/section>/);
+});
+
+test("a page's hideChrome / hideHeader / hideFooter drop the matching chrome partials", () => {
+  const nodes: any = JSON.parse(JSON.stringify(MULTI));
+  nodes.home.props.hideChrome = true;
+  nodes.shop.props.hideFooter = true;
+  const b = convertSite("ROOT", nodes, ctx);
+  assert.doesNotMatch(b.files["index.liquid"], /{% render 'header' %}|{% render 'footer' %}/);
+  assert.match(b.files["shop/[handle].liquid"], /{% render 'header' %}/);
+  assert.doesNotMatch(b.files["shop/[handle].liquid"], /{% render 'footer' %}/);
+});
+
+test("convertSite only requests utility font weights the family supports", () => {
+  const nodes: any = {
+    ROOT: {
+      type: { resolvedName: "Container" },
+      props: { theme: { typography: [{ name: "Heading", fontFamily: "Alpha", fontWeight: "700" }, { name: "Body", fontFamily: "Beta", fontWeight: "400" }] } },
+      nodes: ["t"],
+      parent: null,
+    },
+    t: { type: { resolvedName: "Text" }, props: { tagName: "p", className: "font-semibold font-light", text: "x" }, nodes: [], parent: "ROOT" },
+  };
+  const fonts = (fontWeights?: any) => convertSite("ROOT", nodes, { ...ctx, fontWeights }).fonts;
+  assert.match(fonts({ Beta: ["300", "400", "700"] }), /family=Beta:wght@300;400(&|$)/);
+  assert.doesNotMatch(fonts({ Beta: ["300", "400", "700"] }), /600/);
+  assert.doesNotMatch(fonts(), /300|600/);
 });

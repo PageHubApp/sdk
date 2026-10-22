@@ -104,7 +104,7 @@ function headTags(pageProps: Record<string, any>, siteProps: Record<string, any>
   if (description) lines.push(`    <meta name="description" content="${escapeHTML(String(description))}" />`);
   if (canonical) lines.push(`    <link rel="canonical" href="${escapeHTML(String(canonical))}" />`);
   if (seo.jsonLd) {
-    lines.push(`    <script type="application/ld+json">${String(seo.jsonLd)}</script>`);
+    lines.push(`    <script type="application/ld+json">${typeof seo.jsonLd === "string" ? seo.jsonLd : JSON.stringify(seo.jsonLd)}</script>`);
   } else if (Array.isArray(seo.schema) && seo.schema.length) {
     for (const s of seo.schema) {
       lines.push(`    <script type="application/ld+json">${JSON.stringify(s)}</script>`);

@@ -15,6 +15,7 @@
  * passes straight through to Liquid (never interpolated, matching the Container /
  * Text / Image emitters in `toSource.ts`).
  */
+import { liquidizeBindings } from "./bindings";
 import type { ToSourceFn } from "./toSource";
 import { escapeHTML } from "../../utils/staticHtml";
 import { formAutocomplete } from "../../utils/formAutocomplete";
@@ -31,7 +32,7 @@ function attrsStr(attrs: Record<string, AttrVal>): string {
   for (const [k, v] of Object.entries(attrs)) {
     if (v == null || v === false) continue;
     if (v === true) parts.push(k);
-    else parts.push(`${k}="${String(v).replace(/"/g, "&quot;")}"`);
+    else parts.push(`${k}="${liquidizeBindings(String(v)).replace(/"/g, "&quot;")}"`);
   }
   return parts.length ? " " + parts.join(" ") : "";
 }

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { conditionExpr, stateClassAttr, isRuntimeStateKey } from "./conditions";
+import { conditionExpr, stateClassAttr, isRuntimeStateKey, stateShowExpr } from "./conditions";
 
 test("single `all` group → conditions joined with `and`", () => {
   const groups = [
@@ -75,6 +75,30 @@ test("runtime state key → null + report; url-bridged state maps", () => {
     { logic: "all", conditions: [{ type: "state", key: "url:page", operator: "equals", value: "2" }] },
   ] as any;
   assert.equal(conditionExpr(urlState), "request.query.page == 2");
+});
+
+test("stateShowExpr: a namespaced runtime state gate → a data-state-show test expr", () => {
+  // The marcusmares "Solution Store" card: one `any` group (not-exists OR =all OR =people).
+  const card = [
+    {
+      logic: "any",
+      conditions: [
+        { type: "state", key: "store:filter", operator: "not-exists", value: "" },
+        { type: "state", key: "store:filter", operator: "equals", value: "all" },
+        { type: "state", key: "store:filter", operator: "equals", value: "people" },
+      ],
+    },
+  ] as any;
+  assert.equal(stateShowExpr(card), "!store:filter||store:filter=all||store:filter=people");
+  // An `all` group ANDs its terms (DNF, AND binds tighter).
+  const both = [
+    { logic: "all", conditions: [{ type: "state", key: "a", operator: "exists" }, { type: "state", key: "b", operator: "not-exists" }] },
+  ] as any;
+  assert.equal(stateShowExpr(both), "a&&!b");
+  // Not a pure state gate (a server condition present) → null, so conditionExpr handles it.
+  assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "url-param", key: "x", operator: "exists" }] }] as any), null);
+  // cart:* / form:* are chunk-owned, not store-backed → null (left to the report path).
+  assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "state", key: "cart:open", operator: "equals", value: "shown" }] }] as any), null);
 });
 
 test("mixed and/or (can't flatten) → null + mixed-and-or report", () => {
@@ -184,4 +208,13 @@ test("stateModifiers: ROOT override modifier class resolves", () => {
     ),
     { "data-state-class": "sel:ring-2 ring-primary" },
   );
+});
+
+test("auth customer.* keys read the customer; a logged-out visitor passes the negatives", () => {
+  const one = (c: any) => conditionExpr([{ logic: "all", conditions: [{ type: "auth", ...c }] }]);
+  assert.equal(one({ key: "customer.isMember", operator: "equals", value: "true" }), "customer.isMember == true");
+  assert.equal(one({ key: "customer.isMember", operator: "not-equals", value: "true" }), "customer.isMember != true");
+  assert.equal(one({ key: "customer.plans.pro", operator: "not-exists", value: "" }), "customer.plans.pro == blank");
+  assert.equal(one({ key: "customer.plans.pro", operator: "exists", value: "" }), "customer.plans.pro != blank");
+  assert.equal(one({ key: "status", operator: "not-equals", value: "logged-out" }), "customer");
 });
