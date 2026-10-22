@@ -17,7 +17,7 @@
  * on each is the non-HTML config (home page, 404, auth gate, redirect) a host record owns.
  */
 import type { SerializedNode, SerializedNodes } from "../static/types";
-import type { StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
 import { pageNodeSlug } from "../../utils/page/pageSlug";
 import { migrateActions } from "../../utils/action";
 import { generateDesignSystemCSSVariables } from "../../utils/design/designSystemVars";
@@ -153,7 +153,7 @@ function classify(node: SerializedNode): Kind {
  * `/` from `index.liquid`; `pathPattern` is the dynamic tail (`:handle`) appended to the URL and
  * turned into a `[handle]` file segment so the folder reads like file-based routing.
  */
-function routeFor(node: SerializedNode, nodeId: string): { url: string; path: string } {
+function routeFor(node: Pick<SerializedNode, "props">, nodeId: string): { url: string; path: string } {
   const props = node.props || {};
   if (props.isHomePage) return { url: "/", path: "index.liquid" };
   const slug = slugify(pageNodeSlug(node, nodeId));
@@ -165,7 +165,7 @@ function routeFor(node: SerializedNode, nodeId: string): { url: string; path: st
 }
 
 /** Flatten page SEO props into the `page.<key>` meta the shared head partial reads. */
-function metaFor(node: SerializedNode): { title: string; meta: PageMeta } {
+function metaFor(node: Pick<SerializedNode, "props">): { title: string; meta: PageMeta } {
   const props = node.props || {};
   const seo = { ...(props.seo || {}) };
   const title = String(seo.title || (node as any).custom?.displayName || props.title || props.name || "");
@@ -337,7 +337,7 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     sequence.push(`{% render '${slug}' %}`);
   }
 
-  const emitPage = (bodyIds: string[], node: SerializedNode, nodeId: string) => {
+  const emitPage = (bodyIds: string[], node: Pick<SerializedNode, "props">, nodeId: string) => {
     const rendered = bodyIds.map((id) => renderNodeToSource(id, nodes, ctx)).join("\n");
     // Per-page `headCode` / `footerCode` (raw author HTML scoped to this one page — e.g. the `<style>`
     // that paints a `.hero-bg` background-image) ride with the page body, verbatim. A page file is a
@@ -361,7 +361,7 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
 
   if (pageIds.length === 0) {
     // Single-page site: the loose body is the home page. SEO comes from ROOT props.
-    emitPage(looseIds, { props: { ...siteProps, isHomePage: true } } as SerializedNode, "ROOT");
+    emitPage(looseIds, { props: { ...siteProps, isHomePage: true } }, "ROOT");
   } else {
     for (const id of pageIds) emitPage([id], nodes[id]!, id);
   }

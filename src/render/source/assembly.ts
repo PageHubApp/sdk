@@ -11,7 +11,7 @@
  * output is a faithful page `.liquid`. See docs/strategy/html-first-converter.md.
  */
 import type { SerializedNode, SerializedNodes } from "../static/types";
-import type { StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
 import { escapeHTML } from "../../utils/staticHtml";
 import { componentSlug, renderNodeToSource } from "./toSource";
 

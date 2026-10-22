@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { dataSource } from "./dataSource";
-import type { StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
 
 /**
  * Build a ctx the way the walker sets one up around a `Data` node: `nodes` is

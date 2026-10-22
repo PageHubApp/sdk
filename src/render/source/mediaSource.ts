@@ -25,7 +25,7 @@
  * — the inline embed body is all that maps to a page node.
  */
 import { liquidizeBindings } from "./bindings";
-import type { StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
 import type { ToSourceFn } from "./toSource";
 import { isDirectVideoFileUrl, nativeVideoPlaybackFields } from "../../utils/nativeVideo";
 import { resolveEmbedHTML } from "../../components/Embed/Embed.body";

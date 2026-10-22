@@ -8,7 +8,7 @@ import {
   mapPointSource,
   mapPathSource,
 } from "./mediaSource";
-import type { StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
 
 const ctx = { view: "desktop" } as unknown as StaticRenderContext;
 

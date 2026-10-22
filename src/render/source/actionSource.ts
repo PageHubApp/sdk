@@ -25,7 +25,7 @@
  * runtime that dispatches the chain stays in lockstep with the static walker.
  */
 import { liquidizeBindings } from "./bindings";
-import type { StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
 import type { ToSourceFn } from "./toSource";
 import { actionsAttr, getInlineStyle, getPageIndex, handlerAttrs } from "../../utils/staticHtml";
 import {

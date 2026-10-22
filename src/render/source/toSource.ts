@@ -433,7 +433,7 @@ export const sourceResolver: Record<string, ToSourceFn> = {
     // ship it in `data-state-src` for the runtime's `state-src` directive. Added after `el()` (which blanks
     // colon-keyed state tokens) and wrapped in `{% raw %}` so Liquid leaves the token for the runtime.
     const rawSrc = String(content);
-    const img = el("img", { class: cls, src, alt, style: anim.styleVars || undefined, ...anim.attrs });
+    const img = el("img", { class: cls, src, alt, style: anim.styleVars || undefined, ...anim.attrs }, "");
     if (props.videoId || !rawSrc.includes("{{state.")) return img;
     return img.replace(/^<img/, `<img data-state-src="{% raw %}${rawSrc.replace(/"/g, "&quot;")}{% endraw %}"`);
   },

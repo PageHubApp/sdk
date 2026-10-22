@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { liftPartials, renderDocument } from "./assembly";
-import type { StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
 
 const ctx = { view: "desktop" } as unknown as StaticRenderContext;
 

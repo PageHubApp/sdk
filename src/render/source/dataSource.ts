@@ -24,7 +24,8 @@
  * expands the `{% for %}`, so the authoring form stays clean and 1:1.
  */
 import { liquidizeBindings } from "./bindings";
-import type { SerializedNodes, StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
+import type { SerializedNodes } from "../static/types";
 import { getInlineStyle } from "../../utils/staticHtml";
 import { partitionDataChildIds } from "../../utils/data/emptySlot";
 import { renderNodeToSource, type ToSourceFn } from "./toSource";

@@ -4,7 +4,7 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { StaticRenderContext } from "../static/types";
+import type { StaticRenderContext } from "../../utils/staticHtml";
 import { buttonSource, linkSource, actionToAttrs } from "./actionSource";
 
 const ctx = {} as StaticRenderContext;
