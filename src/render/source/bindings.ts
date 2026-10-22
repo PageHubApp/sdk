@@ -22,7 +22,9 @@ export function liquidizeBindings(s: string): string {
     if (!expr.includes("||")) return full;
     const i = expr.indexOf("||");
     const fallback = expr.slice(i + 2).trim();
-    const lit = /^(['"]).*\1$/.test(fallback) ? fallback : "'" + fallback.split("'").join("\\'") + "'";
+    // Always single-quoted: a double-quoted literal inside an attribute value is escaped to `&quot;` and no longer parses.
+    const quoted = /^(['"])([\s\S]*)\1$/.exec(fallback);
+    const lit = quoted?.[2]!.includes("'") ? fallback : "'" + (quoted ? quoted[2]! : fallback).split("'").join("\\'") + "'";
     return `{{ ${expr.slice(0, i).trim()} | default: ${lit} }}`;
   });
 }
