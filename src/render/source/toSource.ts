@@ -172,20 +172,33 @@ function containerTag(type: unknown): string {
  * row) has its EXPRESSION piped through `image_url` — never wrapped again, which would nest `{{ }}`.
  */
 function imageSrc(content: string): string {
-  if (!content) return "";
-  if (/^(https?:|data:|\/)/.test(content)) return content;
+  return imageSource(content).src;
+}
+
+/**
+ * An Image `src` → the attribute value plus, for a bare binding with no fallback, `guard`: the Liquid path the
+ * `<img>` must be wrapped in `{% if %}` for. The old static walker (`Image.toHTML`) drops an image whose src
+ * resolves to nothing; shipping `<img>` with no src would be a broken box. A binding with a `|| fallback` keeps the
+ * image and falls back to the literal (`| default:`), as `interpolate` does.
+ */
+function imageSource(content: string): { src: string; guard: string | null } {
+  if (!content) return { src: "", guard: null };
+  if (/^(https?:|data:|\/)/.test(content)) return { src: content, guard: null };
   const binding = content.match(/^\s*\{\{-?\s*([\s\S]*?)\s*-?\}\}\s*$/);
   if (binding) {
-    const expr = binding[1]!.split("|")[0]!.trim(); // drop any existing filter; image_url resolves the id
+    const [primary, fallbackRaw] = binding[1]!.split("||");
+    const expr = primary!.split("|")[0]!.trim(); // drop any existing filter; image_url resolves the id
     // A client-only state binding (`state.pdp:current:…`) has colons that aren't a valid Liquid path;
     // it resolves to nothing server-side anyway (the old walker bakes it empty too), so blank it rather
     // than emit un-parseable Liquid. The runtime fills these dynamic srcs client-side.
-    if (!/^[A-Za-z_][\w.]*$/.test(expr)) return "";
-    return `{{ ${expr} | image_url }}`;
+    if (!/^[A-Za-z_][\w.]*$/.test(expr)) return { src: "", guard: null };
+    const fallback = fallbackRaw?.trim().replace(/^(["'])([\s\S]*)\1$/, "$2");
+    if (fallback) return { src: `{{ ${expr} | image_url | default: '${fallback.split("'").join("\\'")}' }}`, guard: null };
+    return { src: `{{ ${expr} | image_url }}`, guard: expr };
   }
   // Single-quote the id literal — a double-quoted `src="…"` can't hold `{{ "id" }}` without the inner
   // quotes being HTML-escaped to `&quot;`, which breaks the Liquid expression.
-  return `{{ '${content.split("'").join("\\'")}' | image_url }}`;
+  return { src: `{{ '${content.split("'").join("\\'")}' | image_url }}`, guard: null };
 }
 
 function sanitizeTagName(raw: unknown): string {
@@ -411,7 +424,12 @@ export const sourceResolver: Record<string, ToSourceFn> = {
     // `{{ item.* }}` / `<span data-variable>` tokens are already the format's binding form.
     // The TipTap `<p>` wrapper is dropped (unwrapP) so the text sits directly in the node's own element,
     // as Text.toHTML does; a `<span><p>…</p></span>` would otherwise render block-level with p margins.
-    const rawText = typeof props.text === "string" ? props.text : "";
+    const text = typeof props.text === "string" ? props.text : "";
+    // Hand-edited data can hold paragraph runs with no outer `<p>` ("A</p><p>B"): a browser reads that as two
+    // paragraphs, but unwrapP would leave the stray tags inside the node's own element (a `</p>` closing an `<h1>`).
+    // A `p` / `div` element takes the stray tags as they are (the browser reads them as sibling paragraphs and the
+    // file lints); any other element (`h1`, `span`) can't hold them.
+    const rawText = t !== "p" && t !== "div" && !/^\s*<p[\s>]/.test(text) && /<\/p>\s*<p>/.test(text) ? `<p>${text}</p>` : text;
     const wrapped = /^<p>[\s\S]*<\/p>$/.test(rawText.trim());
     let inner = bindStateText(rawRichBindings(liquidizeBindings(unwrapP(rawText)), (ctx as any).richFields, wrapped));
     // A Text with a link action wraps its inner text in `<a href>` INSIDE the original tag (mirrors
@@ -441,15 +459,19 @@ export const sourceResolver: Record<string, ToSourceFn> = {
     // It wins over `src`/`content` and is always a stored id, so it resolves through the same
     // `image_url` filter — mirroring Image.toHTML's `if (videoId) cdnId = videoId` branch. Without this,
     // a library-picked image ships as an `<img>` with no src and renders blank.
-    const src = props.videoId ? imageSrc(String(props.videoId)) : imageSrc(String(content));
+    const { src, guard } = imageSource(String(props.videoId || content));
     const anim = animationAttrs(props);
     // A `{{state.*}}` src (the matched variant's image) can't resolve server-side; mirror Image.toHTML and
     // ship it in `data-state-src` for the runtime's `state-src` directive. Added after `el()` (which blanks
     // colon-keyed state tokens) and wrapped in `{% raw %}` so Liquid leaves the token for the runtime.
     const rawSrc = String(content);
-    const img = el("img", { class: cls, src, alt, style: anim.styleVars || undefined, ...anim.attrs }, "");
-    if (props.videoId || !rawSrc.includes("{{state.")) return img;
-    return img.replace(/^<img/, `<img data-state-src="{% raw %}${rawSrc.replace(/"/g, "&quot;")}{% endraw %}"`);
+    const stateSrc = !props.videoId && rawSrc.includes("{{state.");
+    // Image.toHTML ships nothing for an image with no src (and no state src to fill in): an `<img>` without one is a
+    // broken box. A bare binding that may resolve empty (`{{company.logo}}`, a row with no image) is guarded the same way.
+    if (!src && !stateSrc) return "";
+    let img = el("img", { class: cls, src, alt, style: anim.styleVars || undefined, ...anim.attrs }, "");
+    if (stateSrc) img = img.replace(/^<img/, `<img data-state-src="{% raw %}${rawSrc.replace(/"/g, "&quot;")}{% endraw %}"`);
+    return guard ? `{% if ${guard} %}${img}{% endif %}` : img;
   },
 
   // Lazy ref: dataSource imports the walker from this module, so a direct ref would hit the cyclic

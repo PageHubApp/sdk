@@ -39,6 +39,21 @@ test("splits each page into its own file at its route path", () => {
   assert.deepEqual(urls, ["/", "/shop/:handle"]);
 });
 
+test("two pages that claim one file each keep a file of their own; only the first is home", () => {
+  const nodes: any = {
+    ROOT: { type: { resolvedName: "Container" }, props: {}, nodes: ["a", "b", "c"], parent: null },
+    a: { type: { resolvedName: "Container" }, props: { type: "page", isHomePage: true }, nodes: [], parent: "ROOT", custom: { displayName: "Home Page" } },
+    b: { type: { resolvedName: "Container" }, props: { type: "page", isHomePage: true }, nodes: [], parent: "ROOT", custom: { displayName: "Landing" } },
+    c: { type: { resolvedName: "Container" }, props: { type: "page", pageSlug: "landing" }, nodes: [], parent: "ROOT" },
+  };
+  const b = convertSite("ROOT", nodes, ctx);
+  assert.equal(new Set(b.pages.map((p) => p.path)).size, 3, "every page has its own file");
+  assert.deepEqual(b.pages.map((p) => p.policy.isHome === true), [true, false, false]);
+  assert.equal(b.pages[0]!.path, "index.liquid");
+  assert.equal(b.pages[1]!.url, "/landing");
+  assert.equal(b.pages[2]!.path, "landing-c.liquid");
+});
+
 test("lifts header/footer into partials, referenced from every page", () => {
   const b = convertSite("ROOT", MULTI, ctx);
   assert.ok(b.files["partials/header.liquid"].includes("MF"));

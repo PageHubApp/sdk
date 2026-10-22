@@ -153,10 +153,12 @@ function classify(node: SerializedNode): Kind {
  * `/` from `index.liquid`; `pathPattern` is the dynamic tail (`:handle`) appended to the URL and
  * turned into a `[handle]` file segment so the folder reads like file-based routing.
  */
-function routeFor(node: Pick<SerializedNode, "props">, nodeId: string): { url: string; path: string } {
+function routeFor(node: Pick<SerializedNode, "props">, nodeId: string, retry?: "slug" | "id"): { url: string; path: string } {
   const props = node.props || {};
-  if (props.isHomePage) return { url: "/", path: "index.liquid" };
-  const slug = slugify(pageNodeSlug(node, nodeId));
+  // `retry`: a second page claiming the same file (two home pages, two pages with one slug) is routed by its own
+  // slug, then by slug + node id, so every page keeps a file of its own.
+  if (props.isHomePage && !retry) return { url: "/", path: "index.liquid" };
+  const slug = slugify(retry === "id" ? `${pageNodeSlug(node, nodeId)}-${nodeId}` : pageNodeSlug(node, nodeId));
   const pattern = typeof props.pathPattern === "string" ? props.pathPattern.trim().replace(/^\/+/, "") : "";
   if (!pattern) return { url: `/${slug}`, path: `${slug}.liquid` };
   const urlTail = pattern.replace(/^\/+/, "");
@@ -349,7 +351,14 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     const pageHead = typeof pp.headCode === "string" ? pp.headCode.trim() : "";
     const pageFoot = typeof pp.footerCode === "string" ? pp.footerCode.trim() : "";
     const body = [pageHead && rawLiquid(pageHead), rendered, pageFoot && rawLiquid(pageFoot)].filter(Boolean).join("\n");
-    const { url, path } = routeFor(node, nodeId);
+    let route = routeFor(node, nodeId);
+    const policy = policyFor(node.props || {});
+    for (const retry of ["slug", "id"] as const) {
+      if (!pages.some((p) => p.path === route.path)) break;
+      route = routeFor(node, nodeId, retry);
+      delete policy.isHome; // only the first page to claim `/` is the home page
+    }
+    const { url, path } = route;
     const { title, meta } = metaFor(node);
     const visible = sequence.filter((s) => {
       const kind = chromeKind.get(s);
@@ -359,7 +368,7 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     });
     const source = pageDocument(visible.map((s) => (s === PAGE_SLOT ? body : s)), siteProps, ctx);
     files[path] = source;
-    pages.push({ path, url, title, source, meta, policy: policyFor(node.props || {}) });
+    pages.push({ path, url, title, source, meta, policy });
   };
 
   if (pageIds.length === 0) {

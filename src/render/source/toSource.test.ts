@@ -32,6 +32,22 @@ test("Image: inline SVG kept as a labelled span; media id → image_url filter",
   assert.equal(renderToSource("ROOT", url, ctx), `<img src="https://x/y.png">`);
 });
 
+test("Image: no src ships nothing; a bare binding is guarded; a `|| fallback` binding keeps the image", () => {
+  const none = { ROOT: { type: "Image", props: { alt: "Image 2" }, nodes: [] } } as any;
+  assert.equal(renderToSource("ROOT", none, ctx), ``);
+
+  const bare = { ROOT: { type: "Image", props: { src: "{{company.logo}}", alt: "Logo" }, nodes: [] } } as any;
+  assert.equal(renderToSource("ROOT", bare, ctx), `{% if company.logo %}<img src="{{ company.logo | image_url }}" alt="Logo">{% endif %}`);
+
+  const fallback = { ROOT: { type: "Image", props: { src: `{{item.image || "/placeholder.jpg"}}`, alt: "Hero" }, nodes: [] } } as any;
+  assert.equal(renderToSource("ROOT", fallback, ctx), `<img src="{{ item.image | image_url | default: '/placeholder.jpg' }}" alt="Hero">`);
+});
+
+test("Text with paragraph runs but no outer <p> still unwraps cleanly", () => {
+  const nodes = { ROOT: { type: "Text", props: { tagName: "h1", text: "One.</p><p>Two." }, nodes: [] } } as any;
+  assert.equal(renderToSource("ROOT", nodes, ctx), `<h1>One.<br/><br/>Two.</h1>`);
+});
+
 test("a node condition wraps the element in {% if %}", () => {
   const nodes = {
     ROOT: { type: "Container", props: { type: "div", conditionGroups: [{ conditions: [{ type: "auth", operator: "logged-in" }] }] }, nodes: [] },
