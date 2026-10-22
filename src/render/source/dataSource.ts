@@ -80,6 +80,11 @@ function urlInputs(ds: DataSource): string[] {
   return out;
 }
 
+/** `{{params.<name>}}` → `<name>`; null for anything else. */
+function routeParamOf(v: string): string | null {
+  return v.match(/^\s*\{\{-?\s*params\.([A-Za-z0-9_]+)\s*-?\}\}\s*$/)?.[1] ?? null;
+}
+
 /** The `query[...]` key for a URL-driven listing, with the params it refetches on; null for any other binding. */
 export function queryListingKey(ds: DataSource): { key: string; params: string[] } | null {
   const slug = querySlug(ds);
@@ -92,8 +97,12 @@ export function queryListingKey(ds: DataSource): { key: string; params: string[]
   if (typeof ds.sort === "string" && ds.sort) fixed.set("sort", ds.sort);
   if (typeof ds.facetKeys === "string" && ds.facetKeys) fixed.set("facetKeys", ds.facetKeys);
   for (const [k, v] of Object.entries(ds.filter || {})) {
-    // A route-param binding (`{{params.slug}}`) is applied in Liquid after the read; a literal is the binding's own.
-    if (typeof v === "string" && v && !v.includes("{{") && /^[\w.-]+$/.test(k)) fixed.set(`filter.${k}`, v);
+    if (typeof v !== "string" || !v || !/^[\w.-]+$/.test(k)) continue;
+    // A literal is the binding's own filter; a route param (`{{params.category}}`) is filled in by the host at read
+    // time (`param.<field>=<param>`), so the read itself is narrowed and its totals count only the matching rows.
+    const param = routeParamOf(v);
+    if (param) fixed.set(`param.${k}`, param);
+    else if (!v.includes("{{")) fixed.set(`filter.${k}`, v);
   }
   fixed.set("in", inputs.join(","));
   const key = `${slug}?${fixed.toString().replace(/%2C/gi, ",").replace(/%3A/gi, ":").replace(/%2A/gi, "*")}`;
@@ -271,8 +280,9 @@ function splitChildren(
 }
 
 /**
- * A URL-driven listing: rows and meta assigned from `query[…]` / `query_meta[…]` ahead of the element, a route-param
- * filter applied in Liquid, the loop, and the element marked for the runtime's in-place refetch.
+ * A URL-driven listing: rows and meta assigned from `query[…]` / `query_meta[…]` ahead of the element, any other
+ * bound filter (not a route param: those are in the key) applied in Liquid, the loop, and the element marked for the
+ * runtime's in-place refetch.
  */
 function queryListingSource(
   ds: DataSource,
@@ -287,7 +297,9 @@ function queryListingSource(
   const { templateSource, emptySource } = splitChildren(ctx, childrenSource);
   const rowsVar = `rows_${id}`;
   const metaVar = `meta_${id}`;
-  const bound = Object.fromEntries(Object.entries(ds.filter || {}).filter(([, v]) => typeof v === "string" && v.includes("{{")));
+  const bound = Object.fromEntries(
+    Object.entries(ds.filter || {}).filter(([, v]) => typeof v === "string" && v.includes("{{") && !routeParamOf(v)),
+  );
   // Ahead of the element (and of any visibility gate on it): `renderNodeToSource` puts `ctx.pre` in front of the node.
   ((ctx as any).pre ??= []).push(
     `{% assign ${rowsVar} = ${withFilters(`query['${listing.key}']`, bound)} %}{% assign ${metaVar} = query_meta['${listing.key}'] %}`
