@@ -93,6 +93,15 @@ export interface PagePolicy {
   failAction?: string;
   redirectUrl?: string;
   fallbackPath?: string;
+  /** Extra classes on `<body>` for this page (`props.bodyClass`). */
+  bodyClass?: string;
+  /** Per-page CSS variable overrides (`props.themeOverrides`). */
+  themeOverrides?: Array<{ varName: string; value: string }>;
+  /**
+   * The page password as the author typed it (`props.pagePassword`). The host hashes it when it writes the page record
+   * and never stores this field (`utils/htmlFirst/syncPageRecords.ts`).
+   */
+  password?: string;
 }
 
 /** One converted page: a full document (in `files[path]`) plus the host record fields. */
@@ -191,6 +200,12 @@ function policyFor(props: Record<string, any>): PagePolicy {
   if (props.pageConditionFailAction) policy.failAction = String(props.pageConditionFailAction);
   if (props.pageConditionRedirectUrl) policy.redirectUrl = String(props.pageConditionRedirectUrl);
   if (props.pageConditionFallbackPageId) policy.fallbackPath = String(props.pageConditionFallbackPageId);
+  if (typeof props.bodyClass === "string" && props.bodyClass.trim()) policy.bodyClass = props.bodyClass.trim();
+  if (Array.isArray(props.themeOverrides)) {
+    const rows = props.themeOverrides.filter((o: any) => o && typeof o.varName === "string" && o.varName.trim() && typeof o.value === "string" && o.value.trim());
+    if (rows.length) policy.themeOverrides = rows.map((o: any) => ({ varName: o.varName.trim(), value: o.value.trim() }));
+  }
+  if (typeof props.pagePassword === "string" && props.pagePassword) policy.password = props.pagePassword;
   return policy;
 }
 
@@ -367,7 +382,9 @@ export function convertSite(rootId: string, rawNodes: SerializedNodes, ctx: Stat
     const pp = (node.props || {}) as any;
     const pageHead = typeof pp.headCode === "string" ? pp.headCode.trim() : "";
     const pageFoot = typeof pp.footerCode === "string" ? pp.footerCode.trim() : "";
-    const body = [pageHead && rawLiquid(pageHead), rendered, pageFoot && rawLiquid(pageFoot)].filter(Boolean).join("\n");
+    // The markers are how the dashboard finds the blocks again (utils/htmlFirst/pageFileSettings.ts).
+    const marked = (mark: string, code: string) => (code ? `{% comment %}${mark}{% endcomment %}${rawLiquid(code)}{% comment %}ph:end{% endcomment %}` : "");
+    const body = [marked("ph:page-head-code", pageHead), rendered, marked("ph:page-footer-code", pageFoot)].filter(Boolean).join("\n");
     let route = routeFor(node, nodeId);
     const policy = policyFor(node.props || {});
     for (const retry of ["slug", "id"] as const) {
