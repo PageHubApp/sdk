@@ -19,9 +19,24 @@ const COMPILER_BASE = resolve(__dirname, "..");
 
 let _source: string | null = null;
 
+/**
+ * The defaults' `:root` blocks (default palette, spatial scale) ship after the utilities, while a site's own
+ * `:root` tokens are prepended by `compileCSS`. At equal specificity the later block wins, so the defaults would
+ * paint over the site's palette. `:where(:root)` has no specificity: the site's tokens win in any order, and a
+ * page with no theme of its own still gets the defaults.
+ */
+export function lowerDefaultRootSpecificity(css: string): string {
+  return css.replace(/(^|\n):root(\s*\{)/g, "$1:where(:root)$2");
+}
+
 function compilerSource(): string {
   if (_source === null) {
-    const parts = ['@import "tailwindcss";', getThemeCSS(), getSpatialCSS(), getAnimationCSS()];
+    const parts = [
+      '@import "tailwindcss";',
+      lowerDefaultRootSpecificity(getThemeCSS()),
+      lowerDefaultRootSpecificity(getSpatialCSS()),
+      getAnimationCSS(),
+    ];
     _source = parts.filter(Boolean).join("\n");
   }
   return _source;
