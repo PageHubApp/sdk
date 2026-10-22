@@ -23,7 +23,7 @@ import { liquidizeBindings, rawRichBindings } from "./bindings";
 import { formSource, formElementSource } from "./formSource";
 import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
 import { buttonSource, linkSource, interactiveAttrs } from "./actionSource";
-import { conditionExpr, stateClassAttr, isRuntimeStateKey, stateShowExpr } from "./conditions";
+import { conditionExpr, stateModifiers, isRuntimeStateKey, stateShowExpr } from "./conditions";
 import { normalizeInViewState } from "../../utils/state/inViewTracker";
 import { cssAnimationPresets, toTimingFunction } from "../../utils/animations/animations";
 import { iconFillWrapperClass } from "../../utils/icons/iconResolver";
@@ -281,10 +281,21 @@ function inViewStateAttr(props: Record<string, any>): Record<string, string> {
  * Container `computedStateBindings` with a `variant-match` → the runtime's `data-state-compute`. The variant map and
  * axes stay `{{ item.* }}` bindings (the engine fills them per repeater row); `data-axis-key` is the chips' key
  * template (`pdp:current:axis:%axis%`). The state-compute chunk writes the matched variant, as JSON, to `data-compute-key`.
- * Other compute types have no runtime counterpart and emit nothing.
+ * `count` maps to the runtime's `count` compute (`data-from` / `data-count-value`). Other compute types have no runtime counterpart and emit nothing.
  */
-function computeAttrs(props: Record<string, any>): Record<string, string> {
-  const b = (Array.isArray(props.computedStateBindings) ? props.computedStateBindings : []).find((x: any) => x?.compute?.type === "variant-match");
+function computeAttrs(props: Record<string, any>): Record<string, string | undefined> {
+  const bindings: any[] = Array.isArray(props.computedStateBindings) ? props.computedStateBindings : [];
+  // `count` (a quiz score): how many of the `from` keys equal `value`. The runtime's `count` compute reads them as `data-from`.
+  const tally = bindings.find((x) => x?.compute?.type === "count" && typeof x.key === "string" && Array.isArray(x.from));
+  if (tally) {
+    return {
+      "data-state-compute": "count",
+      "data-compute-key": tally.key,
+      "data-from": tally.from.join(","),
+      "data-count-value": tally.compute.value ? String(tally.compute.value) : undefined,
+    };
+  }
+  const b = bindings.find((x: any) => x?.compute?.type === "variant-match");
   if (!b || typeof b.key !== "string") return {};
   const c = b.compute;
   const axes = Array.isArray(c.axes) ? c.axes.join(",") : String(c.axes ?? "");
@@ -334,7 +345,8 @@ export function containerSource(props: Record<string, any>, children: string, ct
   const target = invokerTarget(props, ctx);
   if (target.tag && t === "div") t = target.tag;
   const isTarget = !!target.tag || "popover" in target.attrs;
-  let cls = classString(props);
+  const mods = stateModifiers(props, ctx);
+  let cls = (classString(props) ?? "") + mods.classAdd || undefined;
   if (isTarget) {
     // Authored classes stay verbatim (site CSS keys off `.hidden`); an OPEN popover/dialog beats `.hidden`
     // through the `:popover-open` / `[open]` rules in theme.css. A handler's `classList.add/remove('hidden')`
@@ -371,7 +383,7 @@ export function containerSource(props: Record<string, any>, children: string, ct
       ...visibilityShowAttr(props),
       ...inViewStateAttr(props),
       ...computeAttrs(props),
-      ...stateClassAttr(props, ctx),
+      ...mods.attrs,
       ...target.attrs,
     },
     children
@@ -408,7 +420,9 @@ export const sourceResolver: Record<string, ToSourceFn> = {
     const { href, target, rel, ...outer } = attrs as Record<string, string | null | undefined>;
     if (linkHref) inner = el("a", { href: linkHref, target, rel }, unwrapP(inner));
     const anim = animationAttrs(props);
-    return el(t, { class: classString(props), style: styleWithAnim(props, anim.styleVars), id: props.id || undefined, ...outer, ...anim.attrs }, inner);
+    const mods = stateModifiers(props, ctx);
+    const cls = (classString(props) ?? "") + mods.classAdd || undefined;
+    return el(t, { class: cls, style: styleWithAnim(props, anim.styleVars), id: props.id || undefined, ...outer, ...anim.attrs, ...mods.attrs }, inner);
   },
 
   Image(props, _children, ctx) {
@@ -475,8 +489,18 @@ export function renderNodeToSource(nodeId: string, nodes: SerializedNodes, ctx: 
   (ctx as any).nodes = nodes;
   (ctx as any).renderingNodeId = nodeId;
   const emit = sourceResolver[resolveType(node)];
+  // Statements the emitter needs ahead of its element (the `{% capture %}`s an attribute refers to): collected on
+  // `ctx.pre` for this node only, restored for the outer node a nested walk (a Data's re-walk) interrupted.
+  const outerPre = (ctx as any).pre;
+  (ctx as any).pre = [];
   const body = emit ? emit(props, children, ctx) : el("div", {}, children);
+  const pre: string = ((ctx as any).pre as string[]).join("");
+  (ctx as any).pre = outerPre;
+  return pre + gateNode(props, body);
+}
 
+/** A node's emitted `body` behind its `conditionGroups`: a browser gate, a Liquid `{% if %}`, or reported and ungated. */
+function gateNode(props: Record<string, any>, body: string): string {
   const groups = props.conditionGroups;
   if (Array.isArray(groups) && groups.length > 0) {
     // A gate that is ENTIRELY runtime `state` conditions can't be decided server-side, but the runtime

@@ -35,7 +35,7 @@ import {
   migrateActions,
   type NodeAction,
 } from "../../utils/action";
-import { actionGateExpr, stateClassAttr } from "./conditions";
+import { actionGateExpr, stateModifiers } from "./conditions";
 import { iconFillWrapperClass } from "../../utils/icons/iconResolver";
 
 // ─── Shared element helpers (mirror toSource.ts `el` / `classString`; those are
@@ -315,7 +315,8 @@ function buildActionSource(
   if (tag === "button" && !/\bbtn\b/.test(cls || "") && !/\bcursor-\S+/.test(cls || "")) {
     extra = [extra, "cursor-pointer"].filter(Boolean).join(" ");
   }
-  const fullCls = [cls, extra].filter(Boolean).join(" ") || undefined;
+  const mods = stateModifiers(props, ctx);
+  const fullCls = [cls, extra].filter(Boolean).join(" ") + mods.classAdd || undefined;
 
   // Native attributes for every action, merged (distinct action types use
   // distinct keys; a same-key collision keeps the last, and the chain below
@@ -330,7 +331,7 @@ function buildActionSource(
     ...iconOnlyLabel(props, icon, opts.labelFallback),
     ...passthroughAttrs(props),
     // State-driven class modifiers (e.g. a tab/pagination Button's `tab-active`).
-    ...stateClassAttr(props, ctx),
+    ...mods.attrs,
   };
   if (tag === "button") attrs.type = typeof props.type === "string" ? props.type : "button";
   // A multi-action chain also ships the full ordered chain (resolved hrefs),

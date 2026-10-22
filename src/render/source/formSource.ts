@@ -175,6 +175,15 @@ export const formElementSource: ToSourceFn = (props, _children, ctx) => {
   };
   if (t === "textarea" && props.rows) attrs.rows = String(props.rows);
 
+  // A field bound to a state key (a filter, a search box): the runtime's `data-state-bind`. A `url:` key also
+  // mirrors into the query string. The key may hold `{{ item.* }}` (a facet per repeater row).
+  const bind = props.stateBinding;
+  if (bind && typeof bind.key === "string" && bind.key) {
+    attrs["data-state-bind"] = bind.key;
+    if (bind.mode === "checked") attrs["data-bind-mode"] = "checked";
+    if (Number(bind.debounceMs) > 0) attrs["data-debounce"] = `${Number(bind.debounceMs)}ms`;
+  }
+
   // Author pass-through attrs win, verbatim (no `{{ item.* }}` interpolation).
   const extra = props.attrs;
   if (extra && typeof extra === "object") {

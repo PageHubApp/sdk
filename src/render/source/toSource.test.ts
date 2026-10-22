@@ -131,7 +131,7 @@ test("Container stateModifiers → data-state-class (componentName from node)", 
       nodes: [],
     },
   } as any;
-  assert.equal(renderToSource("ROOT", nodes, ctx), `<div class="hidden" data-state-class="panel=one:flex"></div>`);
+  assert.equal(renderToSource("ROOT", nodes, ctx), `<div class="hidden" data-state-class="panel=one=>flex"></div>`);
 });
 
 test("Text drops the TipTap <p> wrapper so it sits in its own element", () => {
@@ -200,5 +200,34 @@ test("Container variant-match computedStateBindings → data-state-compute", () 
   assert.equal(
     renderToSource("ROOT", nodes, ctx),
     `<div data-state-compute="variant-match" data-compute-key="pdp:current:matching-variant" data-variants="{{item.variantMapJson}}" data-axes="{{item.optionNamesCsv}}" data-axis-key="pdp:current:axis:%axis%"></div>`
+  );
+});
+
+test("Container count computedStateBindings → data-state-compute=count with its source keys", () => {
+  const nodes = {
+    ROOT: { type: "Container", props: { type: "div", computedStateBindings: [{ key: "gp:score", from: ["gp:q1", "gp:q2"], compute: { type: "count", value: "Y" } }] }, nodes: [] },
+  } as any;
+  assert.equal(renderToSource("ROOT", nodes, ctx), `<div data-state-compute="count" data-compute-key="gp:score" data-from="gp:q1,gp:q2" data-count-value="Y"></div>`);
+});
+
+test("a Container's row-gated modifier lands in its class through a captured variable, the runtime-gated one in data-state-class", () => {
+  const nodes = {
+    ROOT: {
+      type: "Container",
+      props: {
+        type: "div",
+        className: "a",
+        stateModifiers: [
+          { conditions: [{ logic: "all", conditions: [{ type: "item", key: "label", operator: "equals", value: "Sage" }] }], modifiers: ["shown-flex"] },
+          { conditions: [{ logic: "all", conditions: [{ type: "state", key: "store:f", operator: "equals", value: "x" }] }], modifiers: ["shown-block"] },
+        ],
+      },
+      nodes: [],
+    },
+  } as any;
+  // The engine-decided class is captured in front of the element (no {% tag %} inside the attribute).
+  assert.equal(
+    renderToSource("ROOT", nodes, { ...ctx } as any),
+    `{% capture ph_mod_1 %}{% if item.label == 'Sage' %} flex{% endif %}{% endcapture %}<div class="a{{ ph_mod_1 }}" data-state-class="store:f=x=>block"></div>`
   );
 });

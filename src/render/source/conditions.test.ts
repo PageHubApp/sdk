@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { conditionExpr, stateClassAttr, isRuntimeStateKey, stateShowExpr } from "./conditions";
+import { conditionExpr, stateModifiers, isRuntimeStateKey, stateShowExpr } from "./conditions";
+
+const stateClassAttr = (props: any, ctx: any) => stateModifiers(props, ctx).attrs;
 
 test("single `all` group → conditions joined with `and`", () => {
   const groups = [
@@ -97,8 +99,18 @@ test("stateShowExpr: a namespaced runtime state gate → a data-state-show test 
   assert.equal(stateShowExpr(both), "a&&!b");
   // Not a pure state gate (a server condition present) → null, so conditionExpr handles it.
   assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "url-param", key: "x", operator: "exists" }] }] as any), null);
-  // cart:* / form:* are chunk-owned, not store-backed → null (left to the report path).
-  assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "state", key: "cart:open", operator: "equals", value: "shown" }] }] as any), null);
+  // cart:* is written into the store by the cart chunk, so it gates like any key.
+  assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "state", key: "cart:error", operator: "exists" }] }] as any), "cart:error");
+  // form:* is the form chunk's own (`[data-form-state]`), not store-backed → null (left to the report path).
+  assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "state", key: "form:x:fields", operator: "exists" }] }] as any), null);
+  // A `{{ item.* }}` token builds a key or value per repeater row; an `{{ anchor.* }}` token has nothing to fill it.
+  assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "state", key: "axis:{{item.name}}", operator: "equals", value: "{{item.label}}" }] }] as any), "axis:{{item.name}}={{item.label}}");
+  assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "state", key: "{{anchor.chat}}:hasError", operator: "exists" }] }] as any), null);
+  // A JSON-field `contains` is the runtime's `key.field` path (the matched variant's image).
+  const has = (operator: string) => [{ logic: "all", conditions: [{ type: "state", key: "pdp:v", operator, value: '"image":"' }] }] as any;
+  assert.equal(stateShowExpr(has("contains")), "pdp:v.image");
+  assert.equal(stateShowExpr(has("not-contains")), "!pdp:v.image");
+  assert.equal(stateShowExpr([{ logic: "all", conditions: [{ type: "state", key: "pdp:v", operator: "contains", value: "free text" }] }] as any), null);
 });
 
 test("mixed and/or (can't flatten) → null + mixed-and-or report", () => {
@@ -143,11 +155,11 @@ test("stateModifiers: builtin tab-active resolved to classes, single state equal
     ],
   };
   assert.deepEqual(stateClassAttr(props, ctx), {
-    "data-state-class": "tabs-group=tab-panel-0:border-primary text-primary",
+    "data-state-class": "tabs-group=tab-panel-0=>border-primary text-primary",
   });
 });
 
-test("stateModifiers: `any` group of state terms → OR entries (same classes)", () => {
+test("stateModifiers: `any` group of state terms → one OR expression", () => {
   const ctx = { renderingNodeId: "c1", nodes: { c1: { type: "Container" }, ROOT: { props: {} } } } as any;
   const props = {
     stateModifiers: [
@@ -165,35 +177,7 @@ test("stateModifiers: `any` group of state terms → OR entries (same classes)",
       },
     ],
   };
-  assert.deepEqual(stateClassAttr(props, ctx), { "data-state-class": "mode=a:flex;mode=b:flex" });
-});
-
-test("stateModifiers: colon key / AND group / contains → dropped (no data-state-class)", () => {
-  const ctx = { renderingNodeId: "c1", nodes: { c1: { type: "Container" }, ROOT: { props: {} } } } as any;
-  // colon-namespaced key (cart:*) — not test()-parseable
-  assert.deepEqual(
-    stateClassAttr(
-      { stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "cart:count", operator: "greater-than", value: "0" }] }], modifiers: ["shown-block"] }] },
-      ctx,
-    ),
-    {},
-  );
-  // AND group (2 conditions in one `all` group) — can't be one entry
-  assert.deepEqual(
-    stateClassAttr(
-      { stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "x", operator: "exists", value: "" }, { type: "state", key: "y", operator: "not-exists", value: "" }] }], modifiers: ["shown-flex"] }] },
-      ctx,
-    ),
-    {},
-  );
-  // contains has no test() operator
-  assert.deepEqual(
-    stateClassAttr(
-      { stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "x", operator: "contains", value: "a" }] }], modifiers: ["shown-flex"] }] },
-      ctx,
-    ),
-    {},
-  );
+  assert.deepEqual(stateClassAttr(props, ctx), { "data-state-class": "mode=a||mode=b=>flex" });
 });
 
 test("stateModifiers: ROOT override modifier class resolves", () => {
@@ -206,8 +190,51 @@ test("stateModifiers: ROOT override modifier class resolves", () => {
       { stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "sel", operator: "exists", value: "" }] }], modifiers: ["my-mod"] }] },
       ctx,
     ),
-    { "data-state-class": "sel:ring-2 ring-primary" },
+    { "data-state-class": "sel=>ring-2 ring-primary" },
   );
+});
+
+test("stateModifiers: colon keys, AND groups and row-templated keys all map", () => {
+  const ctx = { renderingNodeId: "c1", nodes: { c1: { type: "Container" }, ROOT: { props: {} } } } as any;
+  const one = (conditions: any[], logic = "all") => stateClassAttr({ stateModifiers: [{ conditions: [{ logic, conditions }], modifiers: ["shown-block"] }] }, ctx);
+  assert.deepEqual(one([{ type: "state", key: "cart:count", operator: "greater-than", value: "0" }]), { "data-state-class": "cart:count>0=>block" });
+  assert.deepEqual(one([{ type: "state", key: "x", operator: "exists", value: "" }, { type: "state", key: "y", operator: "not-exists", value: "" }]), { "data-state-class": "x&&!y=>block" });
+  assert.deepEqual(
+    one([{ type: "state", key: "pdp:axis:{{item.axisName}}", operator: "equals", value: "{{item.label}}" }]),
+    { "data-state-class": "pdp:axis:{{item.axisName}}={{item.label}}=>block" },
+  );
+  assert.deepEqual(one([{ type: "state", key: "gp:score", operator: "equals", value: "4" }, { type: "state", key: "gp:score", operator: "equals", value: "5" }], "any"), { "data-state-class": "gp:score=4||gp:score=5=>block" });
+});
+
+test("stateModifiers: a binding with no mapping is counted as a state-modifier report, not dropped silently", () => {
+  const reports = new Set<string>();
+  const ctx = { renderingNodeId: "c1", nodes: { c1: { type: "Container" }, ROOT: { props: {} } }, reports } as any;
+  // contains has no test() operator
+  assert.deepEqual(
+    stateClassAttr({ stateModifiers: [{ conditions: [{ logic: "all", conditions: [{ type: "state", key: "x", operator: "contains", value: "a" }] }], modifiers: ["shown-flex"] }] }, ctx),
+    {},
+  );
+  assert.deepEqual([...reports], ["state-modifier"]);
+});
+
+test("stateModifiers: a row condition is decided by the engine; mixed with state it gates the entry", () => {
+  const ctx = { renderingNodeId: "b1", nodes: { b1: { type: "Button" }, ROOT: { props: {} } } } as any;
+  const row = { type: "item", key: "label", operator: "equals", value: "Sage" };
+  const st = { type: "state", key: "pdp:v", operator: "not-exists", value: "" };
+  const mod = (conditions: any[]) => ({ stateModifiers: [{ conditions: [{ logic: "all", conditions }], modifiers: ["disabled-look"] }] });
+  const classes = "opacity-50 pointer-events-none";
+  // A {% tag %} may not sit in an attribute value: each decision is captured BEFORE the element, the attribute holds `{{ var }}`.
+  const only = stateModifiers(mod([row]), ctx);
+  assert.deepEqual(only.attrs, {});
+  assert.equal(only.classAdd, "{{ ph_mod_1 }}");
+  assert.deepEqual(ctx.pre, [`{% capture ph_mod_1 %}{% if item.label == 'Sage' %} ${classes}{% endif %}{% endcapture %}`]);
+  ctx.pre = [];
+  const both = stateModifiers(mod([row, st]), ctx);
+  assert.equal(both.classAdd, "");
+  assert.deepEqual(both.attrs, { "data-state-class": "{{ ph_mod_2 }}" });
+  assert.deepEqual(ctx.pre, [`{% capture ph_mod_2 %}{% if item.label == 'Sage' %}!pdp:v=>${classes}{% endif %}{% endcapture %}`]);
+  // a mixed `any` group has no safe expression
+  assert.deepEqual(stateClassAttr({ stateModifiers: [{ conditions: [{ logic: "any", conditions: [row, st] }], modifiers: ["disabled-look"] }] }, ctx), {});
 });
 
 test("auth customer.* keys read the customer; a logged-out visitor passes the negatives", () => {

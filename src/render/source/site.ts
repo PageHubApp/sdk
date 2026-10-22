@@ -264,6 +264,9 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
     }
   }
   (ctx as any).popoverTargets = popoverTargets;
+  // Constructs an emitter could not carry over (a modifier binding with no mapping) land here and join `notes`.
+  const reports = new Set<string>();
+  (ctx as any).reports = reports;
   (ctx as any).dialogTargets = dialogTargets;
 
   const hasPages = childIds.some((id) => nodes[id]?.props?.type === "page");
@@ -371,6 +374,8 @@ export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticR
   for (const src of Object.values(files)) {
     for (const m of src.matchAll(REPORT)) notes.add(m[1]!.trim());
   }
+
+  reports.forEach((r) => notes.add(r));
 
   // Exactly one home: if none was flagged, the first page serves `/`.
   if (!pages.some((p) => p.policy.isHome) && pages.length) {

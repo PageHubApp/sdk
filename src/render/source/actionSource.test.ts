@@ -158,7 +158,7 @@ test("Button stateModifiers (tab-active) → data-state-class resolved from Butt
     bctx,
   );
   assert.ok(src.includes('data-state-set="tabs-group:tab-panel-1"'));
-  assert.ok(src.includes('data-state-class="tabs-group=tab-panel-1:border-primary text-primary"'));
+  assert.ok(src.includes('data-state-class="tabs-group=tab-panel-1=>border-primary text-primary"'));
 });
 
 test("actionToAttrs: state actions use ':' separator (splitKey), trigger + bounds", () => {

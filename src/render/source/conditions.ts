@@ -128,9 +128,10 @@ export function conditionExpr(groups: Group[] | undefined, report?: (note: strin
 //
 // `props.stateModifiers` → the runtime `state` chunk's `data-state-class`
 // attribute (read by `state-view`/`state` in `@pagehub-editor/site-runtime`,
-// `chunks/state.ts#paint`). Grammar: `<test-expr>:<classes>` entries joined by
-// `;`, where `<test-expr>` is what `state-store.ts#test` parses and `<classes>`
-// is a space-separated class string toggled while the expression passes.
+// `chunks/state.ts#paint`). Grammar: `<test-expr>=><classes>` entries joined by
+// `;`, where `<test-expr>` is what `state-store.ts#test` parses (colon-namespaced
+// keys, `&&` / `||`) and `<classes>` is a space-separated class string toggled
+// while the expression passes.
 //
 // The old static walker emits a richer `data-state-modifiers` JSON (with a
 // `remove` field); the new runtime has NO class-removal, so modifiers that rely
@@ -164,30 +165,46 @@ const STATE_OP: Record<string, string> = {
 // the chips' `data-state-set` drive it live. Colon-namespaced keys
 // (`store:filter`) are first-class here — `state-store.ts#test` now parses them.
 
+/** A repeater-row token (`{{item.label}}`, `{{ item.axisName }}`): the engine fills it per row, so a runtime key or value
+ *  can be built from it (`pdp:current:axis:{{item.axisName}}`). Any other token (`{{anchor.*}}`) has no value to fill. */
+const ROW_TOKEN = String.raw`\{\{\s*item\.[\w.]+\s*\}\}`;
+const ROW_TOKENS = new RegExp(ROW_TOKEN, "g");
+const SEG = `(?:[\\w.-]|${ROW_TOKEN})+`;
+
 /** A runtime state key `test()` / `data-state-show` can parse: single segment, a
- *  `local:` / `url:` prefix, or colon-namespaced (`store:filter`, `form:x:fields`). */
-const SHOW_KEY = /^(?:local:|url:)?[\w.-]+(?::[\w.-]+)*$/;
+ *  `local:` / `url:` prefix, or colon-namespaced (`store:filter`, `form:x:fields`); segments may hold row tokens. */
+const SHOW_KEY = new RegExp(`^(?:local:|url:)?${SEG}(?::${SEG})*$`);
+
+/** The value carries no grammar delimiter `|` `&` `:` `;` `=>` once row tokens are blanked (their value is the row's). */
+const plainValue = (v: string) => v !== "" && !/[|&:;]|=>/.test(v.replace(ROW_TOKENS, ""));
+
+/** A `contains` / `not-contains` on a JSON state value for `"<field>":"` (the matched variant's `"image":"`) is the
+ *  runtime's `key.field` path: set while that field is non-empty. */
+const JSON_FIELD = /^"([\w-]+)":"$/;
 
 /** One `state` condition → a `test()` atom for `data-state-show`, or null when the
- *  runtime can't evaluate it (non-state type, unparseable key, `contains`, or a
- *  value carrying a grammar delimiter `|` / `&` / `:` / `;`). */
+ *  runtime can't evaluate it (non-state type, unparseable key, a `contains` that isn't a
+ *  JSON field check, or a value carrying a grammar delimiter `|` / `&` / `:` / `;`). */
 function showTerm(c: Cond): string | null {
   if (c.type !== "state") return null;
   const key = String(c.key ?? "");
   if (!key || !SHOW_KEY.test(key)) return null;
-  // `cart:*` and `form:*` are owned by the cart / form chunks (a `#cart` dialog, `[data-form-state]`
-  // swaps), NOT the state store — nothing ever writes them there, so a `data-state-show` on one would
-  // hide the node forever. Leave those to the report path, as `visibilityShowAttr` already does.
-  // `store:*`, `deck:*` (state-view writes it), `url:` / `local:` and generic keys ARE store-backed.
-  if (/^(?:cart|form):/.test(key)) return null;
+  // `form:*` is owned by the form chunk (`[data-form-state]` swaps), NOT the state store — nothing writes
+  // it there, so a `data-state-show` on one would hide the node forever. Leave it to the report path, as
+  // `visibilityShowAttr` already does. `cart:*` (cart chunk), `store:*`, `deck:*` (state-view writes it),
+  // `url:` / `local:` and generic keys ARE store-backed.
+  if (/^form:/.test(key)) return null;
   const op = c.operator ?? "exists";
   if (op === "exists") return key;
   if (op === "not-exists") return "!" + key;
+  if (op === "contains" || op === "not-contains") {
+    const field = JSON_FIELD.exec(String(c.value ?? ""))?.[1];
+    return field ? (op === "contains" ? "" : "!") + key + "." + field : null;
+  }
   const sym = STATE_OP[op];
-  if (!sym) return null; // contains / not-contains: `test()` has no such operator
+  if (!sym) return null;
   const v = String(c.value ?? "");
-  if (v === "" || /[|&:;]/.test(v)) return null;
-  return key + sym + v;
+  return plainValue(v) ? key + sym + v : null;
 }
 
 /**
@@ -242,41 +259,32 @@ export function actionGateExpr(groups: Group[] | undefined): string | null {
   return dnf(groups, gateTerm);
 }
 
-/** One `state` condition → a runtime `test()` expression, or null when the
- *  runtime can't evaluate it (non-state type, colon key, `contains`, or a value
- *  carrying `:` / `;` that would break the `data-state-class` grammar). */
-function stateTerm(c: Cond): string | null {
-  if (c.type !== "state") return null;
-  const key = String(c.key ?? "");
-  if (!key || !isRuntimeStateKey(key)) return null;
-  const op = c.operator ?? "exists";
-  if (op === "exists") return key;
-  if (op === "not-exists") return "!" + key;
-  const sym = STATE_OP[op];
-  if (!sym) return null; // contains / not-contains: `test()` has no such operator
-  const v = String(c.value ?? "");
-  if (v === "" || /[:;]/.test(v)) return null;
-  return key + sym + v;
-}
+/** Conditions the browser decides (the state store, localStorage, the URL as state): they ride in `data-state-class`. */
+const isRuntimeCond = (c: Cond) => c.type === "state" || c.type === "localStorage" || c.type === "url-param";
 
-/** A binding's condition groups → the OR list of test-expr terms, or null when
- *  it can't be expressed. One `data-state-class` entry is a single `test()`
- *  call, so an `all` group with more than one condition (a logical AND) has no
- *  equivalent and voids the binding. */
-function bindingTerms(groups: Group[] | undefined): string[] | null {
+/**
+ * A modifier binding's condition groups → the two halves of its gate. `runtime` is a `test()` expression for
+ * `data-state-class`; `server` is a Liquid boolean (a repeater row's `item.*`, `company`, `auth`…) the engine
+ * decides at render. A binding is wholly one kind, or one `all` group mixing both (server AND runtime). Anything
+ * else (a mixed `any`, an unmappable condition) is null.
+ */
+function bindingGate(groups: Group[] | undefined): { server: string | null; runtime: string | null } | null {
   if (!Array.isArray(groups) || groups.length === 0) return null;
-  const terms: string[] = [];
-  for (const g of groups) {
-    const conds = g?.conditions ?? [];
-    if (conds.length === 0) return null;
-    if ((g?.logic ?? "all") === "all" && conds.length > 1) return null; // AND
-    for (const c of conds) {
-      const t = stateTerm(c);
-      if (t == null) return null;
-      terms.push(t);
-    }
+  const all = groups.flatMap((g) => g?.conditions ?? []);
+  if (all.length === 0 || groups.some((g) => !(g?.conditions ?? []).length)) return null;
+  if (all.every(isRuntimeCond)) {
+    const runtime = dnf(groups, gateTerm);
+    return runtime ? { server: null, runtime } : null;
   }
-  return terms.length ? terms : null;
+  if (!all.some(isRuntimeCond)) {
+    const server = conditionExpr(groups);
+    return server ? { server, runtime: null } : null;
+  }
+  const g = groups[0]!;
+  if (groups.length !== 1 || (g.logic ?? "all") !== "all") return null;
+  const server = conditionExpr([{ logic: "all", conditions: g.conditions!.filter((c) => !isRuntimeCond(c)) }]);
+  const runtime = dnf([{ logic: "all", conditions: g.conditions!.filter(isRuntimeCond) }], gateTerm);
+  return server && runtime ? { server, runtime } : null;
 }
 
 /** Resolve a modifier NAME to its class string against the viewer-safe builtin
@@ -290,25 +298,32 @@ function resolveModifierClasses(componentName: string, name: string, rootProps: 
   return mod.classes || mod.name;
 }
 
+type ModCtx = { nodes?: Record<string, any>; renderingNodeId?: string; reports?: Set<string>; pre?: string[]; modSeq?: number };
+
 /**
- * `props.stateModifiers` → the runtime's `data-state-class` attribute. Modifier
- * names are resolved to class strings here (the runtime is table-free). The
- * component name comes from the node under `ctx.renderingNodeId` (defaulting to
- * `Container`), matching the old `stateModifiersAttrs`. Returns `{}` when
- * nothing maps.
+ * `props.stateModifiers` → what each binding contributes. Modifier names are resolved to class strings here (the
+ * runtime is table-free); the component name comes from the node under `ctx.renderingNodeId` (defaulting to
+ * `Container`), matching the old `stateModifiersAttrs`. A binding gated by the browser becomes a `data-state-class`
+ * entry (`test=>classes`); one gated only by the row or site (`item.*`, `company`, `auth`) is a class the engine
+ * decides at render; a mix of both gates the entry the same way. A `{% tag %}` may not sit inside an attribute value,
+ * so each engine-decided piece is `{% capture %}`d into a variable BEFORE the element (pushed on `ctx.pre`, which
+ * `renderNodeToSource` puts in front of the node) and the attribute holds only `{{ variable }}`. A binding with no
+ * mapping is counted in `ctx.reports` as "state-modifier" instead of vanishing.
  */
-export function stateClassAttr(
-  props: Record<string, any>,
-  ctx?: { nodes?: Record<string, any>; renderingNodeId?: string }
-): Record<string, string> {
+function modifierParts(props: Record<string, any>, ctx?: ModCtx): { entries: string[]; classAdd: string[] } {
+  const out = { entries: [] as string[], classAdd: [] as string[] };
   const m = props.stateModifiers;
-  if (!Array.isArray(m) || m.length === 0) return {};
+  if (!Array.isArray(m) || m.length === 0) return out;
+  const capture = (server: string, body: string): string => {
+    const v = `ph_mod_${(ctx!.modSeq = (ctx!.modSeq ?? 0) + 1)}`;
+    (ctx!.pre ??= []).push(`{% capture ${v} %}{% if ${server} %}${body}{% endif %}{% endcapture %}`);
+    return `{{ ${v} }}`;
+  };
   const node = ctx?.renderingNodeId ? ctx.nodes?.[ctx.renderingNodeId] : null;
   const componentName =
     (node && (typeof node.type === "string" ? node.type : node.type?.resolvedName)) || "Container";
   const rootProps = ctx?.nodes?.["ROOT"]?.props || {};
 
-  const entries: string[] = [];
   for (const binding of m) {
     const classes = Array.isArray(binding?.modifiers)
       ? binding.modifiers
@@ -317,9 +332,25 @@ export function stateClassAttr(
           .join(" ")
       : "";
     if (!classes) continue;
-    const terms = bindingTerms(binding?.conditions);
-    if (!terms) continue;
-    for (const t of terms) entries.push(`${t}:${classes}`);
+    const gate = bindingGate(binding?.conditions);
+    if (!gate) {
+      ctx?.reports?.add("state-modifier");
+      continue;
+    }
+    if (!gate.runtime) out.classAdd.push(capture(gate.server!, ` ${classes}`));
+    else {
+      const entry = `${gate.runtime}=>${classes}`;
+      out.entries.push(gate.server ? capture(gate.server, entry) : entry);
+    }
   }
-  return entries.length ? { "data-state-class": entries.join(";") } : {};
+  return out;
+}
+
+/**
+ * `props.stateModifiers` → `classAdd` (engine-decided classes, appended to the element's `class`) and `attrs` (the
+ * runtime's `data-state-class`). Call it ONCE per node: it pushes the `{% capture %}`s the attributes refer to.
+ */
+export function stateModifiers(props: Record<string, any>, ctx?: ModCtx): { classAdd: string; attrs: Record<string, string> } {
+  const { entries, classAdd } = modifierParts(props, ctx);
+  return { classAdd: classAdd.join(""), attrs: entries.length ? { "data-state-class": entries.join(";") } : {} };
 }

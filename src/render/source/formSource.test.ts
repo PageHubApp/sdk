@@ -121,3 +121,14 @@ test("textarea → <textarea rows> with escaped default content", () => {
     `<textarea name="message" aria-label="message" rows="5">a &amp; b</textarea>`
   );
 });
+
+test("stateBinding → data-state-bind (+ checked mode, debounce); a url: key may hold a row token", () => {
+  assert.equal(
+    formElementSource({ type: "search", name: "q", stateBinding: { key: "url:q", debounceMs: 300 } }, "", ctx),
+    `<input type="search" name="q" aria-label="q" data-state-bind="url:q" data-debounce="300ms">`
+  );
+  assert.equal(
+    formElementSource({ type: "checkbox", name: "f", stateBinding: { key: "url:facet.{{item.facetKey}}", mode: "checked" } }, "", ctx),
+    `<input type="checkbox" name="f" aria-label="f" data-state-bind="url:facet.{{item.facetKey}}" data-bind-mode="checked">`
+  );
+});
