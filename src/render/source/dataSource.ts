@@ -23,6 +23,8 @@
  * per-row `data-item-id`) are NOT source: the engine regenerates them when it
  * expands the `{% for %}`, so the authoring form stays clean and 1:1.
  */
+import { CHAT_TURNS_SCOPE } from "./anchors";
+import { chatTurnsSource } from "./chatSource";
 import { liquidizeBindings } from "./bindings";
 import type { StaticRenderContext } from "../../utils/staticHtml";
 import type { SerializedNodes } from "../static/types";
@@ -204,6 +206,8 @@ function splitChildren(
  */
 export const dataSource: ToSourceFn = (props, childrenSource, ctx) => {
   if (props.type === "component" || props.type === "componentCanvas") return "";
+  // The chat's message list is drawn by the runtime from a row template, not a Liquid loop (chatSource.ts).
+  if (props.dataSource?.scope === CHAT_TURNS_SCOPE) return chatTurnsSource(props, ctx);
 
   const tagName = containerTag(props.type);
   const attrs = {

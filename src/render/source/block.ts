@@ -14,6 +14,7 @@ import type { SerializedNodes } from "../static/types";
 import type { StaticRenderContext } from "../../utils/staticHtml";
 import { migrateActions } from "../../utils/action";
 import { expandStructureWithModifiers } from "../../utils/modifierUtils";
+import { resolveAnchorScopes } from "./anchors";
 import { renderToSource } from "./toSource";
 
 export interface BlockStructure {
@@ -50,7 +51,9 @@ function flatten(structure: BlockStructure): { nodes: SerializedNodes; rootId: s
 }
 
 export function blockToSource(structure: BlockStructure, modifiers?: BlockModifiers | null, ctx: Partial<StaticRenderContext> = {}): BlockSourceResult {
-  const { nodes, rootId } = flatten(expandStructureWithModifiers(structure, modifiers));
+  const flat = flatten(expandStructureWithModifiers(structure, modifiers));
+  const rootId = flat.rootId;
+  const nodes = resolveAnchorScopes(flat.nodes, rootId);
 
   const popoverTargets = new Set<string>();
   const dialogTargets = new Set<string>();

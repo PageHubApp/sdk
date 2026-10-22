@@ -199,9 +199,11 @@ const SHOW_HIDE_LAYOUT_CSS = `/* Overlays toggled by the show-hide action.
 
 /* HTML-first source: a show-hide / open-modal target is a native [popover], opened by
    \`command="show-popover"\`. Strip the UA popover box (fit-content, centred, bordered, canvas
-   background) so utilities decide the layout; a closed popover keeps the UA \`display:none\`. */
+   background) so utilities decide the layout; a closed popover keeps the UA \`display:none\`.
+   \`:where()\` keeps this at zero specificity: the compile flattens \`@layer\`s and this block lands after the
+   utilities, so a plain \`[popover]\` would override a panel's own \`w-[380px]\` / \`right-4\`. */
 @layer base {
-  [popover] {
+  :where([popover]) {
     inset: auto;
     width: auto;
     height: auto;

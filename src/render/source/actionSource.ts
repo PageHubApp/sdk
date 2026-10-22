@@ -138,7 +138,7 @@ function variantAxisTemplate(variantKey: string, ctx?: StaticRenderContext): str
 /**
  * One action → the native attributes the site-runtime reads for it. `link` and
  * `download-file` carry the href (handled by `hrefAttrs`, not here) so they add
- * nothing. Types with no native attribute (`manage-subscription`, `agent-send`,
+ * nothing. Types with no native attribute (`manage-subscription`,
  * `*-local-storage`) also return `{}` — they ride the `data-ph-actions` chain
  * only, and are reported by the state-system pass when they stand alone.
  *
@@ -187,6 +187,9 @@ export function actionToAttrs(a: NodeAction, ctx?: StaticRenderContext): Record<
     }
     case "toggle-cart":
       return { "data-cart": "open" };
+    // The composer's Send: the runtime's `chat` chunk reads the named field and hands it to the chat widget.
+    case "agent-send":
+      return { "data-chat-send": a.field || "agentMessage" };
     case "cart-checkout": {
       // The runtime has no page index, so the return pages ship resolved to site paths.
       const out: Record<string, string> = { "data-cart": "checkout" };

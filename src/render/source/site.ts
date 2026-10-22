@@ -23,6 +23,7 @@ import { migrateActions } from "../../utils/action";
 import { generateDesignSystemCSSVariables } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { googleFontFamilyParam } from "../../utils/fonts/familyParam";
+import { resolveAnchorScopes } from "./anchors";
 import { componentSlug, renderNodeToSource } from "./toSource";
 import { collectComponents, componentPartialSource, isComponentMaster, setComponentSource, setComponents } from "./componentSource";
 import { toHTML as rootWrapperHTML } from "../../components/Background/Background.toHTML";
@@ -227,7 +228,9 @@ function partialBody(node: SerializedNode, id: string, nodes: SerializedNodes, c
  * the editor-only `componentCanvas` scaffold is dropped. A site with no `type:"page"` child is a
  * single-page site — its content (minus chrome) becomes `index.liquid`.
  */
-export function convertSite(rootId: string, nodes: SerializedNodes, ctx: StaticRenderContext): SiteBundle {
+export function convertSite(rootId: string, rawNodes: SerializedNodes, ctx: StaticRenderContext): SiteBundle {
+  // `{{anchor.*}}` become the real per-instance ids before anything scans or emits (anchors.ts).
+  const nodes = resolveAnchorScopes(rawNodes);
   const files: Record<string, string> = {};
   const pages: ConvertedPage[] = [];
   const notes = new Set<string>();

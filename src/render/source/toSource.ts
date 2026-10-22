@@ -18,6 +18,7 @@ import { headerSlotProps } from "../../components/Header/headerSlot";
 import { unwrapP } from "../../utils/unwrapP";
 import { STATE_KEY } from "../../utils/state/keys";
 import { withCartItemsDefaults } from "../../utils/cart/cartItemsDefaults";
+import { agentBubbleSource, agentChatSource } from "./chatSource";
 import { dataSource } from "./dataSource";
 import { liquidizeBindings, rawRichBindings } from "./bindings";
 import { formSource, formElementSource } from "./formSource";
@@ -416,6 +417,9 @@ export const sourceResolver: Record<string, ToSourceFn> = {
   CartItems: (props) => cartItemsSource(props),
   CartSubtotal: (props, children) => cartSubtotalSource(props, children),
   CheckoutBanner: containerSource,
+  // The site chat widget (chatSource.ts): a hidden shell the runtime's `chat` chunk finishes.
+  AgentFloatingBubble: agentBubbleSource,
+  AgentChat: agentChatSource,
   CartBadge: cartBadgeSource,
   Icon: (props) => iconNodeSource(props),
 
