@@ -132,3 +132,19 @@ test("convertSite only requests utility font weights the family supports", () =>
   assert.doesNotMatch(fonts({ Beta: ["300", "400", "700"] }), /600/);
   assert.doesNotMatch(fonts(), /300|600/);
 });
+
+test("a handler no runtime attribute covers is registered in a `handlers` partial every page renders; a site without one gets none", () => {
+  const plain = convertSite("ROOT", MULTI, ctx);
+  assert.ok(!plain.files["partials/handlers.liquid"]);
+  assert.ok(!plain.files["index.liquid"].includes("HANDLERS"));
+  const nodes: any = JSON.parse(JSON.stringify(MULTI));
+  nodes.h1.type = { resolvedName: "Container" };
+  nodes.h1.props = { className: "x", handlers: { onClick: "try{window.gtag('consent','update',{ad_storage:'denied'})}catch(e){}" } };
+  const b = convertSite("ROOT", nodes, ctx);
+  assert.match(b.files["partials/handlers.liquid"]!, /^\{% raw %\}<script>/);
+  assert.match(b.files["index.liquid"]!, /\{% render 'handlers' %\}/);
+  assert.match(b.files["shop/[handle].liquid"]!, /\{% render 'handlers' %\}/);
+  assert.match(b.files["index.liquid"]!, /data-on="click:ph_h_/);
+  assert.ok(!/ onclick=/.test(b.files["index.liquid"]!));
+  assert.equal(b.pages.find((p) => p.path === "index.liquid")!.source, b.files["index.liquid"]);
+});

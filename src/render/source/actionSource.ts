@@ -27,7 +27,8 @@
 import { liquidizeBindings } from "./bindings";
 import type { StaticRenderContext } from "../../utils/staticHtml";
 import type { ToSourceFn } from "./toSource";
-import { actionsAttr, getInlineStyle, getPageIndex, handlerAttrs } from "../../utils/staticHtml";
+import { actionsAttr, getInlineStyle, getPageIndex } from "../../utils/staticHtml";
+import { handlerSource, splitJavascriptLinks } from "./handlerSource";
 import {
   actionToHref,
   actionTrigger,
@@ -261,16 +262,17 @@ function hrefAttrs(actions: NodeAction[], ctx?: StaticRenderContext): Record<str
  * separately so a plain-`div` caller can swap to `<a>` (mirrors `Container.toHTML`'s anchor swap).
  */
 export function interactiveAttrs(
-  props: Record<string, any>,
-  ctx?: StaticRenderContext
+  rawProps: Record<string, any>,
+  ctx: StaticRenderContext
 ): { attrs: Record<string, string | null | undefined>; linkHref: string | null } {
+  const props = splitJavascriptLinks(rawProps);
   const actions = migrateActions(props);
-  if (!actions.length) return { attrs: { ...handlerAttrs(props), ...passthroughAttrs(props) }, linkHref: null };
+  if (!actions.length) return { attrs: { ...handlerSource(props, ctx), ...passthroughAttrs(props) }, linkHref: null };
   const href = hrefAttrs(actions, ctx);
   const native = nativeAttrs(actions, ctx);
   const chain = actions.length > 1 ? (actionsAttr(props, ctx) as Record<string, string | undefined>) : {};
   return {
-    attrs: { ...href, ...native, ...handlerAttrs(props), ...passthroughAttrs(props), ...chain },
+    attrs: { ...href, ...native, ...handlerSource(props, ctx, native), ...passthroughAttrs(props), ...chain },
     linkHref: href.href ?? null,
   };
 }
@@ -299,10 +301,11 @@ function passthroughAttrs(props: Record<string, any>): Record<string, string> {
  * resolves (Button).
  */
 function buildActionSource(
-  props: Record<string, any>,
+  rawProps: Record<string, any>,
   ctx: StaticRenderContext | undefined,
   opts: { alwaysAnchor: boolean; iconSize: string; iconGap: string; labelFallback: string; iconExtra: (vertical: boolean, gap: string) => string },
 ): string {
+  const props = splitJavascriptLinks(rawProps);
   const icon = normalizeIcon(props.icon, opts.iconSize, opts.iconGap);
   const actions = migrateActions(props);
   const href = hrefAttrs(actions, ctx);
@@ -331,6 +334,9 @@ function buildActionSource(
     style: getInlineStyle(props) || undefined,
     ...href,
     ...native,
+    ...handlerSource(props, ctx ?? ({} as StaticRenderContext), native),
+    // An anchor with no href is no longer focusable: a `javascript:` link that became a handler keeps its button role.
+    ...(tag === "a" && !href.href && props !== rawProps ? { role: "button", tabindex: "0", "data-key-click": "true" } : {}),
     ...iconOnlyLabel(props, icon, opts.labelFallback),
     ...passthroughAttrs(props),
     // State-driven class modifiers (e.g. a tab/pagination Button's `tab-active`).

@@ -24,6 +24,7 @@ import { liquidizeBindings, rawRichBindings } from "./bindings";
 import { formSource, formElementSource } from "./formSource";
 import { videoSource, audioSource, embedSource, mapSource, mapPointSource, mapPathSource } from "./mediaSource";
 import { buttonSource, linkSource, interactiveAttrs } from "./actionSource";
+import { invokerTarget } from "./handlerSource";
 import { instanceSource } from "./componentSource";
 import { stateModifiers, isRuntimeStateKey } from "./conditions";
 import { gateNode } from "./nodeGate";
@@ -329,26 +330,6 @@ function styleWithAnim(props: Record<string, any>, styleVars: string): string | 
   return [getInlineStyle(props), styleVars].filter(Boolean).join("; ") || undefined;
 }
 
-/** The DOM id an invoker's `commandfor` points at: the passthrough `attrs.id`, else `id`/`anchor`. */
-function domId(props: Record<string, any>): string | undefined {
-  const a = props.attrs && typeof props.attrs === "object" ? (props.attrs as any).id : undefined;
-  return (typeof a === "string" && a) || props.id || props.anchor || undefined;
-}
-
-/**
- * Make an element a valid invoker TARGET when another node's action points at its id: a `show-hide`
- * target gets the `popover` attribute (`command="show/hide/toggle-popover"` acts on it) and an
- * `open-modal` target becomes a `<dialog>` (`command="show-modal"`). Without this the trigger has
- * nothing to open. The target id set is collected tree-wide by `convertSite` onto `ctx`.
- */
-function invokerTarget(props: Record<string, any>, ctx: StaticRenderContext): { tag: "dialog" | null; attrs: Record<string, string | undefined> } {
-  const id = domId(props);
-  if (!id) return { tag: null, attrs: {} };
-  if ((ctx as any).dialogTargets?.has?.(id)) return { tag: "dialog", attrs: {} };
-  if ((ctx as any).popoverTargets?.has?.(id)) return { tag: null, attrs: { popover: "manual" } };
-  return { tag: null, attrs: {} };
-}
-
 /** Container → its HTML tag, carrying class/style/id + any action (link → `<a>`, native invoker attrs). */
 export function containerSource(props: Record<string, any>, children: string, ctx: StaticRenderContext): string {
   if (props.type === "component" || props.type === "componentCanvas") return "";
@@ -360,21 +341,8 @@ export function containerSource(props: Record<string, any>, children: string, ct
   // When another node's invoker targets this element's id, make it a real popover / <dialog> target.
   const target = invokerTarget(props, ctx);
   if (target.tag && t === "div") t = target.tag;
-  const isTarget = !!target.tag || "popover" in target.attrs;
   const mods = stateModifiers(props, ctx);
   let cls = (classString(props) ?? "") + mods.classAdd || undefined;
-  if (isTarget) {
-    // Authored classes stay verbatim (site CSS keys off `.hidden`); an OPEN popover/dialog beats `.hidden`
-    // through the `:popover-open` / `[open]` rules in theme.css. A handler's `classList.add/remove('hidden')`
-    // becomes the native close/open so it still drives the target.
-    const [shut, open] = target.tag ? ["close()", "showModal()"] : ["hidePopover()", "showPopover()"];
-    for (const k of Object.keys(act)) {
-      if (/^on/.test(k) && typeof act[k] === "string")
-        act[k] = (act[k] as string)
-          .replace(/([\w.$]+)\.classList\.add\((['"])hidden\2\)/g, `$1.${shut}`)
-          .replace(/([\w.$]+)\.classList\.remove\((['"])hidden\2\)/g, `$1.${open}`);
-    }
-  }
   const slot = formSlotState(props);
   let startsHidden = false;
   // A form slot and the cart drawer panel are shown by toggling the `hidden` ATTRIBUTE; a lingering `.hidden` class would stay display:none.

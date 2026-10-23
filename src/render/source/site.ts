@@ -16,6 +16,7 @@
  * engine renderer's `files(path)` lookup). `pages` are the host records the renderer consumes; `policy`
  * on each is the non-HTML config (home page, 404, auth gate, redirect) a host record owns.
  */
+import { liftedHandlersPartial } from "./handlerSource";
 import type { SerializedNode, SerializedNodes } from "../static/types";
 import type { StaticRenderContext } from "../../utils/staticHtml";
 import { pageNodeSlug } from "../../utils/page/pageSlug";
@@ -211,6 +212,8 @@ function policyFor(props: Record<string, any>): PagePolicy {
 
 /** The page slot inside the ordered chrome `sequence`; replaced per page with that page's own body. */
 const PAGE_SLOT = "\u0000PAGE\u0000";
+/** Last in the sequence: becomes `{% render 'handlers' %}` once the pages have been emitted and any handler needed lifting. */
+const HANDLERS_SLOT = "\u0000HANDLERS\u0000";
 
 /**
  * A page file is a BODY FRAGMENT, not a full document — the ordered chrome `{% render %}` calls with
@@ -374,6 +377,8 @@ export function convertSite(rootId: string, rawNodes: SerializedNodes, ctx: Stat
     sequence.push(`{% render '${slug}' %}`);
   }
 
+  sequence.push(HANDLERS_SLOT);
+
   const emitPage = (bodyIds: string[], node: Pick<SerializedNode, "props">, nodeId: string) => {
     const rendered = bodyIds.map((id) => renderNodeToSource(id, nodes, ctx)).join("\n");
     // Per-page `headCode` / `footerCode` (raw author HTML scoped to this one page — e.g. the `<style>`
@@ -410,6 +415,22 @@ export function convertSite(rootId: string, rawNodes: SerializedNodes, ctx: Stat
     emitPage(looseIds, { props: { ...siteProps, isHomePage: true } }, "ROOT");
   } else {
     for (const id of pageIds) emitPage([id], nodes[id]!, id);
+  }
+
+  // Handlers no runtime attribute covers are registered once as named functions (handlerSource.ts); every page renders that partial.
+  const handlersSource = liftedHandlersPartial((ctx as any).liftedHandlers);
+  let handlersCall = "";
+  if (handlersSource) {
+    let slug = "handlers";
+    for (let i = 2; usedSlugs.has(slug); i++) slug = `handlers-${i}`;
+    usedSlugs.add(slug);
+    files[`partials/${slug}.liquid`] = handlersSource;
+    handlersCall = `{% render '${slug}' %}`;
+  }
+  const settleHandlers = (src: string) => src.split(`\n${HANDLERS_SLOT}`).join(handlersCall ? `\n${handlersCall}` : "");
+  for (const page of pages) {
+    page.source = settleHandlers(page.source);
+    files[page.path] = page.source;
   }
 
   // Surface the condition notes the walker inlined into the source (`/* report: <reason> */`).
