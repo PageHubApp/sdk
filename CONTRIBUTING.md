@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 20.16+
 - pnpm 9+
 
 ## Setup
@@ -13,6 +13,16 @@ The SDK lives in the PageHub monorepo as a git submodule (`packages/sdk`). Insta
 pnpm install
 pnpm typecheck -- -p packages/sdk   # from the monorepo root
 ```
+
+## Build (the npm tarball)
+
+The monorepo uses `src/` directly. The published package is built by `scripts/build.mjs` into `dist/` (JS, `.d.ts`, CSS, icon registries) and `publishConfig.exports` points the tarball at it. From `packages/sdk` after `pnpm gen:icons` at the root:
+
+```bash
+pnpm pack --pack-destination /tmp/out   # runs the build via prepack
+```
+
+Each module compiles to its own file at the same path, so the `__dirname`-relative reads in `compile-css/` keep working. The build fails if `dist` imports an npm package that is not in `dependencies` or `peerDependencies`. When you add a `exports` entry, add its `dist` twin under `publishConfig.exports`.
 
 ## Project Structure
 

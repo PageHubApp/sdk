@@ -19,10 +19,17 @@ const entryCache = new Map<string, IconSvgEntry>();
 //
 // Resolution order, first existing wins:
 //   1. Resolve relative to the package install location via `@pagehub/sdk/package.json`
-//      — works for any consumer that npm-installs the package.
+//      — works for any consumer that npm-installs the package (`dist/data/icon-svgs`,
+//      the published tree) and for the monorepo (`src/data/icon-svgs`).
 //   2. `process.cwd() + "packages/sdk/src/data/icon-svgs"` — monorepo dev.
-//   3. `process.cwd() + "node_modules/@pagehub/sdk/src/data/icon-svgs"` — fallback when
+//   3. `process.cwd() + "node_modules/@pagehub/sdk/dist/data/icon-svgs"` — fallback when
 //      package-name resolution is unavailable (some bundled server contexts).
+//
+// Node built-ins come from `process.getBuiltinModule` (Node 20.16+, 22.3+), which also
+// works in plain Node ESM where `require` does not exist; bundlers still see the literal
+// `require` calls as the fallback.
+const nodeBuiltin = (name: string): any => (globalThis as any).process?.getBuiltinModule?.(name);
+
 let _dataDir: string | null | undefined;
 function getDataDir(): string | null {
   if (_dataDir !== undefined) return _dataDir;
@@ -30,8 +37,8 @@ function getDataDir(): string | null {
   let path: typeof import("node:path");
   let fs: typeof import("node:fs");
   try {
-    path = require("node:path");
-    fs = require("node:fs");
+    path = nodeBuiltin("node:path") ?? require("node:path");
+    fs = nodeBuiltin("node:fs") ?? require("node:fs");
   } catch {
     _dataDir = null;
     return null;
@@ -44,9 +51,10 @@ function getDataDir(): string | null {
     const url: string | undefined =
       typeof import.meta !== "undefined" ? (import.meta as ImportMeta).url : undefined;
     if (url) {
-      const { createRequire } = require("node:module");
+      const { createRequire } = nodeBuiltin("node:module") ?? require("node:module");
       const req = createRequire(url);
       const pkgPath = req.resolve("@pagehub/sdk/package.json");
+      candidates.push(path.resolve(path.dirname(pkgPath), "dist/data/icon-svgs"));
       candidates.push(path.resolve(path.dirname(pkgPath), "src/data/icon-svgs"));
     }
   } catch { /* skip — fall through to cwd-based candidates */ }
@@ -55,7 +63,7 @@ function getDataDir(): string | null {
   candidates.push(path.resolve(process.cwd(), "packages/sdk/src/data/icon-svgs"));
 
   // 3. Consumer's local node_modules (cwd = consumer project root).
-  candidates.push(path.resolve(process.cwd(), "node_modules/@pagehub/sdk/src/data/icon-svgs"));
+  candidates.push(path.resolve(process.cwd(), "node_modules/@pagehub/sdk/dist/data/icon-svgs"));
 
   for (const c of candidates) {
     try {
@@ -76,8 +84,8 @@ function loadSetSync(set: string): Record<string, IconSvgEntry> | null {
   const dir = getDataDir();
   if (!dir) return null;
   try {
-    const fs = require("node:fs");
-    const path = require("node:path");
+    const fs: typeof import("node:fs") = nodeBuiltin("node:fs") ?? require("node:fs");
+    const path: typeof import("node:path") = nodeBuiltin("node:path") ?? require("node:path");
     const file = path.join(dir, `${set}.json`);
     const text = fs.readFileSync(file, "utf8");
     const registry = JSON.parse(text) as Record<string, IconSvgEntry>;

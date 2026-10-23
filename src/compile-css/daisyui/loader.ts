@@ -17,15 +17,24 @@ export function getDaisyUIDir(): string {
   // Try relative from SDK source first (works in dev / monorepo).
   // This file lives at src/compile-css/daisyui/, so reach repo-root node_modules
   // by walking up five levels (daisyui → compile-css → src → sdk → packages).
-  const fromSource = resolve(__dirname, "../../../../../node_modules/daisyui/components");
-  try {
-    statSync(fromSource);
-    _daisyuiDir = fromSource;
-  } catch {
-    // Bundled (Vercel): __dirname is the output bundle dir, not the source tree.
-    // process.cwd() is always the project root on Vercel serverless.
-    _daisyuiDir = resolve(/*turbopackIgnore: true*/ process.cwd(), "node_modules/daisyui/components");
+  // An npm install puts daisyui next to `@pagehub/`, the same five levels up
+  // (daisyui → compile-css → dist → sdk → @pagehub → node_modules).
+  const candidates = [
+    resolve(__dirname, "../../../../../node_modules/daisyui/components"),
+    resolve(__dirname, "../../../../../daisyui/components"),
+  ];
+  for (const c of candidates) {
+    try {
+      statSync(c);
+      _daisyuiDir = c;
+      return c;
+    } catch {
+      // try next
+    }
   }
+  // Bundled (Vercel): __dirname is the output bundle dir, not the source tree.
+  // process.cwd() is always the project root on Vercel serverless.
+  _daisyuiDir = resolve(/*turbopackIgnore: true*/ process.cwd(), "node_modules/daisyui/components");
   return _daisyuiDir;
 }
 

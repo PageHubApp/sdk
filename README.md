@@ -19,7 +19,13 @@ PageHub's shared UI chrome and site utilities. The PageHub app (a site is HTML +
 
 ## Use
 
-This package is not published to npm yet. The PageHub monorepo consumes it from source (`exports` point at `src/`, and the app resolves `@pagehub/sdk/*` to `packages/sdk/src/*` through `tsconfig.json` paths), so the host transpiles it (`transpilePackages: ["@pagehub/sdk"]` in Next).
+```sh
+npm install @pagehub/sdk
+```
+
+The npm package ships compiled ESM and `.d.ts` files in `dist/` (`publishConfig.exports`). Subpaths: `chrome/*`, `utils/*`, `compile-css`, `email-renderer`, `page-settings/fields`, `theme.css`, `themes/shadcn.css` and `chrome.css`. Needs Node 20.16 or newer for the server-side helpers.
+
+The PageHub monorepo consumes the same package from source instead (`exports` point at `src/`, and the app resolves `@pagehub/sdk/*` to `packages/sdk/src/*` through `tsconfig.json` paths), so the app transpiles it (`transpilePackages: ["@pagehub/sdk"]` in Next).
 
 ```tsx
 import { Modal } from "@pagehub/sdk/chrome/floating/Modal";
