@@ -10,7 +10,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { purgeDaisyUIRules } from "./purgeRules";
-import { compileCSS } from "../api";
+import { compileCSS } from "../compile";
 
 test("a license comment doesn't count as part of the first selector", () => {
   const css = "/*! 🌼 daisyUI 5.7.0 - MIT License */ .hero { display:grid } .hero-content { gap:1rem }";

@@ -1,7 +1,7 @@
 /** No compiled stylesheet may carry `--x: var(--x)`. Run: pnpm test:daisyui-toggle */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { compileCSS } from "../api";
+import { compileCSS } from "../compile";
 import { stripSelfReferencingVars } from "./stripSelfReferencingVars";
 
 test("drops a declaration that points at its own name, keeps the rest", () => {

@@ -5,7 +5,7 @@
  */
 
 import { escapeHTML } from "../../utils/staticHtml";
-import { EMAIL_STACK_BREAKPOINT, EMAIL_WIDTH } from "./profile";
+import { EMAIL_STACK_BREAKPOINT, EMAIL_WIDTH } from "./constants";
 
 /** Marks the preheader so `htmlToText` can skip it. */
 export const PREHEADER_ATTR = "data-ph-preheader";

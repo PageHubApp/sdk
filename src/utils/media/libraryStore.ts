@@ -1,22 +1,12 @@
 /**
  * Media library store — host-injectable seam for the site's media library.
  *
- * The Media Manager never touches `ROOT.props.pageMedia` itself. It reads and
- * writes through a `MediaLibraryStore`:
- *  - a host that keeps the library somewhere else (PageHub: one row per file)
- *    registers its store on boot;
- *  - with no host store, `useMediaLibrary()` falls back to the Craft tree
- *    (`useRootPropsMediaLibrary`), which is today's `setProp(ROOT_NODE)`
- *    behaviour for SDK consumers with no backend (avocado-editor, demos).
- *
- * In the editor, `useMirrorMediaLibraryToRoot` copies the host store's
- * snapshot into `ROOT.props.pageMedia` / `mediaFolders` so every renderer and
- * picker that reads the tree keeps working.
+ * The media library UI reads and writes through a `MediaLibraryStore` the host
+ * (PageHub: one row per file) registers on boot.
  *
  * Mirrors `registerMediaUploadHandler` in `./registry`.
  */
 import { useMemo, useState } from "react";
-import { useRootPropsMediaLibrary } from "../../chrome/toolbar/inputs/media/hooks/useRootPropsMediaLibrary";
 import type { MediaFolder, MediaItem } from "./libraryTypes";
 
 export interface MediaLibrarySnapshot {
@@ -65,9 +55,8 @@ let _store: MediaLibraryStore | null = null;
 /**
  * Register (or clear, with `null`) the host's library store.
  *
- * Register BEFORE any media chrome first renders (Media Manager, pickers, the
- * editor itself): each component picks the registered store or the Craft-tree
- * fallback once, on mount, and keeps that choice for its lifetime. Swapping
+ * Register BEFORE any media UI first renders: each component picks the
+ * registered store once, on mount, and keeps it for its lifetime. Swapping
  * stores later only reaches components mounted after the swap.
  */
 export function registerMediaLibraryStore(store: MediaLibraryStore | null): void {
@@ -80,7 +69,13 @@ export function getMediaLibraryStore(): MediaLibraryStore | null {
 
 const EMPTY_SNAPSHOT: MediaLibrarySnapshot = { items: [], folders: [] };
 
-function useRegisteredMediaLibrary(store: MediaLibraryStore): MediaLibrary {
+/**
+ * The one hook the media library UI reads: the registered store's operations
+ * plus its current snapshot. The store is read once per mount.
+ */
+export function useMediaLibrary(): MediaLibrary {
+  const [store] = useState(getMediaLibraryStore);
+  if (!store) throw new Error("[PageHub] useMediaLibrary: no media library store registered");
   const { data } = store.useSnapshot();
   return useMemo<MediaLibrary>(
     () => ({
@@ -97,16 +92,4 @@ function useRegisteredMediaLibrary(store: MediaLibraryStore): MediaLibrary {
     }),
     [store, data]
   );
-}
-
-/**
- * The one hook the Media Manager reads. The registered store, else the
- * Craft-tree store. With a registered store nothing here calls Craft, so it
- * works outside `<Editor>` (the dashboard Media page).
- */
-export function useMediaLibrary(): MediaLibrary {
-  // Read once per mount so the hook sequence below can't change mid-life.
-  const [store] = useState(getMediaLibraryStore);
-  // eslint-disable-next-line react-hooks/rules-of-hooks -- `store` is fixed for this mount
-  return store ? useRegisteredMediaLibrary(store) : useRootPropsMediaLibrary();
 }

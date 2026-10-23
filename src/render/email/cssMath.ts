@@ -9,7 +9,7 @@
  * caller drops the declaration.
  */
 
-import { EMAIL_WIDTH } from "./profile";
+import { EMAIL_WIDTH } from "./constants";
 
 const REM_PX = 16;
 const VW_PX = EMAIL_WIDTH / 100;

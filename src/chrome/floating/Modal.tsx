@@ -21,7 +21,7 @@ import { useScrollLock } from "../../utils/hooks/useScrollLock";
 import { useOverlay } from "../../registry/hooks/useOverlay";
 import { usePortalTarget } from "../popovers/usePortalTarget";
 import { OVERLAY_Z_MODAL } from "../popovers/overlayZIndex";
-import type { ModalSize, ModalVariant } from "../../registry/types";
+import type { ModalSize, ModalVariant } from "./modalTypes";
 import { MODAL_EASING, useModalPresence } from "./useModalPresence";
 import { shouldCloseOnEscape } from "./modalEscape";
 

@@ -8,7 +8,7 @@
 
 import { transform } from "lightningcss";
 import postcss, { type Root } from "postcss";
-import { compileCSS } from "../../compile-css/api";
+import { compileCSS } from "../../compile-css/compile";
 import { PageHubError } from "../../utils/errors";
 import { evalStaticMath } from "./cssMath";
 import { collectRootVars, resolveCssVars } from "./cssVars";

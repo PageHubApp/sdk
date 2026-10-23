@@ -1,0 +1,12 @@
+/* The SDK chrome stylesheet: scrollbars, modal surfaces, dropdown panels, button and field chrome, the image crop
+   dialog. Import it from the host's global CSS after tailwindcss and ./styles.css (the rules use @apply, which
+   resolves against the host's Tailwind setup):
+
+     @import "@pagehub/sdk/chrome.css";
+*/
+@import "./chrome/utilities.css";
+@import "./chrome/base-and-scrollbars.css";
+@import "./chrome/toolbar-forms.css";
+@import "./chrome/react-image-crop.css";
+@import "./chrome/dropdowns.css";
+@import "./chrome/modifiers.css";

@@ -4,7 +4,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { compileCSS } from "./api";
+import { compileCSS } from "./compile";
 import { lowerDefaultRootSpecificity } from "./compiler";
 
 test("lowerDefaultRootSpecificity rewrites a block-start :root only", () => {
