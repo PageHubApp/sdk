@@ -1,9 +1,9 @@
 /**
  * Cart lines — the ONE definition of what a storefront cart holds, shared by
- * the React cart (`components/stripe/cartContext.tsx` in the app) and the
- * static runtime cart (`render/static/runtime/chunks/cart.ts`), which inlines
- * these functions by source. Both write the same `ph-cart-<pageId>`
- * localStorage entry, so they must agree on its shape.
+ * the React cart and the static runtime cart
+ * (`render/static/runtime/chunks/cart.ts`), which inlines these functions by
+ * source. Both write the same `ph-cart-<pageId>` localStorage entry, so they
+ * must agree on its shape.
  *
  * Because the static runtime inlines them with `fn.toString()`, every function
  * here is self-contained: no imports, no calls to each other, no nested named

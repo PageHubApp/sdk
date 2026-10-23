@@ -86,9 +86,8 @@ function cartBadgeSource(props: Record<string, any>, children: string): string {
 
 /**
  * CartSubtotal → hidden while the cart is empty (`data-state-show="cart:count>0"`), holding the
- * author's children or, when there are none, the built-in "Subtotal  $X" row the app's CartSubtotal
- * `toHTML` emits (`components/stripe/cartSubtotalDefaults.ts`; the SDK can't import app code, so the
- * classes are repeated here). `cart:total` is filled by the cart runtime.
+ * author's children or, when there are none, the built-in "Subtotal  $X" row.
+ * `cart:total` is filled by the cart runtime.
  */
 function cartSubtotalSource(props: Record<string, any>, children: string): string {
   const cls = classString(props) || "border-base-300 border-t px-6 py-3";
