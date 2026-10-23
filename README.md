@@ -19,7 +19,7 @@ PageHub's shared UI chrome and site utilities. The PageHub app (a site is HTML +
 
 ## Use
 
-The package is consumed from source (`exports` point at `src/`), so the host transpiles it (`transpilePackages: ["@pagehub/sdk"]` in Next).
+This package is not published to npm yet. The PageHub monorepo consumes it from source (`exports` point at `src/`, and the app resolves `@pagehub/sdk/*` to `packages/sdk/src/*` through `tsconfig.json` paths), so the host transpiles it (`transpilePackages: ["@pagehub/sdk"]` in Next).
 
 ```tsx
 import { Modal } from "@pagehub/sdk/chrome/floating/Modal";
