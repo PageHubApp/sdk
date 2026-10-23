@@ -12,14 +12,10 @@
  *  - Animation preset shortcuts (paired with @keyframes in styles.css)
  *  - Sidebar chrome vars (editor-only)
  *
- * Two artifacts are emitted from this:
- *  - `packages/sdk/src/css/theme.css` (via `emitThemeCss`)
- *  - `packages/sdk/src/core/themeInline.generated.ts` (via `emitBrowserThemeCss`,
- *    consumed by `tailwindBrowser.ts` for the editor's runtime Tailwind v4 compiler)
+ * The artifact emitted from this is `packages/sdk/src/css/theme.css` (via `emitThemeCss`).
  *
  * Each `@theme inline` token carries a `targets` array selecting which output(s)
- * it lands in — the two outputs are overlapping but DIVERGENT (shadows are
- * theme-only; animations + spatial are browser-only; everything else is both).
+ * it lands in; `emitThemeCss` takes the `theme` ones.
  *
  * Per-site author overrides (`ROOT.props.theme.palette` / `styleGuide` /
  * `typography`) are unrelated — they get turned into CSS vars at runtime by

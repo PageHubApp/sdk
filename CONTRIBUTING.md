@@ -7,131 +7,63 @@
 
 ## Setup
 
+The SDK lives in the PageHub monorepo as a git submodule (`packages/sdk`). Install from the monorepo root, never from this folder:
+
 ```bash
-# Clone the repo
-git clone https://github.com/pagehub-dev/sdk.git
-cd sdk
-
-# Install dependencies (always from repo root)
 pnpm install
-
-# Build the SDK
-cd packages/sdk
-pnpm run build
-
-# Run type checking
-pnpm run typecheck
+pnpm typecheck -- -p packages/sdk   # from the monorepo root
 ```
-
-Runnable example integrations (vanilla HTML, Vite, Next.js) live in their own
-repo: [PageHubApp/demos](https://github.com/PageHubApp/demos).
 
 ## Project Structure
 
 ```
 packages/sdk/src/
-  index.ts              # Public API — PageHub.init(), React components, types
-  editor.tsx            # Main editor React component
-  viewer.tsx            # Read-only viewer component
-  static-renderer.ts   # Server-side HTML renderer (no React/DOM)
-  define.ts             # defineComponent() — custom component registration
-  config.ts             # Config resolution and defaults
-  types.ts              # Public TypeScript types
-  store.tsx             # Zedux state store
-  events.ts             # Event emitter
-
-  components/           # Built-in drag-and-drop components
-    Button.tsx          # Runtime component
-    Button.craft.tsx    # CraftJS editor definition (props schema, defaults, rules)
-    ...
-
-  chrome/               # Editor UI (toolbar, viewport, panels)
-    Toolbar/            # Settings sidebar, inputs, tools
-    Viewport/           # Canvas, design system editor, page management
-    canvas/             # Selection, dragging, resizing overlays
-    shared/             # Shared UI (Tooltip, AutoHideScrollbar, etc.)
-
-  utils/                # Utilities
-    design/             # Color system, palette, theme resolution
-    tailwind/           # Tailwind class parsing, merging, style maps
-    fonts/              # Google Fonts loader
-    animations/         # CSS animation presets
-    hooks/              # Custom React hooks
-    data/               # Static data (icon registry, etc.)
+  chrome/               # Dashboard chrome
+    floating/           # Modal, modal presence
+    popovers/           # anchored popover hooks, overlay z-index scale
+    primitives/layout/  # ConfirmDialog, useConfirm, AutoHideScrollbar, tooltip surface
+    shell/              # MarkdownText
+    toolbar/            # image crop dialog, media list / delete / upload helpers, code inputs
+  compile-css/          # Server-side Tailwind + DaisyUI compile
+  css/                  # theme.css, styles.css, chrome.css (+ chrome/ partials), themes/
+  data/                 # generated icon registries, animation presets
+  page-settings/        # page-settings field contract
+  render/email/         # email CSS, text and shell helpers
+  utils/                # design tokens and theme, icons, media, cdn, page slug, seo, state
 ```
 
 ## Import Convention
 
-All internal SDK imports use the `@/` alias, which maps to `src/`:
+Internal SDK imports use the `@/` alias (`src/`) or short relative paths:
 
 ```ts
-// Good
 import { resolveTheme } from "@/utils/design/resolveTheme";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
-
-// Bad — relative paths with 3+ levels
-import { resolveTheme } from "../../../../utils/design/resolveTheme";
-
-// Bad — bare aliases (only work in monorepo)
-import { resolveTheme } from "utils/design/resolveTheme";
+import { useScrollLock } from "../../utils/hooks/useScrollLock";
 ```
-
-Close siblings (1-2 levels) can use relative imports:
-
-```ts
-// Fine — same directory or one level up
-import { useView } from "./hooks/useView";
-import { BaseSelectorProps } from "../selectors";
-```
-
-## Component Architecture
-
-Each built-in component has two files:
-
-- **`Component.tsx`** — Runtime React component (used by editor, viewer, and static renderer)
-- **`Component.craft.tsx`** — CraftJS definition (props schema, defaults, editor rules, inline tools)
-
-Both are registered via `defineComponent()` in `builtins.ts`.
 
 ## Code Quality
 
-- **No `@ts-ignore`** — fix the actual type issue
-- **No `as any`** in new code — type it properly
-- **600 LOC hard cap** — split large files into hooks, sub-components, or utils
-- **Search before creating** — check existing utils/hooks before writing new ones
-
-## Building
-
-```bash
-# Full build (ES entries: main + viewer + static renderer, + editor CSS)
-pnpm run build
-
-# Watch mode (fast iteration)
-pnpm run dev
-
-# Type check only
-pnpm run typecheck
-```
+- **No `@ts-ignore`**: fix the actual type issue.
+- **No `as any`** in new code: type it properly.
+- **600 LOC hard cap**: split large files into hooks, sub-components, or utils.
+- **Search before creating**: check existing utils and hooks before writing new ones.
+- No `@craftjs` import: nothing in the SDK may depend on a node-tree editor.
 
 ## Generated files (do NOT hand-edit)
 
-A few files in the SDK are auto-generated and committed. The generators run automatically in `prebuild`; you only need to invoke them manually when you bump a dependency and want to refresh the snapshot.
+| File | Generator | Regen / Verify |
+| --- | --- | --- |
+| `src/data/icon-svgs/*.json`, `src/data/icon-manifests/*.json` | `scripts/generate-react-icons-svg-registry.mjs` | `pnpm gen:icons` |
+| `src/css/theme.css` | `scripts/generate-theme-css.mjs` | `pnpm gen:tokens` / `pnpm verify:tokens` |
 
-| File                                                          | Generator                                                  | Regen / Verify                                                                |
-| ------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/sdk/src/utils/tailwind/tailwind-styles.ts`          | `scripts/generate-tailwind-styles.js`                      | `pnpm gen:tailwind-styles` / `pnpm verify:tailwind-styles` (CI drift gate)    |
-| `public/vendor/daisyui-blocks.css`                            | `scripts/generate-daisyui-blocks-css.mjs`                  | `pnpm gen:daisyui-blocks` / `pnpm verify:daisyui-blocks`                      |
-| `packages/sdk/src/data/icon-svgs/*.json`                      | `scripts/generate-react-icons-svg-registry.mjs`            | `pnpm gen:icons`                                                              |
-| `packages/sdk/src/core/themeInline.generated.ts` + `theme.css` | `scripts/generate-theme-css.mjs`                           | `pnpm gen:tokens` / `pnpm verify:tokens`                                      |
-
-When you bump Tailwind, DaisyUI, or `react-icons`, run the corresponding `gen:` script and commit the resulting file. CI's `verify:` gate will fail otherwise.
+Run these from the monorepo root.
 
 ## Pull Requests
 
-1. Fork the repo and create a branch from `main`
-2. Run `pnpm run typecheck` — must pass with zero errors
-3. Keep PRs focused — one feature or fix per PR
-4. Describe what changed and why in the PR description
+1. Fork the repo and create a branch from `main`.
+2. Run the typecheck: it must pass with zero errors.
+3. Keep PRs focused: one feature or fix per PR.
+4. Describe what changed and why in the PR description.
 
 ## License
 
