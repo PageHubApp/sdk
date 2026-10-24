@@ -40,7 +40,13 @@ test("off: no DaisyUI component CSS; utilities still compile", async () => {
   assert.doesNotMatch(css, componentRule("btn-primary"));
   assert.match(css, /\.px-4\s*\{/);
   assert.match(css, /\.min-h-96\s*\{/);
-  // The spatial overrides stay in the sheet but can't match under the off root.
+  // The spatial overrides only retune DaisyUI's components: off, they're left out (a site's own `.navbar` keeps its height).
+  assert.ok(!css.includes('[data-daisyui="off"] *'));
+  assert.match(css, /--space-sm/, "the spatial scale itself still ships");
+});
+
+test("on: the spatial overrides ship", async () => {
+  const css = await compileCSS({ classes: CLASSES, lean: true });
   assert.ok(css.includes('.hero-content:where(:not([data-daisyui="off"] *))'));
 });
 

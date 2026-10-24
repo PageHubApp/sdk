@@ -84,7 +84,7 @@ export async function compileCSS(options: {
   const daisyuiCSS = daisyui ? collectDaisyUICSS(classes) : "";
 
   // Compile Tailwind utilities
-  const compiler = await getCompiler(preflight);
+  const compiler = await getCompiler(preflight, daisyui);
   const css = compiler.build(classes);
 
   // Keep Tailwind's preflight intact — `unwrapLayerBlocks` below flattens the

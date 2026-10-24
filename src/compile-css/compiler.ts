@@ -17,8 +17,8 @@ const __dirname = dirname(__filename);
 // "tailwindcss"` resolves identically (this file sits one level deeper).
 const COMPILER_BASE = resolve(__dirname, "..");
 
-/** The compiler source, built once per preflight setting. */
-const _source = new Map<boolean, string>();
+/** The compiler source, built once per preflight / DaisyUI setting. */
+const _source = new Map<string, string>();
 
 /**
  * Tailwind with or without its preflight reset. Without: the theme and utilities layers only (Tailwind v4's documented
@@ -40,17 +40,30 @@ export function lowerDefaultRootSpecificity(css: string): string {
   return css.replace(/(^|\n):root(\s*\{)/g, "$1:where(:root)$2");
 }
 
-function compilerSource(preflight: boolean): string {
-  let source = _source.get(preflight);
+/**
+ * The spatial CSS without its DaisyUI component overrides (`.btn`, `.navbar`, `.card-body`, …: every selector ending in
+ * `:where(:not([data-daisyui="off"] *))`), for a site that turns DaisyUI off. They only retune DaisyUI's components;
+ * on such a site a `.navbar` is the site's own and would gain a 4rem min-height.
+ */
+export function withoutDaisyUIOverrides(css: string): string {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/[^{}]*:where\(:not\(\[data-daisyui="off"\] \*\)\)[^{}]*\{[^{}]*\}/g, "");
+}
+
+function compilerSource(preflight: boolean, daisyui: boolean): string {
+  const key = `${preflight}:${daisyui}`;
+  let source = _source.get(key);
   if (source === undefined) {
+    const spatial = getSpatialCSS();
     const parts = [
       TAILWIND_ENTRY[`${preflight}`],
       lowerDefaultRootSpecificity(getThemeCSS()),
-      lowerDefaultRootSpecificity(getSpatialCSS()),
+      lowerDefaultRootSpecificity(daisyui ? spatial : withoutDaisyUIOverrides(spatial)),
       getAnimationCSS(),
     ];
     source = parts.filter(Boolean).join("\n");
-    _source.set(preflight, source);
+    _source.set(key, source);
   }
   return source;
 }
@@ -61,9 +74,9 @@ function compilerSource(preflight: boolean): string {
  * the process rendered before — bloating this page's CSS and masking classes
  * its own candidate list misses. Compiling the cached source costs a few ms.
  */
-export async function getCompiler(preflight = true) {
+export async function getCompiler(preflight = true, daisyui = true) {
   const { compile } = await import("@tailwindcss/node");
-  return compile(compilerSource(preflight), {
+  return compile(compilerSource(preflight, daisyui), {
     base: COMPILER_BASE,
     onDependency() {},
   });
