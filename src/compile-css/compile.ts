@@ -60,6 +60,11 @@ export async function compileCSS(options: {
    * specificity, so `btn px-space-md` would lose its padding.
    */
   canvasScoped?: boolean;
+  /**
+   * Ship Tailwind's preflight reset. Default true; false for a site whose theme turns it off (`--ph-preflight: 0`,
+   * an imported site written against the browser's defaults).
+   */
+  preflight?: boolean;
 }): Promise<string> {
   const {
     classes,
@@ -70,6 +75,7 @@ export async function compileCSS(options: {
     editor = false,
     daisyui = true,
     canvasScoped = false,
+    preflight = true,
   } = options;
 
   if (classes.length === 0) return themeCSS || "";
@@ -78,7 +84,7 @@ export async function compileCSS(options: {
   const daisyuiCSS = daisyui ? collectDaisyUICSS(classes) : "";
 
   // Compile Tailwind utilities
-  const compiler = await getCompiler();
+  const compiler = await getCompiler(preflight);
   const css = compiler.build(classes);
 
   // Keep Tailwind's preflight intact — `unwrapLayerBlocks` below flattens the

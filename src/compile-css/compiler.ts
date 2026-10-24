@@ -17,7 +17,18 @@ const __dirname = dirname(__filename);
 // "tailwindcss"` resolves identically (this file sits one level deeper).
 const COMPILER_BASE = resolve(__dirname, "..");
 
-let _source: string | null = null;
+/** The compiler source, built once per preflight setting. */
+const _source = new Map<boolean, string>();
+
+/**
+ * Tailwind with or without its preflight reset. Without: the theme and utilities layers only (Tailwind v4's documented
+ * split), for a site written against the browser's defaults (an imported non-Tailwind site), where `p { margin: 0 }`
+ * and `line-height: 1.5` would move its text.
+ */
+const TAILWIND_ENTRY = {
+  true: '@import "tailwindcss";',
+  false: '@layer theme, base, components, utilities;\n@import "tailwindcss/theme.css" layer(theme);\n@import "tailwindcss/utilities.css" layer(utilities);',
+} as const;
 
 /**
  * The defaults' `:root` blocks (default palette, spatial scale) ship after the utilities, while a site's own
@@ -29,17 +40,19 @@ export function lowerDefaultRootSpecificity(css: string): string {
   return css.replace(/(^|\n):root(\s*\{)/g, "$1:where(:root)$2");
 }
 
-function compilerSource(): string {
-  if (_source === null) {
+function compilerSource(preflight: boolean): string {
+  let source = _source.get(preflight);
+  if (source === undefined) {
     const parts = [
-      '@import "tailwindcss";',
+      TAILWIND_ENTRY[`${preflight}`],
       lowerDefaultRootSpecificity(getThemeCSS()),
       lowerDefaultRootSpecificity(getSpatialCSS()),
       getAnimationCSS(),
     ];
-    _source = parts.filter(Boolean).join("\n");
+    source = parts.filter(Boolean).join("\n");
+    _source.set(preflight, source);
   }
-  return _source;
+  return source;
 }
 
 /**
@@ -48,9 +61,9 @@ function compilerSource(): string {
  * the process rendered before — bloating this page's CSS and masking classes
  * its own candidate list misses. Compiling the cached source costs a few ms.
  */
-export async function getCompiler() {
+export async function getCompiler(preflight = true) {
   const { compile } = await import("@tailwindcss/node");
-  return compile(compilerSource(), {
+  return compile(compilerSource(preflight), {
     base: COMPILER_BASE,
     onDependency() {},
   });
