@@ -3,7 +3,8 @@
  *
  *   device part          a responsive hide class on the element (`md:hidden` / `max-md:hidden`, conditions.ts
  *                        `deviceGate`); a node shown on no device emits nothing
- *   runtime state only   `data-state-show` on the element (the runtime's `state` chunk decides, live)
+ *   runtime state only   `data-state-show` on the element, or on a `<div>` around a body that is not one element
+ *                        (the runtime's `state` chunk decides, live)
  *   server-readable      a Liquid `{% if %}` around it
  *   anything else        emitted ungated with a `<!--/* report: <reason> *\/-->` note the migration counts
  */
@@ -30,9 +31,9 @@ function gateGroups(groups: any, body: string): string {
   // `hidden = !test(expr)` and re-tests on every store change, so a filter chip's `data-state-set` drives it live.
   const show = stateShowExpr(groups);
   if (show) {
-    const gated = injectAttr(body, "data-state-show", show);
-    if (gated) return gated;
-    // The body root isn't a single plain element (e.g. a Data `{% for %}`): fall through to report.
+    // The body root isn't a single plain element (an Image's `{% if item.image %}<img>`, a Data `{% for %}`): a plain
+    // `<div>` carries the gate instead, the wrapper the old walker put around every gated node.
+    return injectAttr(body, "data-state-show", show) ?? `<div data-state-show="${escAttr(show)}">${body}</div>`;
   }
   // Client-only / non-flattenable conditions can't be decided at render time: the node is emitted ungated with the
   // reported note so the migration surfaces them per site. The note is wrapped in a real HTML comment — a bare
@@ -50,9 +51,10 @@ function gateGroups(groups: any, body: string): string {
 export function injectAttr(body: string, name: string, value: string): string | null {
   const m = /^(\s*<[a-zA-Z][\w-]*)(?=[\s/>])/.exec(body);
   if (!m) return null;
-  const esc = value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
-  return `${m[1]} ${name}="${esc}"${body.slice(m[1].length)}`;
+  return `${m[1]} ${name}="${escAttr(value)}"${body.slice(m[1].length)}`;
 }
+
+const escAttr = (value: string) => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 
 /**
  * Add a class to the single plain-element root of an emitted body, merged into its `class` attribute. A body whose

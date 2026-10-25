@@ -50,3 +50,21 @@ test("gateNode: a phone-only banner gated on a query param gets both the class a
   assert.equal(gateNode({ conditionGroups: [{ logic: "all", conditions: [dev("mobile"), dev("desktop")] }] }, `<p>x</p>`), "");
   assert.equal(gateNode({}, `<p>x</p>`), `<p>x</p>`);
 });
+
+test("gateNode: a runtime state gate on a body that is not one element rides on a wrapping div, never reported", () => {
+  // Moss & Fern's product page: the default photo shows until the matched variant has its own image.
+  const groups = [{
+    logic: "any",
+    conditions: [
+      { type: "state", key: "pdp:current:matching-variant", operator: "not-exists", value: "" },
+      { type: "state", key: "pdp:current:matching-variant", operator: "not-contains", value: '"image":"' },
+    ],
+  }];
+  const body = `{% if item.image %}<img src="{{ item.image | image_url }}">{% endif %}`;
+  assert.equal(
+    gateNode({ conditionGroups: groups }, body),
+    `<div data-state-show="!pdp:current:matching-variant||!pdp:current:matching-variant.image">${body}</div>`,
+  );
+  // A single element still carries the gate itself.
+  assert.equal(gateNode({ conditionGroups: groups }, `<img src="a.jpg">`), `<img data-state-show="!pdp:current:matching-variant||!pdp:current:matching-variant.image" src="a.jpg">`);
+});
