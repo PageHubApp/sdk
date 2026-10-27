@@ -206,22 +206,30 @@ function fmt(len: Len, capPx: number | null): string {
 
 /**
  * Derive a full responsive `sizes` string from an image's own className and its
- * immediate parent's className. Always returns a value (never null) — the safe
- * default is `100vw` (over-fetch, never blur). Precedence per breakpoint:
- * explicit width → grid-column context → height-capped logo → 100vw; then any
- * `max-w-*` clamps the result via CSS `min()`.
+ * immediate parent's className (or the grid that holds it). Always returns a
+ * value (never null) — the safe default is `100vw` (over-fetch, never blur).
+ * Precedence per breakpoint: explicit width → grid-column context →
+ * height-capped logo → 100vw; then any `max-w-*` clamps the result via CSS `min()`.
+ *
+ * `cellClassName` is the grid cell holding the image (the grid's child — the
+ * image itself when it sits directly in the grid): its `col-span-N` /
+ * `col-span-full` widens the column share, so a `lg:col-span-5` cell in a
+ * `lg:grid-cols-12` grid sizes as 5/12 of the viewport, not 1/12.
  */
 export function deriveImageSizes(
   className?: string | undefined,
-  parentClassName?: string | undefined
+  parentClassName?: string | undefined,
+  cellClassName?: string | undefined
 ): string {
   const own = (className || "").split(/\s+/).filter(Boolean);
   const parent = (parentClassName || "").split(/\s+/).filter(Boolean);
+  const cell = (cellClassName || "").split(/\s+/).filter(Boolean);
 
   const widthByTier: Partial<Record<Tier, Len>> = {};
   const maxWByTier: Partial<Record<Tier, number>> = {};
   const heightByTier: Partial<Record<Tier, number>> = {};
   const gridColsByTier: Partial<Record<Tier, number>> = {};
+  const spanByTier: Partial<Record<Tier, number | "full">> = {};
   let hasWAuto = false;
   let fullBleed = false;
 
@@ -243,11 +251,17 @@ export function deriveImageSizes(
     const m = bare.match(/^grid-cols-(\d+)$/);
     if (m) gridColsByTier[tier] = parseInt(m[1], 10);
   }
+  for (const tok of cell) {
+    const { tier, bare } = tierAndBare(tok);
+    const m = bare.match(/^col-span-(\d+|full)$/);
+    if (m) spanByTier[tier] = m[1] === "full" ? "full" : parseInt(m[1], 10);
+  }
 
   const width = inherit(widthByTier);
   const maxW = inherit(maxWByTier);
   const height = inherit(heightByTier);
   const grid = inherit(gridColsByTier);
+  const span = inherit(spanByTier);
 
   // A height-constrained image with no width class (or `w-auto`) is a logo /
   // inline mark — cap the request at ~4× its rendered height instead of the
@@ -265,9 +279,11 @@ export function deriveImageSizes(
       len = { kind: "vw", value: 100 };
     }
     // `w-full` / fractional widths are relative to the containing block — inside a
-    // CSS grid that block is one column, so divide the vw by the column count.
+    // CSS grid that block is the cell's columns, so scale the vw by span / cols.
     if (len.kind === "vw" && cols && cols > 1) {
-      len = { kind: "vw", value: len.value / cols };
+      const s = span[tier];
+      const cellCols = s === "full" ? cols : Math.min(s ?? 1, cols);
+      len = { kind: "vw", value: (len.value * cellCols) / cols };
     }
     return fmt(len, maxW[tier] ?? null);
   };
