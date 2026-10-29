@@ -127,12 +127,14 @@ function plainText(raw: string): string {
 /**
  * Whether a bullet reads like something the user would send back ("home",
  * "warm rustic", "Add a pricing section") rather than information to read.
- * A link, a labelled finding ("**Copy:** …") or a sentence or two stays text.
+ * A link, a labelled finding ("**Copy:** …", "Home Page: /") or a sentence or
+ * two stays text.
  */
 function isReplyOption(raw: string): boolean {
   if (/https?:\/\/|\]\(/.test(raw)) return false;
   if (/^\s*\*\*[^*]+:\*\*/.test(raw)) return false;
   const text = plainText(raw);
+  if (/^[^:]{1,40}:\s+\S/.test(text)) return false;
   return text.length <= 60 && !/[.!?]\s/.test(text);
 }
 
