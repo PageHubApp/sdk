@@ -31,6 +31,14 @@ const TAILWIND_ENTRY = {
 } as const;
 
 /**
+ * Tailwind v4's preflight leaves buttons on the browser's default cursor, so a button without DaisyUI's `btn` reads as
+ * not clickable. `:where()` has no specificity: a `cursor-*` class or a site's own CSS wins in any order. Ships with
+ * preflight only, so a site written against the browser's defaults keeps them.
+ */
+const POINTER_CURSOR =
+  ':where(button:not(:disabled), select:not(:disabled), summary, [role="button"], [commandfor], [popovertarget], input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled), input[type="submit"]:not(:disabled), label:has(input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled))) { cursor: pointer; }';
+
+/**
  * The defaults' `:root` blocks (default palette, spatial scale) ship after the utilities, while a site's own
  * `:root` tokens are prepended by `compileCSS`. At equal specificity the later block wins, so the defaults would
  * paint over the site's palette. `:where(:root)` has no specificity: the site's tokens win in any order, and a
@@ -58,6 +66,7 @@ function compilerSource(preflight: boolean, daisyui: boolean): string {
     const spatial = getSpatialCSS();
     const parts = [
       TAILWIND_ENTRY[`${preflight}`],
+      preflight ? POINTER_CURSOR : "",
       lowerDefaultRootSpecificity(getThemeCSS()),
       lowerDefaultRootSpecificity(daisyui ? spatial : withoutDaisyUIOverrides(spatial)),
       getAnimationCSS(),
