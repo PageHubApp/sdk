@@ -13,6 +13,10 @@ const cases: Array<{ name: string; cn: string; parent?: string; cell?: string; e
   { name: "logo h-8 w-auto", cn: "h-8 w-auto", expect: "128px" },
   { name: "logo responsive height", cn: "h-8 md:h-12 w-auto", expect: "(min-width: 768px) 192px, 128px" },
 
+  // A height-sized photo (object-cover) is ~2x its height wide, not a logo's 4x.
+  { name: "gallery photo h-[260px] w-auto object-cover", cn: "h-[260px] w-auto max-w-none object-cover lg:h-[333px]", expect: "(min-width: 1024px) 666px, 520px" },
+  { name: "object-cover without w-auto keeps the logo rule", cn: "h-10 object-cover", expect: "160px" },
+
   // Full-bleed hero → 100vw at every width (old code returned 33vw desktop → blur).
   { name: "full-bleed hero", cn: "w-full h-full absolute inset-0 object-cover", expect: "100vw" },
   { name: "w-full fixed height", cn: "w-full h-[500px] object-cover", expect: "100vw" },

@@ -184,6 +184,23 @@ function heightPx(bare: string): number | null {
   return len?.kind === "px" ? len.value : null;
 }
 
+/**
+ * A photo sized by its height: a fixed `h-*` with `w-auto` and `object-cover` (a gallery strip, a carousel slide).
+ * Without `object-cover` the same classes are a logo or inline mark.
+ */
+export function isHeightSizedPhoto(className?: string): boolean {
+  let wAuto = false;
+  let cover = false;
+  let fixedHeight = false;
+  for (const tok of (className || "").split(/\s+/).filter(Boolean)) {
+    const { bare } = tierAndBare(tok);
+    if (bare === "w-auto") wAuto = true;
+    if (bare === "object-cover") cover = true;
+    if (heightPx(bare) != null) fixedHeight = true;
+  }
+  return wAuto && cover && fixedHeight;
+}
+
 /** Fill missing tiers from the next-lower tier (Tailwind mobile-first inheritance). */
 function inherit<T>(byTier: Partial<Record<Tier, T>>): Record<Tier, T | undefined> {
   const out = {} as Record<Tier, T | undefined>;
@@ -266,6 +283,7 @@ export function deriveImageSizes(
   // A height-constrained image with no width class (or `w-auto`) is a logo /
   // inline mark — cap the request at ~4× its rendered height instead of the
   // 100vw default (a 40px-tall logo should fetch the 320w variant, not 1080w).
+  const photo = isHeightSizedPhoto(className);
   const sizeAt = (tier: Tier): string => {
     let len = width[tier];
     const cols = grid[tier];
@@ -275,7 +293,8 @@ export function deriveImageSizes(
       // NOT a grid cell (a grid child fills its column — divide 100vw instead).
       const logo =
         h != null && !fullBleed && !cols && (hasWAuto || Object.keys(widthByTier).length === 0);
-      if (logo) return fmt({ kind: "px", value: h! * 4 }, maxW[tier] ?? null);
+      // A height-sized photo (`object-cover`) is about 2× its height wide, not a logo's 4×.
+      if (logo) return fmt({ kind: "px", value: h! * (photo ? 2 : 4) }, maxW[tier] ?? null);
       len = { kind: "vw", value: 100 };
     }
     // `w-full` / fractional widths are relative to the containing block — inside a
