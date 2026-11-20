@@ -16,6 +16,8 @@ interface ConfirmDialogProps {
   cancelText?: string;
   variant?: ConfirmVariant;
   icon?: React.ReactNode;
+  /** Shown under the message, e.g. a "Download your site first" button before a delete. */
+  children?: React.ReactNode;
 }
 
 const VARIANT_STYLES: Record<ConfirmVariant, { icon: string; confirm: string }> = {
@@ -35,6 +37,7 @@ export const ConfirmDialog = ({
   cancelText = "Cancel",
   variant = "danger",
   icon,
+  children,
 }: ConfirmDialogProps) => {
   const announce = useAnnounce();
   const titleId = useId();
@@ -70,6 +73,7 @@ export const ConfirmDialog = ({
               {title}
             </h3>
             <p className="text-neutral-content text-sm">{message}</p>
+            {children ? <div className="mt-3">{children}</div> : null}
           </div>
         </div>
 
